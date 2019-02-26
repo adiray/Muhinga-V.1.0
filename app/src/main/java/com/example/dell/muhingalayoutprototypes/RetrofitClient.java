@@ -13,4 +13,6 @@ public interface RetrofitClient {
     Call<ArrayList<LandResponse>> getFilteredLand(@QueryMap(encoded = true) Map<String, String> userFilters_Land);
 
 
+    @GET("real_estate")
+    Call<ArrayList<HousesResponse>> getFilteredHouses(@QueryMap (encoded = true) Map<String, String> userFilters);
 }
