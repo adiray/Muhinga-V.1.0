@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">MuhingaLayoutPrototypes</string>
+    <string name="max_price">Max price</string>
+    <string name="ALL">ALL</string>
+    <string name="my_app_name">Muhinga</string>
+    <string name="history">History</string>
+    <string name="saved">Saved</string>
+    <string name="wallet">Wallet</string>
+    <string name="profile">Profile</string>
+    <string name="rent">Rent</string>
+    <string name="land">Land</string>
+    <string name="houses">Houses</string>
+    <string name="transport">Transport</string>
+    <string name="events">Events</string>
+    <string name="goods">Goods</string>
+    <string name="shop">Shop</string>
+    <string name="hotels">Hotels</string>
+    <string name="venues">Venues</string>
+    <string name="shipping">Shipping</string>
+    <string name="HousesActivityLabel">Houses</string>
+    <string name="filter">Filter</string>
+    <string name="ForSale">For Sale</string>
+    <string name="ForRent">For Rent</string>
+    <string name="services">Services</string>
+    <string name="location">Location</string>
+    <string name="max_size">max size</string>
+    <string name="go">Go</string>
+    <string name="add_filters">Add Filters</string>
+    <string name="title">Title</string>
+    <string name="browse_artists">Browse artists</string>
+    <string name="artists_image">Artists\' image</string>
+    <string name="artists_cover_image">Artists\' cover image</string>
+    <string name="refresh">refresh</string>
+    <string name="account">account</string>
+    <string name="music">Music</string>
+
+
+</resources>
