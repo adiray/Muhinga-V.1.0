@@ -12,11 +12,17 @@ public interface RetrofitClient {
     @GET("land")
     Call<ArrayList<LandResponse>> getFilteredLand(@QueryMap(encoded = true) Map<String, String> userFilters_Land);
 
-
     @GET("real_estate")
     Call<ArrayList<HousesResponse>> getFilteredHouses(@QueryMap (encoded = true) Map<String, String> userFilters);
 
-
     @GET("artist")
     Call<ArrayList<ArtistResponse>> getFilteredArtist(@QueryMap(encoded = true) Map<String, String> userFilters_Artist);
+
+    @GET("artist")
+    Call<ArrayList<ArtistAlbumRelationsResponse>> getFilteredArtistWithAlbum(@QueryMap(encoded = true) Map<String, String> userFilters_Artist_withAlbum);
+
+    @GET("album")
+    Call<ArrayList<SongResponse>> getAlbumWithSongs(@QueryMap(encoded = true) Map<String, String> userFilters_Album_with_Songs);
+
+
 }

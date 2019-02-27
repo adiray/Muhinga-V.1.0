@@ -17,8 +17,11 @@
             android:id="@+id/single_song_song_cover_image"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginStart="8dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/music_note" />
+            android:src="@drawable/music_note"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
         <TextView
