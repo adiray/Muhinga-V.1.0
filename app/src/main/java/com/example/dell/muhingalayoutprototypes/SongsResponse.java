@@ -1,17 +1,8 @@
 package com.example.dell.muhingalayoutprototypes;
 
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import com.bumptech.glide.Glide;
-import com.google.gson.annotations.SerializedName;
-import com.mikepenz.fastadapter.items.AbstractItem;
 
 class SongResponse {
 

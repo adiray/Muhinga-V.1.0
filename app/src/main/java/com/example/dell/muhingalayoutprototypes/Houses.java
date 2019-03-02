@@ -1,5 +1,6 @@
 package com.example.dell.muhingalayoutprototypes;
 
+import android.content.Intent;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +15,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.FooterAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter_extensions.items.ProgressItem;
@@ -73,6 +76,15 @@ public class Houses extends AppCompatActivity {
     FastItemAdapter<HousesResponse> housesFastAdapter;
     FooterAdapter<ProgressItem> footerAdapter = new FooterAdapter<>();
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
+
+
+    public static final String EXTRA_ARRAY_H = "com.example.muhinga.housesItemImageReferences";
+    public static final String EXTRA_DESCRIPTION_H = "com.example.muhinga.housesItemDescription";
+    public static final String EXTRA_TITLE_H = "com.example.muhinga.housesItemTitle";
+    public static final String EXTRA_PRICE_H = "com.example.muhinga.housesItemPrice";
+    public static final String EXTRA_LOCATION_H = "com.example.muhinga.housesItemLocation";
+    public static final String EXTRA_RENT_SALE_H = "com.example.muhinga.housesItemRentOrSale";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,6 +175,55 @@ public class Houses extends AppCompatActivity {
 
             }
         });
+
+
+        //add an on click to the fast adapter objects
+        housesFastAdapter.withSelectable(true);
+        housesFastAdapter.withOnClickListener(new FastAdapter.OnClickListener<HousesResponse>() {
+            @Override
+            public boolean onClick(View v, IAdapter<HousesResponse> adapter, HousesResponse item, int position) {
+
+
+                // Handle click here
+                Intent intent = new Intent(Houses.this, HousesDetails.class);
+                ArrayList<String> housesItemImageReferences = new ArrayList<>();
+                String location, title, price, rentSale, description;
+                Boolean isForRent;
+
+
+                //add the image references to the image reference array
+                housesItemImageReferences.add(item.getMianImageReference());
+                housesItemImageReferences.add(item.getImg2());
+                housesItemImageReferences.add(item.getImg3());
+                housesItemImageReferences.add(item.getImg4());
+                housesItemImageReferences.add(item.getImg5());
+
+                //add the other details to the respective variables
+                location = item.getLocation();
+                title = item.getTitle();
+                price = item.getPrice();
+                description = item.getDescription();
+                if (item.isRent()) {
+
+                    rentSale = "For Rent";
+                } else {
+                    rentSale = "For Sale";
+                }
+
+
+                intent.putExtra(EXTRA_ARRAY_H, housesItemImageReferences);
+                intent.putExtra(EXTRA_LOCATION_H, location);
+                intent.putExtra(EXTRA_TITLE_H, title);
+                intent.putExtra(EXTRA_PRICE_H, price);
+                intent.putExtra(EXTRA_RENT_SALE_H, rentSale);
+                intent.putExtra(EXTRA_DESCRIPTION_H, description);
+                startActivity(intent);
+
+
+                return true;
+            }
+        });
+
 
     }
 
