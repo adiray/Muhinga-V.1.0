@@ -49,7 +49,12 @@ public class MainActivity extends AppCompatActivity {
                 musicButtonClicked();
             }
         });
-
+        venuesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                venuesButtonClicked();
+            }
+        });
         landButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,6 +85,15 @@ public class MainActivity extends AppCompatActivity {
 
         //open land activity
         Intent intent = new Intent(MainActivity.this, Land.class);
+        MainActivity.this.startActivity(intent);
+
+
+    }
+
+    void venuesButtonClicked() {
+
+        //open the venues activity
+        Intent intent = new Intent(MainActivity.this, Venues.class);
         MainActivity.this.startActivity(intent);
 
 
