@@ -1,5 +1,6 @@
 package com.example.dell.muhingalayoutprototypes;
 
+import android.content.Intent;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +15,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.FooterAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter_extensions.items.ProgressItem;
@@ -32,7 +35,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class Venues extends AppCompatActivity {
 
     //miscellaneous objects
-    Boolean onRefreshing= false, infiniteLoading=false;
+    Boolean onRefreshing = false, infiniteLoading = false;
     Boolean onFilteredRefreshing = false, filteredInfiniteLoading = false; //shows whether the user is refeshing or loading more filtered items;
     ArrayList<VenuesResponse> allVenuesResponseArray = new ArrayList<>(), filteredVenuesResponseArray = new ArrayList<>();
     ArrayList<String> queryStringsHolder = new ArrayList<>();
@@ -71,6 +74,13 @@ public class Venues extends AppCompatActivity {
     FastItemAdapter<VenuesResponse> venuesRecViewFastAdapter;
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
     FooterAdapter<ProgressItem> footerAdapter = new FooterAdapter<>();
+
+    public static final String EXTRA_ARRAY = "com.example.muhinga.venuesItemImageReferences";
+    public static final String EXTRA_DESCRIPTION = "com.example.muhinga.venuesItemDescription";
+    public static final String EXTRA_TITLE = "com.example.muhinga.venuesItemTitle";
+    public static final String EXTRA_PRICE = "com.example.muhinga.venuesItemPrice";
+    public static final String EXTRA_LOCATION = "com.example.muhinga.venuesItemLocation";
+    public static final String EXTRA_SIZE = "com.example.muhinga.venuesItemSize";
 
 
     @Override
@@ -155,6 +165,43 @@ public class Venues extends AppCompatActivity {
                 requestFilteredVenues();
                 filteredState = true;
 
+            }
+        });
+
+
+        venuesRecViewFastAdapter.withSelectable(true);
+        venuesRecViewFastAdapter.withOnClickListener(new FastAdapter.OnClickListener<VenuesResponse>() {
+            @Override
+            public boolean onClick(View v, IAdapter<VenuesResponse> adapter, VenuesResponse item, int position) {
+
+                Intent intent = new Intent(Venues.this, VenuesDetails.class);
+                ArrayList<Object> venuesItemImageReferences = new ArrayList<>();
+                String location, title, price, size, description;
+
+                //add the image references to the image reference array
+                venuesItemImageReferences.add(item.getMainImageReference());
+                venuesItemImageReferences.add(item.getImg2());
+                venuesItemImageReferences.add(item.getImg3());
+                venuesItemImageReferences.add(item.getImg4());
+                venuesItemImageReferences.add(item.getImg5());
+
+                //add the other details to the respective variables
+                location = item.getLocation();
+                title = item.getTitle();
+                price = item.getPrice();
+                size = item.getCapacity();
+                description = item.getDescription();
+
+                intent.putExtra(EXTRA_ARRAY, venuesItemImageReferences);
+                intent.putExtra(EXTRA_LOCATION, location);
+                intent.putExtra(EXTRA_TITLE, title);
+                intent.putExtra(EXTRA_PRICE, price);
+                intent.putExtra(EXTRA_SIZE, size);
+                intent.putExtra(EXTRA_DESCRIPTION, description);
+                startActivity(intent);
+
+
+                return true;
             }
         });
 
@@ -357,7 +404,7 @@ public class Venues extends AppCompatActivity {
         //add an All locations option for the user to select all available locations
         locationOptions.add(getString(R.string.ALL));
 
-        locationsMap.put("props", "Location");
+        locationsMap.put("props", "location");
 
         //initialize the spinner and assign it an adapter
         ArrayAdapter<String> locationSpinnerAdapter = new ArrayAdapter<>(Venues.this, android.R.layout.simple_spinner_item, locationOptions);
