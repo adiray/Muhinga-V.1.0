@@ -1,15 +1,39 @@
 package com.example.dell.muhingalayoutprototypes;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.tonyodev.fetch2.Download;
+import com.tonyodev.fetch2.Error;
+import com.tonyodev.fetch2.Fetch;
+import com.tonyodev.fetch2.FetchConfiguration;
+import com.tonyodev.fetch2.FetchListener;
+import com.tonyodev.fetch2.NetworkType;
+import com.tonyodev.fetch2.Priority;
+import com.tonyodev.fetch2.Request;
+import com.tonyodev.fetch2core.DownloadBlock;
+import com.tonyodev.fetch2core.Func;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.File;
+import java.util.List;
+import java.util.Objects;
 
 
 public class PlayMusic extends AppCompatActivity {
@@ -27,6 +51,19 @@ public class PlayMusic extends AppCompatActivity {
     MediaPlayer mediaPlayer = null;
     Integer songPosition;
     Boolean isPaused = false;
+
+
+    //Fetch downloader objects
+    private Fetch fetch;
+    FetchConfiguration fetchConfiguration;
+    String url, fileName, fileType, downloadLocation;
+    FetchListener fetchListener;
+
+    //file downloading objects
+
+    private static final int  REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +98,7 @@ public class PlayMusic extends AppCompatActivity {
         //set the cover image
         Glide.with(this).load(coverImage).into(coverImageImgView);
 
+
         //set onClickListeners to the control buttons
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,6 +121,16 @@ public class PlayMusic extends AppCompatActivity {
                 stopSong();
             }
         });
+
+        downloadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                downloadSong();
+            }
+        });
+
+
+        getWritePermission();
 
 
     }
@@ -168,6 +216,201 @@ public class PlayMusic extends AppCompatActivity {
 
 
     }
+
+
+    public void downloadSong() {
+
+        downloadLocation= ExternalStorageUtil.getPublicExternalStorageBaseDir(Environment.DIRECTORY_DOWNLOADS);
+
+        File myFile = new File(downloadLocation,songTitle + "." + fileType);
+
+        fetchConfiguration = new FetchConfiguration.Builder(this)
+                .setDownloadConcurrentLimit(3)
+                .build();
+
+        fetch = Fetch.Impl.getInstance(fetchConfiguration);
+        fileType = songFileReference.substring(songFileReference.length() - 4);
+        fileName = myFile.getAbsolutePath();
+        // fileName = "/downloads/" + songTitle + "." + fileType;
+        final Request request = new Request(songFileReference, fileName);
+        request.setPriority(Priority.HIGH);
+        request.setNetworkType(NetworkType.ALL);
+        //request.addHeader("clientKey", "SD78DF93_3947&MVNGHE1WONG"); //don't know what this does so its commented out for now
+
+        fetch.enqueue(request, new Func<Request>() {
+            @Override
+            public void call(@NotNull Request updatedRequest) {
+                //Request was successfully enqueued for download.
+                Log.d("myLogsDownloadRequest", "everything seems fine" + updatedRequest.getFile() + updatedRequest.getFileUri());
+                Log.d("myLogsDownloadRequest2",updatedRequest.getUrl());
+
+
+            }
+        }, new Func<Error>() {
+            @Override
+            public void call(@NotNull Error error) {
+                //An error occurred enqueuing the request.
+                Log.d("myLogsDownloadRequestF", "something went wrong" + error);
+
+            }
+        });
+
+
+        fetchListener = new FetchListener() {
+            @Override
+            public void onAdded(@NotNull Download download) {
+
+
+            }
+
+            @Override
+            public void onQueued(@NotNull Download download, boolean b) {
+
+                if (request.getId() == download.getId()) {
+
+                    Toast.makeText(PlayMusic.this, download.getFile() + " " + "is queued!", Toast.LENGTH_LONG).show();
+                    Log.d("myLogsDLQ", "file is queued");
+
+
+                }
+
+            }
+
+            @Override
+            public void onWaitingNetwork(@NotNull Download download) {
+
+                Log.d("myLogsDLWN", "file is waiting on network");
+
+
+            }
+
+            @Override
+            public void onCompleted(@NotNull Download download) {
+
+                if (request.getId() == download.getId()) {
+
+                    Toast.makeText(PlayMusic.this, download.getFile() + " download has been completed!", Toast.LENGTH_LONG).show();
+                    Log.d("myLogsDLC", "file is completed");
+
+
+                }
+
+
+            }
+
+            @Override
+            public void onError(@NotNull Download download, @NotNull Error error, @Nullable Throwable throwable) {
+
+                if (request.getId() == download.getId()) {
+
+                    Toast.makeText(PlayMusic.this, "everything is horrible!", Toast.LENGTH_LONG).show();
+                    Log.d("myLogsDLE", "there is an error");
+                    //Log.d("myLogsDLE", error.getHttpResponse().getErrorResponse());
+
+                    Log.d("myLogsDLE", throwable.getMessage());
+                    Log.d("myLogsDLE", throwable.getCause().toString());
+
+
+                }
+
+
+            }
+
+            @Override
+            public void onDownloadBlockUpdated(@NotNull Download download, @NotNull DownloadBlock downloadBlock, int i) {
+
+            }
+
+            @Override
+            public void onStarted(@NotNull Download download, @NotNull List<? extends DownloadBlock> list, int i) {
+
+                Log.d("myLogsDLS", "file has started downloading");
+
+            }
+
+            @Override
+            public void onProgress(@NotNull Download download, long l, long l1) {
+
+                Log.d("myLogsDLP", "downloaded so far: "+ download.getProgress());
+
+
+            }
+
+            @Override
+            public void onPaused(@NotNull Download download) {
+
+            }
+
+            @Override
+            public void onResumed(@NotNull Download download) {
+
+            }
+
+            @Override
+            public void onCancelled(@NotNull Download download) {
+
+            }
+
+            @Override
+            public void onRemoved(@NotNull Download download) {
+
+            }
+
+            @Override
+            public void onDeleted(@NotNull Download download) {
+
+            }
+        };
+
+        fetch.addListener(fetchListener);
+
+        //ToDo ADD THIS TO A METHOD THAT DETERMINES WHEN THE USER IS DONE WITH THE DOWNLOAD
+        //Remove listener when done.
+        //fetch.removeListener(fetchListener);
+
+    }
+
+
+    public void getWritePermission(){
+
+        try {
+            if (ExternalStorageUtil.isExternalStorageMounted()){
+
+                //check if the app has permission to write to external storage or not
+                int writeExternalStoragePermission = ContextCompat.checkSelfPermission(PlayMusic.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                int readExternalStoragePermission = ContextCompat.checkSelfPermission(PlayMusic.this, Manifest.permission.READ_EXTERNAL_STORAGE);
+
+                //if write permission is not yet granted
+                if (writeExternalStoragePermission!= PackageManager.PERMISSION_GRANTED){
+                    //request user to grant write external storage permission
+                    ActivityCompat.requestPermissions(PlayMusic.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+
+                }
+
+                //if read permission is not yet granted
+                if (readExternalStoragePermission!= PackageManager.PERMISSION_GRANTED){
+                    //request user to grant write external storage permission
+                    ActivityCompat.requestPermissions(PlayMusic.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+
+                }
+
+
+
+
+            }
+        }catch (Exception ex){
+
+
+            Log.d("myLogsWritePermissionF", "something went wrong " + ex.getMessage());
+
+
+        }
+
+
+
+
+    }
+
 
 
 }
