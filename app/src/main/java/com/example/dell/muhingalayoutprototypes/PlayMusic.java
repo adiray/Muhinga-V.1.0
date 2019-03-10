@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +35,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.List;
-import java.util.Objects;
 
 
 public class PlayMusic extends AppCompatActivity {
@@ -42,15 +43,17 @@ public class PlayMusic extends AppCompatActivity {
     //miscellaneous objects
     String songTitle, artistName, songFileReference, albumName, coverImage;
 
+
     //initialize the views
-    TextView songTitleTv, artistNameTv;
+    TextView songTitleTv, artistNameTv , elapsedTimeTv, songDurationTv;
     ImageButton playButton, downloadButton, pauseButton, stopButton;
     ImageView coverImageImgView;
+    SeekBar songSeekBar;
 
     //Media player objects
     MediaPlayer mediaPlayer = null;
     Integer songPosition;
-    Boolean isPaused = false;
+    Boolean isPaused = false, isStopped = false;
 
 
     //Fetch downloader objects
@@ -61,8 +64,7 @@ public class PlayMusic extends AppCompatActivity {
 
     //file downloading objects
 
-    private static final int  REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
-
+    private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
 
 
     @Override
@@ -88,11 +90,18 @@ public class PlayMusic extends AppCompatActivity {
         stopButton = findViewById(R.id.play_music_stop_button);
         downloadButton = findViewById(R.id.play_music_download_button);
         coverImageImgView = findViewById(R.id.play_music_song_cover_image);
+        songSeekBar = findViewById(R.id.song_seek_bar);
+        elapsedTimeTv = findViewById(R.id.song_elapsed_duration);
+        songDurationTv = findViewById(R.id.song_total_duration);
+
 
 
         //assign the text to the textViews
         songTitleTv.setText(songTitle);
         artistNameTv.setText(artistName);
+        songSeekBar.setProgress(0);
+
+        //assign the initial progress
 
 
         //set the cover image
@@ -132,6 +141,9 @@ public class PlayMusic extends AppCompatActivity {
 
         getWritePermission();
 
+        //set the file type and file name. //set here because it is used later on in the download function. It can be set anywhere just before it is used.
+        fileType = songFileReference.substring(songFileReference.length() - 4);
+
 
     }
 
@@ -163,9 +175,42 @@ public class PlayMusic extends AppCompatActivity {
             mediaPlayer.prepareAsync();
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
-                public void onPrepared(MediaPlayer mediaPlayer) {
+                public void onPrepared(final MediaPlayer mediaPlayer) {
 
                     mediaPlayer.start();
+                    isPaused =false;
+                    isStopped = false;
+
+                    if (mediaPlayer.isPlaying()) {
+
+                        Integer songDuration;
+                        songDuration = mediaPlayer.getDuration();
+                        songSeekBar.setMax(songDuration);
+                        getTotalTime();
+
+
+
+                        final Handler handler = new Handler();
+
+                        final Runnable r = new Runnable() {
+
+                            @Override
+                            public void run() {
+
+                                if (!isStopped) {
+                                    songSeekBar.setProgress(mediaPlayer.getCurrentPosition());
+                                    getElapsedTime();
+                                    handler.postDelayed(this, 1000);
+                                }
+
+
+                            }
+                        };
+
+                        handler.postDelayed(r, 1000);
+
+
+                    }
 
 
                 }
@@ -211,6 +256,7 @@ public class PlayMusic extends AppCompatActivity {
             mediaPlayer.release();
             mediaPlayer = null;
             isPaused = false;
+            isStopped = true;
 
         }
 
@@ -220,16 +266,17 @@ public class PlayMusic extends AppCompatActivity {
 
     public void downloadSong() {
 
-        downloadLocation= ExternalStorageUtil.getPublicExternalStorageBaseDir(Environment.DIRECTORY_DOWNLOADS);
+        downloadLocation = ExternalStorageUtil.getPublicExternalStorageBaseDir(Environment.DIRECTORY_DOWNLOADS);
 
-        File myFile = new File(downloadLocation,songTitle + "." + fileType);
+
+        File myFile = new File(downloadLocation, songTitle + "." + fileType);
 
         fetchConfiguration = new FetchConfiguration.Builder(this)
                 .setDownloadConcurrentLimit(3)
                 .build();
 
         fetch = Fetch.Impl.getInstance(fetchConfiguration);
-        fileType = songFileReference.substring(songFileReference.length() - 4);
+
         fileName = myFile.getAbsolutePath();
         // fileName = "/downloads/" + songTitle + "." + fileType;
         final Request request = new Request(songFileReference, fileName);
@@ -242,7 +289,7 @@ public class PlayMusic extends AppCompatActivity {
             public void call(@NotNull Request updatedRequest) {
                 //Request was successfully enqueued for download.
                 Log.d("myLogsDownloadRequest", "everything seems fine" + updatedRequest.getFile() + updatedRequest.getFileUri());
-                Log.d("myLogsDownloadRequest2",updatedRequest.getUrl());
+                Log.d("myLogsDownloadRequest2", updatedRequest.getUrl());
 
 
             }
@@ -331,7 +378,7 @@ public class PlayMusic extends AppCompatActivity {
             @Override
             public void onProgress(@NotNull Download download, long l, long l1) {
 
-                Log.d("myLogsDLP", "downloaded so far: "+ download.getProgress());
+                Log.d("myLogsDLP", "downloaded so far: " + download.getProgress());
 
 
             }
@@ -371,35 +418,32 @@ public class PlayMusic extends AppCompatActivity {
     }
 
 
-    public void getWritePermission(){
+    public void getWritePermission() {
 
         try {
-            if (ExternalStorageUtil.isExternalStorageMounted()){
+            if (ExternalStorageUtil.isExternalStorageMounted()) {
 
                 //check if the app has permission to write to external storage or not
                 int writeExternalStoragePermission = ContextCompat.checkSelfPermission(PlayMusic.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 int readExternalStoragePermission = ContextCompat.checkSelfPermission(PlayMusic.this, Manifest.permission.READ_EXTERNAL_STORAGE);
 
                 //if write permission is not yet granted
-                if (writeExternalStoragePermission!= PackageManager.PERMISSION_GRANTED){
+                if (writeExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
                     //request user to grant write external storage permission
-                    ActivityCompat.requestPermissions(PlayMusic.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                    ActivityCompat.requestPermissions(PlayMusic.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
 
                 }
 
                 //if read permission is not yet granted
-                if (readExternalStoragePermission!= PackageManager.PERMISSION_GRANTED){
+                if (readExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
                     //request user to grant write external storage permission
-                    ActivityCompat.requestPermissions(PlayMusic.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
+                    ActivityCompat.requestPermissions(PlayMusic.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
 
                 }
 
 
-
-
             }
-        }catch (Exception ex){
-
+        } catch (Exception ex) {
 
             Log.d("myLogsWritePermissionF", "something went wrong " + ex.getMessage());
 
@@ -407,10 +451,68 @@ public class PlayMusic extends AppCompatActivity {
         }
 
 
+    }
 
+    public void getTotalTime(){
+
+        Integer durationMinutes = mediaPlayer.getDuration()/60000;
+        Integer durationSeconds = (mediaPlayer.getDuration()%60000)/1000;
+        String durationString = durationMinutes + ":"+ durationSeconds;
+        songDurationTv.setText(durationString);
+    }
+
+    public void getElapsedTime(){
+
+        Integer durationMinutes = mediaPlayer.getCurrentPosition()/60000;
+        Integer durationSeconds = (mediaPlayer.getCurrentPosition()%60000)/1000;
+        String durationString = durationMinutes + ":"+ durationSeconds;
+        elapsedTimeTv.setText(durationString);
 
     }
 
 
 
 }
+
+
+/*
+
+     int q = request.getId();
+        fetch.cancel(q, new Func<Download>() {
+           @Override
+           public void call(@NotNull Download result) {
+
+           }
+       }, new Func<Error>() {
+           @Override
+           public void call(@NotNull Error result) {
+
+           }
+       });
+
+
+
+//the holy five  mp = media player
+ if(mp!=null) {
+        if(mp.isPlaying())
+            mp.stop();
+        mp.reset();
+        mp.release();
+        mp=null;
+    }
+
+
+ */
+
+/*
+todo USE A RUNNABLE TO ADD THE PROGRESS UPDATE WITH A DELAY BEFORE CHECKING //done
+todo HANDLE THE LIFECYCLE EVENTS FOR THE MEDIA PLAYER
+TODO SET THE INITIAL SEEK BAR TO ZERO //done
+todo cache the song when downloaded
+todo add a timer to show duration and other details //done
+todo onStop rest the UI so that the user is not confused
+todo work on the UI
+todo find a faster song buffer
+todo get a dependency for the round image view
+
+*/

@@ -19,7 +19,6 @@
 
     <TextView
         android:id="@+id/play_music_song_title"
-        android:textAlignment="center"
         android:layout_width="0dp"
         android:layout_height="30dp"
         android:layout_marginStart="8dp"
@@ -27,6 +26,7 @@
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/montserrat_regular"
         android:text="song title"
+        android:textAlignment="center"
         android:textColor="@color/my_color_secondary"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -41,13 +41,11 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintDimensionRatio="H,16:9"
         android:src="@drawable/test_default_img1"
+        app:layout_constraintDimensionRatio="H,16:9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/play_music_artist_name" />
-
-
 
 
     <ImageButton
@@ -126,6 +124,49 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/play_music_app_bar" />
+
+    <TextView
+        android:id="@+id/song_total_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:gravity="end"
+        android:text="0:00"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_play_button" />
+
+
+    <TextView
+        android:id="@+id/song_elapsed_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:text="0:00"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_play_button" />
+
+
+    <SeekBar
+        android:id="@+id/song_seek_bar"
+        style="?android:attr/seekBarStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_play_button" />
 
 
 </android.support.constraint.ConstraintLayout>
