@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/my_color_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".PlayMusic">
@@ -22,7 +23,7 @@
         android:layout_width="0dp"
         android:layout_height="30dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/montserrat_regular"
         android:text="song title"
@@ -34,7 +35,7 @@
         app:layout_constraintTop_toBottomOf="@+id/play_music_song_cover_image" />
 
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/play_music_song_cover_image"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -58,9 +59,8 @@
         android:layout_marginTop="8dp"
         android:background="@color/my_color_bg"
         android:scaleType="centerCrop"
-        android:src="@drawable/play_normal"
+        android:src="@drawable/play_black_rounded"
         app:layout_constraintEnd_toStartOf="@+id/play_music_stop_button"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/play_music_pause_button"
         app:layout_constraintTop_toBottomOf="@+id/play_music_song_title" />
 
@@ -73,9 +73,8 @@
         android:layout_marginTop="8dp"
         android:background="@color/my_color_bg"
         android:scaleType="centerCrop"
-        android:src="@drawable/pause_normal"
+        android:src="@drawable/pause_black_empty"
         app:layout_constraintEnd_toStartOf="@+id/play_music_play_button"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/play_music_song_title" />
 
@@ -86,11 +85,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:background="@color/my_color_bg"
-        android:padding="6dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/download_normal"
+        android:src="@drawable/download_black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/play_music_stop_button"
         app:layout_constraintTop_toBottomOf="@+id/play_music_song_title" />
 
@@ -103,16 +100,15 @@
         android:layout_marginTop="8dp"
         android:background="@color/my_color_bg"
         android:scaleType="centerCrop"
-        android:src="@drawable/stop_normal"
+        android:src="@drawable/stop_black"
         app:layout_constraintEnd_toStartOf="@+id/play_music_download_button"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/play_music_play_button"
         app:layout_constraintTop_toBottomOf="@+id/play_music_song_title" />
 
     <TextView
         android:id="@+id/play_music_artist_name"
         android:layout_width="0dp"
-        android:layout_height="30dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"

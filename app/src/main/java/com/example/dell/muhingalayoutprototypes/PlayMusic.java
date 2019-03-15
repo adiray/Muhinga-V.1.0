@@ -1,23 +1,27 @@
 package com.example.dell.muhingalayoutprototypes;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.Builder;
 import com.bumptech.glide.Glide;
 import com.tonyodev.fetch2.Download;
 import com.tonyodev.fetch2.Error;
@@ -36,6 +40,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 
 public class PlayMusic extends AppCompatActivity {
 
@@ -43,17 +49,44 @@ public class PlayMusic extends AppCompatActivity {
     //miscellaneous objects
     String songTitle, artistName, songFileReference, albumName, coverImage;
 
+    //notification objects
+    private NotificationManager mNotifyManager;
+    private NotificationCompat.Builder mNotificationBuilder;
+    int downloadProgressNotificationId = 1;
+    String channelId1 = "1", channelName1= "channel1";
+    String downloadTitle;
+
+
+    //timer and seek bar objects
+    Integer newTime;  //this is the time to which the user seeks the song
+    Boolean isSeekUsedWhilePaused = false;  //if the song is paused while the user seeks then this boolean is set to true otherwise false
+    final Handler updateTimerHandler = new Handler(); //this handler is used to update the time and the seek bar
+    final Runnable updateTimerRunnable = new Runnable() { //this runnable is used to update the timer and tha seek bar. it is passed into the updateTimerHandle
+        @Override
+        public void run() {
+
+            if (!isStopped) {
+                songSeekBar.setProgress(mediaPlayer.getCurrentPosition());
+                getElapsedTime();
+                updateTimerHandler.postDelayed(this, 1000);
+            }
+
+
+        }
+    };
+
 
     //initialize the views
-    TextView songTitleTv, artistNameTv , elapsedTimeTv, songDurationTv;
+    TextView songTitleTv, artistNameTv, elapsedTimeTv, songDurationTv;
     ImageButton playButton, downloadButton, pauseButton, stopButton;
-    ImageView coverImageImgView;
+    CircleImageView coverImageImgView;
+    //ImageView coverImageImgView;
     SeekBar songSeekBar;
 
     //Media player objects
     MediaPlayer mediaPlayer = null;
-    Integer songPosition;
-    Boolean isPaused = false, isStopped = false;
+    Integer songPausePosition;
+    Boolean isPaused = false, isStopped = false, isPlayPressed = false;
 
 
     //Fetch downloader objects
@@ -95,16 +128,21 @@ public class PlayMusic extends AppCompatActivity {
         songDurationTv = findViewById(R.id.song_total_duration);
 
 
-
         //assign the text to the textViews
         songTitleTv.setText(songTitle);
         artistNameTv.setText(artistName);
-        songSeekBar.setProgress(0);
 
         //assign the initial progress
+        songSeekBar.setProgress(0);
+
+        //assign the tittle to the download
+        downloadTitle = songTitle;
+
+        implementSeekFunctionality();
 
 
         //set the cover image
+        //todo set the image to dontanimate()
         Glide.with(this).load(coverImage).into(coverImageImgView);
 
 
@@ -140,6 +178,7 @@ public class PlayMusic extends AppCompatActivity {
 
 
         getWritePermission();
+        buildNotifications();
 
         //set the file type and file name. //set here because it is used later on in the download function. It can be set anywhere just before it is used.
         fileType = songFileReference.substring(songFileReference.length() - 4);
@@ -147,93 +186,171 @@ public class PlayMusic extends AppCompatActivity {
 
     }
 
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+
+    public void buildNotifications(){
+
+        mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationBuilder = new NotificationCompat.Builder(PlayMusic.this, channelId1);
+        mNotificationBuilder.setContentTitle(downloadTitle)
+                .setContentText("Download in progress")
+                .setSmallIcon(R.drawable.save_green_filled);
+
+
+
+    }
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+
+
     public void playSong() {
 
 
-        playButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
-        pauseButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
-        stopButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
+        //playButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
+        //pauseButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
+        //stopButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
+
+        if (!isPlayPressed) {
+            if (!isPaused) {
+                mediaPlayer = new android.media.MediaPlayer();
+                isPlayPressed = true;
+                mediaPlayer.setAudioStreamType(android.media.AudioManager.STREAM_MUSIC);
+                try {
+
+                    mediaPlayer.setDataSource(songFileReference);
+
+                } catch (IllegalArgumentException | SecurityException | IllegalStateException e) {
+
+                    android.widget.Toast.makeText(getApplicationContext(), "You might not set the URI correctly!", android.widget.Toast.LENGTH_LONG).show();
+
+                } catch (java.io.IOException e) {
+
+                    e.printStackTrace();
+
+                }
+
+                mediaPlayer.prepareAsync();
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(final MediaPlayer mediaPlayer) {
+
+                        mediaPlayer.start();
+                        isPaused = false;
+                        isStopped = false;
+
+                        if (mediaPlayer.isPlaying()) {
+
+                            Integer songDuration;
+                            songDuration = mediaPlayer.getDuration();
+                            songSeekBar.setMax(songDuration);
+                            getTotalTime();
+
+                            updateTimerHandler.postDelayed(updateTimerRunnable, 1000);
 
 
-        if (!isPaused) {
-            mediaPlayer = new android.media.MediaPlayer();
-            mediaPlayer.setAudioStreamType(android.media.AudioManager.STREAM_MUSIC);
-            try {
-
-                mediaPlayer.setDataSource(songFileReference);
-
-            } catch (IllegalArgumentException | SecurityException | IllegalStateException e) {
-
-                android.widget.Toast.makeText(getApplicationContext(), "You might not set the URI correctly!", android.widget.Toast.LENGTH_LONG).show();
-
-            } catch (java.io.IOException e) {
-
-                e.printStackTrace();
-
-            }
-
-            mediaPlayer.prepareAsync();
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(final MediaPlayer mediaPlayer) {
-
-                    mediaPlayer.start();
-                    isPaused =false;
-                    isStopped = false;
-
-                    if (mediaPlayer.isPlaying()) {
-
-                        Integer songDuration;
-                        songDuration = mediaPlayer.getDuration();
-                        songSeekBar.setMax(songDuration);
-                        getTotalTime();
-
-
-
-                        final Handler handler = new Handler();
-
-                        final Runnable r = new Runnable() {
-
-                            @Override
-                            public void run() {
-
-                                if (!isStopped) {
-                                    songSeekBar.setProgress(mediaPlayer.getCurrentPosition());
-                                    getElapsedTime();
-                                    handler.postDelayed(this, 1000);
-                                }
-
-
-                            }
-                        };
-
-                        handler.postDelayed(r, 1000);
+                        }
 
 
                     }
+                });
+            } else {
+
+                if (isSeekUsedWhilePaused) {
+
+                    mediaPlayer.seekTo(newTime);
+                    mediaPlayer.start();
+                    isPaused = false;
+                    isSeekUsedWhilePaused = false;
+
+
+                } else {
+
+                    mediaPlayer.seekTo(songPausePosition);
+                    mediaPlayer.start();
+                    isPaused = false;
 
 
                 }
-            });
-        } else {
-
-            mediaPlayer.seekTo(songPosition);
-            mediaPlayer.start();
-            isPaused = false;
 
 
+            }
         }
+
+    }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+    public void implementSeekFunctionality() {
+
+        songSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+                //remove the handler from updating the progress bar
+                updateTimerHandler.removeCallbacks(updateTimerRunnable);
+
+                if (isPaused) {
+                    isSeekUsedWhilePaused = true;
+                }
+
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+                //remove the handler from updating the progress bar
+                updateTimerHandler.removeCallbacks(updateTimerRunnable);
+
+                //get the new progress from the seek bar and update the timer and media player
+                newTime = seekBar.getProgress();
+                mediaPlayer.seekTo(newTime);
+
+                updateTimerHandler.postDelayed(updateTimerRunnable, 1000);
+
+
+            }
+        });
 
 
     }
 
 
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
     public void pauseSong() {
 
         if (mediaPlayer != null) {
-            songPosition = mediaPlayer.getCurrentPosition();
+            songPausePosition = mediaPlayer.getCurrentPosition();
             mediaPlayer.pause();
             isPaused = true;
+            isPlayPressed = false;
             playButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
             stopButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
             pauseButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
@@ -242,6 +359,12 @@ public class PlayMusic extends AppCompatActivity {
 
 
     }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
 
 
     public void stopSong() {
@@ -257,6 +380,7 @@ public class PlayMusic extends AppCompatActivity {
             mediaPlayer = null;
             isPaused = false;
             isStopped = true;
+            isPlayPressed = false;
 
         }
 
@@ -264,152 +388,181 @@ public class PlayMusic extends AppCompatActivity {
     }
 
 
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
     public void downloadSong() {
 
-        downloadLocation = ExternalStorageUtil.getPublicExternalStorageBaseDir(Environment.DIRECTORY_DOWNLOADS);
+
+        //THIS METHOD IS CALLED WHEN THE USER PRESSES THE DOWNLOAD SONG BUTTON
 
 
-        File myFile = new File(downloadLocation, songTitle + "." + fileType);
+        if (ExternalStorageUtil.isExternalStorageMounted()) {  //CHECK IF EXTERNAL STORAGE IS AVAILABLE
 
-        fetchConfiguration = new FetchConfiguration.Builder(this)
-                .setDownloadConcurrentLimit(3)
-                .build();
+            downloadLocation = ExternalStorageUtil.getPublicExternalStorageBaseDir(Environment.DIRECTORY_MUSIC); //GET THE FILE PATH TO THE DOWNLOAD DIRECTORY
 
-        fetch = Fetch.Impl.getInstance(fetchConfiguration);
-
-        fileName = myFile.getAbsolutePath();
-        // fileName = "/downloads/" + songTitle + "." + fileType;
-        final Request request = new Request(songFileReference, fileName);
-        request.setPriority(Priority.HIGH);
-        request.setNetworkType(NetworkType.ALL);
-        //request.addHeader("clientKey", "SD78DF93_3947&MVNGHE1WONG"); //don't know what this does so its commented out for now
-
-        fetch.enqueue(request, new Func<Request>() {
-            @Override
-            public void call(@NotNull Request updatedRequest) {
-                //Request was successfully enqueued for download.
-                Log.d("myLogsDownloadRequest", "everything seems fine" + updatedRequest.getFile() + updatedRequest.getFileUri());
-                Log.d("myLogsDownloadRequest2", updatedRequest.getUrl());
+            File myFile = new File(downloadLocation, songTitle + fileType); //GET THE FILE NAME AND EXTENSION AND USE IT TO CREATE THE FILE OBJECT
 
 
-            }
-        }, new Func<Error>() {
-            @Override
-            public void call(@NotNull Error error) {
-                //An error occurred enqueuing the request.
-                Log.d("myLogsDownloadRequestF", "something went wrong" + error);
 
-            }
-        });
+            fetchConfiguration = new FetchConfiguration.Builder(this)
+                    .setDownloadConcurrentLimit(3)
+                    .build();
+
+            fetch = Fetch.Impl.getInstance(fetchConfiguration);
+
+            fileName = myFile.getAbsolutePath();
+            final Request request = new Request(songFileReference, fileName);
+            request.setPriority(Priority.HIGH);
+            request.setNetworkType(NetworkType.ALL);
+           // request.addHeader("clientKey", "SD78DF93_3947&MVNGHE1WONG"); //don't know what this does so its commented out for now
+
+            fetch.enqueue(request, new Func<Request>() {
+                @Override
+                public void call(@NotNull Request updatedRequest) {
+                    //Request was successfully enqueued for download.
+                    Log.d("myLogsDownloadRequest", "everything seems fine" + updatedRequest.getFile() +" > " + updatedRequest.getFileUri());
+                    Log.d("myLogsDownloadRequest2", updatedRequest.getUrl());
 
 
-        fetchListener = new FetchListener() {
-            @Override
-            public void onAdded(@NotNull Download download) {
+                }
+            }, new Func<Error>() {
+                @Override
+                public void call(@NotNull Error error) {
+                    //An error occurred enqueuing the request.
+                    Log.d("myLogsDownloadRequestF", "something went wrong" + error);
+
+                }
+            });
 
 
-            }
-
-            @Override
-            public void onQueued(@NotNull Download download, boolean b) {
-
-                if (request.getId() == download.getId()) {
+            fetchListener = new FetchListener() {
+                @Override
+                public void onAdded(@NotNull Download download) {
 
                     Toast.makeText(PlayMusic.this, download.getFile() + " " + "is queued!", Toast.LENGTH_LONG).show();
-                    Log.d("myLogsDLQ", "file is queued");
+
+                    //display the notification for the first time
+                    mNotificationBuilder.setProgress(100,0,false);
+                    mNotifyManager.notify(downloadProgressNotificationId,mNotificationBuilder.build());
 
 
                 }
 
-            }
+                @Override
+                public void onQueued(@NotNull Download download, boolean b) {
 
-            @Override
-            public void onWaitingNetwork(@NotNull Download download) {
+                    if (request.getId() == download.getId()) {
 
-                Log.d("myLogsDLWN", "file is waiting on network");
+                        Log.d("myLogsDLQ", "file is queued");
 
 
-            }
+                    }
 
-            @Override
-            public void onCompleted(@NotNull Download download) {
+                }
 
-                if (request.getId() == download.getId()) {
+                @Override
+                public void onWaitingNetwork(@NotNull Download download) {
 
-                    Toast.makeText(PlayMusic.this, download.getFile() + " download has been completed!", Toast.LENGTH_LONG).show();
-                    Log.d("myLogsDLC", "file is completed");
+                    Log.d("myLogsDLWN", "file is waiting on network");
 
 
                 }
 
+                @Override
+                public void onCompleted(@NotNull Download download) {
 
-            }
+                    if (request.getId() == download.getId()) {
 
-            @Override
-            public void onError(@NotNull Download download, @NotNull Error error, @Nullable Throwable throwable) {
+                        mNotificationBuilder.setContentText("Download Complete!");
+                        // Removes the progress bar
+                        mNotificationBuilder.setProgress(0, 0, false);
+                        mNotifyManager.notify(downloadProgressNotificationId, mNotificationBuilder.build());
 
-                if (request.getId() == download.getId()) {
+                        Toast.makeText(PlayMusic.this, download.getFile() + " download has been completed!", Toast.LENGTH_LONG).show();
+                        Log.d("myLogsDLC", "file download is completed");
 
-                    Toast.makeText(PlayMusic.this, "everything is horrible!", Toast.LENGTH_LONG).show();
-                    Log.d("myLogsDLE", "there is an error");
-                    //Log.d("myLogsDLE", error.getHttpResponse().getErrorResponse());
 
-                    Log.d("myLogsDLE", throwable.getMessage());
-                    Log.d("myLogsDLE", throwable.getCause().toString());
+                    }
 
 
                 }
 
+                @Override
+                public void onError(@NotNull Download download, @NotNull Error error, @Nullable Throwable throwable) {
 
-            }
+                    if (request.getId() == download.getId()) {
 
-            @Override
-            public void onDownloadBlockUpdated(@NotNull Download download, @NotNull DownloadBlock downloadBlock, int i) {
+                        Toast.makeText(PlayMusic.this, "everything is horrible!", Toast.LENGTH_LONG).show();
+                        Log.d("myLogsDLE", "there is an error");
+                        //Log.d("myLogsDLE", error.getHttpResponse().getErrorResponse());
 
-            }
-
-            @Override
-            public void onStarted(@NotNull Download download, @NotNull List<? extends DownloadBlock> list, int i) {
-
-                Log.d("myLogsDLS", "file has started downloading");
-
-            }
-
-            @Override
-            public void onProgress(@NotNull Download download, long l, long l1) {
-
-                Log.d("myLogsDLP", "downloaded so far: " + download.getProgress());
+                        Log.d("myLogsDLE", throwable.getMessage());
+                        Log.d("myLogsDLE", throwable.getCause().toString());
 
 
-            }
+                    }
 
-            @Override
-            public void onPaused(@NotNull Download download) {
 
-            }
+                }
 
-            @Override
-            public void onResumed(@NotNull Download download) {
+                @Override
+                public void onDownloadBlockUpdated(@NotNull Download download, @NotNull DownloadBlock downloadBlock, int i) {
 
-            }
+                }
 
-            @Override
-            public void onCancelled(@NotNull Download download) {
+                @Override
+                public void onStarted(@NotNull Download download, @NotNull List<? extends DownloadBlock> list, int i) {
 
-            }
+                    Log.d("myLogsDLS", "file has started downloading");
 
-            @Override
-            public void onRemoved(@NotNull Download download) {
+                }
 
-            }
+                @Override
+                public void onProgress(@NotNull Download download, long l, long l1) {
 
-            @Override
-            public void onDeleted(@NotNull Download download) {
+                    mNotificationBuilder.setProgress(100,download.getProgress(),false);
+                    mNotifyManager.notify(downloadProgressNotificationId,mNotificationBuilder.build());
+                    Log.d("myLogsDLP", "downloaded so far: " + download.getProgress());
 
-            }
-        };
 
-        fetch.addListener(fetchListener);
+                }
+
+                @Override
+                public void onPaused(@NotNull Download download) {
+
+                }
+
+                @Override
+                public void onResumed(@NotNull Download download) {
+
+                }
+
+                @Override
+                public void onCancelled(@NotNull Download download) {
+
+                }
+
+                @Override
+                public void onRemoved(@NotNull Download download) {
+
+                }
+
+                @Override
+                public void onDeleted(@NotNull Download download) {
+
+                }
+
+
+
+            };
+
+            fetch.addListener(fetchListener);
+
+        }
 
         //ToDo ADD THIS TO A METHOD THAT DETERMINES WHEN THE USER IS DONE WITH THE DOWNLOAD
         //Remove listener when done.
@@ -453,23 +606,52 @@ public class PlayMusic extends AppCompatActivity {
 
     }
 
-    public void getTotalTime(){
 
-        Integer durationMinutes = mediaPlayer.getDuration()/60000;
-        Integer durationSeconds = (mediaPlayer.getDuration()%60000)/1000;
-        String durationString = durationMinutes + ":"+ durationSeconds;
-        songDurationTv.setText(durationString);
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+    public void getTotalTime() {
+
+        Integer durationMinutes = mediaPlayer.getDuration() / 60000;
+        Integer durationSeconds = (mediaPlayer.getDuration() % 60000) / 1000;
+
+        if (durationSeconds < 10) {
+            String durationString = durationMinutes + ":0" + durationSeconds;
+            songDurationTv.setText(durationString);
+        } else {
+            String durationString = durationMinutes + ":" + durationSeconds;
+            songDurationTv.setText(durationString);
+        }
+
     }
 
-    public void getElapsedTime(){
 
-        Integer durationMinutes = mediaPlayer.getCurrentPosition()/60000;
-        Integer durationSeconds = (mediaPlayer.getCurrentPosition()%60000)/1000;
-        String durationString = durationMinutes + ":"+ durationSeconds;
-        elapsedTimeTv.setText(durationString);
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+    public void getElapsedTime() {
+
+        Integer durationMinutes = mediaPlayer.getCurrentPosition() / 60000;
+        Integer durationSeconds = (mediaPlayer.getCurrentPosition() % 60000) / 1000;
+
+        if (durationSeconds < 10) {
+
+            String durationString = durationMinutes + ":0" + durationSeconds;
+            elapsedTimeTv.setText(durationString);
+
+        } else {
+
+            String durationString = durationMinutes + ":" + durationSeconds;
+            elapsedTimeTv.setText(durationString);
+
+        }
+
 
     }
-
 
 
 }
@@ -505,14 +687,21 @@ public class PlayMusic extends AppCompatActivity {
  */
 
 /*
+TODO ADD A SHARE BUTTON
+TODO ADD A LIKE BUTTON  //PURCHASE BUTTON WITH PRICE AND SUPPORT ARTIST DIALOG
+TODO TIME SHOWING LIKE 1:9 INSTEAD OF 1:09  //DONE
+todo ERROR WHEN THE PLAY BUTTON IS PRESSED TWICE DURING A SONG PLAYING //DONE
+TODO ERROR AT A CERTAIN POINT DURING THE DOWNLOAD
+TODO CHANGE THE BACKGROUND COLOR WHEN THE USER CLICKS BUTTONS
+TODO IMPLEMENT MULTITHREADING FOR FASTER DOWNLOADING
+TODO IMPLEMENT CACHING FOR RECENTLY PLAYED SONGS
 todo USE A RUNNABLE TO ADD THE PROGRESS UPDATE WITH A DELAY BEFORE CHECKING //done
 todo HANDLE THE LIFECYCLE EVENTS FOR THE MEDIA PLAYER
 TODO SET THE INITIAL SEEK BAR TO ZERO //done
-todo cache the song when downloaded
 todo add a timer to show duration and other details //done
-todo onStop rest the UI so that the user is not confused
+todo onStop reset the UI so that the user is not confused
 todo work on the UI
-todo find a faster song buffer
-todo get a dependency for the round image view
+todo get a dependency for the round image view //done
+TODO ON SONG COMPLETION LITSENER AND WHTA HAPPENS WHEN A SONG COMPLETES
 
 */
