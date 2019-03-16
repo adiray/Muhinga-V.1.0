@@ -1,11 +1,11 @@
 package com.example.dell.muhingalayoutprototypes;
 
 import android.Manifest;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Environment;
 import android.os.Handler;
@@ -20,8 +20,8 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.Builder;
+import android.net.Uri;
+
 import com.bumptech.glide.Glide;
 import com.tonyodev.fetch2.Download;
 import com.tonyodev.fetch2.Error;
@@ -38,9 +38,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.example.dell.muhingalayoutprototypes.AppNotifications.MUSIC_DL_CHANNEL_ID;
 
 
 public class PlayMusic extends AppCompatActivity {
@@ -49,12 +52,20 @@ public class PlayMusic extends AppCompatActivity {
     //miscellaneous objects
     String songTitle, artistName, songFileReference, albumName, coverImage;
 
+
     //notification objects
     private NotificationManager mNotifyManager;
     private NotificationCompat.Builder mNotificationBuilder;
     int downloadProgressNotificationId = 1;
-    String channelId1 = "1", channelName1= "channel1";
+    //String channelId1 = "1", channelName1= "channel1";
     String downloadTitle;
+
+
+  /*  //notification objects
+    private NotificationManagerCompat notificationManager;
+    String downloadTitle;
+    NotificationReceiver musicBroadcastReceiver;
+*/
 
 
     //timer and seek bar objects
@@ -87,13 +98,16 @@ public class PlayMusic extends AppCompatActivity {
     MediaPlayer mediaPlayer = null;
     Integer songPausePosition;
     Boolean isPaused = false, isStopped = false, isPlayPressed = false;
+    Uri songURI;
 
 
     //Fetch downloader objects
     private Fetch fetch;
+    Integer requestId;
     FetchConfiguration fetchConfiguration;
     String url, fileName, fileType, downloadLocation;
     FetchListener fetchListener;
+    Boolean isCurrentlyDownloading = false;  //used to determine whether the download button should be displayed or the cancel download button should be displayed
 
     //file downloading objects
 
@@ -132,6 +146,9 @@ public class PlayMusic extends AppCompatActivity {
         songTitleTv.setText(songTitle);
         artistNameTv.setText(artistName);
 
+        //initialize the notification manager compat
+        //notificationManager = NotificationManagerCompat.from(this);
+
         //assign the initial progress
         songSeekBar.setProgress(0);
 
@@ -145,12 +162,44 @@ public class PlayMusic extends AppCompatActivity {
         //todo set the image to dontanimate()
         Glide.with(this).load(coverImage).into(coverImageImgView);
 
+        //set the file type and file name. //set here because it is used later on in the download function. It can be set anywhere just before it is used.
+        fileType = songFileReference.substring(songFileReference.length() - 4);
+
 
         //set onClickListeners to the control buttons
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                playSong();
+
+                Boolean songFileExists = false;
+
+             if (songURI != null){
+
+                 File songFile = new File(songURI.getPath());
+
+                 if (songFile.exists()){
+                     songFileExists =true;
+
+                 }
+
+             }
+
+
+
+
+                if (songFileExists) {
+
+                    playSongFromStorage();
+
+                } else {
+
+                    playSongFromServer();
+
+                }
+
+
+
+
             }
         });
 
@@ -172,7 +221,17 @@ public class PlayMusic extends AppCompatActivity {
         downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                downloadSong();
+
+                if (isCurrentlyDownloading) {
+
+                    cancelDownload();
+
+                } else {
+
+                    downloadSong();
+                }
+
+
             }
         });
 
@@ -180,8 +239,7 @@ public class PlayMusic extends AppCompatActivity {
         getWritePermission();
         buildNotifications();
 
-        //set the file type and file name. //set here because it is used later on in the download function. It can be set anywhere just before it is used.
-        fileType = songFileReference.substring(songFileReference.length() - 4);
+
 
 
     }
@@ -193,18 +251,112 @@ public class PlayMusic extends AppCompatActivity {
      */
 
 
-
-    public void buildNotifications(){
+    public void buildNotifications() {
 
         mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationBuilder = new NotificationCompat.Builder(PlayMusic.this, channelId1);
+        mNotificationBuilder = new NotificationCompat.Builder(PlayMusic.this, MUSIC_DL_CHANNEL_ID);
         mNotificationBuilder.setContentTitle(downloadTitle)
                 .setContentText("Download in progress")
                 .setSmallIcon(R.drawable.save_green_filled);
 
 
+    }
+
+
+
+
+  /*  public void buildNotifications(){
+
+
+        Notification notification = new NotificationCompat.Builder(this, MUSIC_DL_CHANNEL_ID)
+                .setSmallIcon(R.drawable.save_green_filled)
+                .setContentTitle(downloadTitle)
+                .setContentText("Download in Progress")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+                .build();
+
+
+
+    }*/
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+    public void playSongFromStorage() {
+
+
+        if (!isPlayPressed) {
+            if (!isPaused) {
+                mediaPlayer = new android.media.MediaPlayer();
+                isPlayPressed = true;
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                try {
+
+                    mediaPlayer.setDataSource(this,songURI);
+
+                } catch (IllegalArgumentException | SecurityException | IllegalStateException e) {
+
+                    android.widget.Toast.makeText(getApplicationContext(), "Sorry! This song cannot be played.!", android.widget.Toast.LENGTH_LONG).show();
+
+                } catch (java.io.IOException e) {
+
+                    e.printStackTrace();
+
+                }
+
+                mediaPlayer.prepareAsync();
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(final MediaPlayer mediaPlayer) {
+
+                        mediaPlayer.start();
+                        isPaused = false;
+                        isStopped = false;
+
+                        if (mediaPlayer.isPlaying()) {
+
+                            Integer songDuration;
+                            songDuration = mediaPlayer.getDuration();
+                            songSeekBar.setMax(songDuration);
+                            getTotalTime();
+
+                            updateTimerHandler.postDelayed(updateTimerRunnable, 1000);
+
+
+                        }
+
+
+                    }
+                });
+            } else {
+
+                if (isSeekUsedWhilePaused) {
+
+                    mediaPlayer.seekTo(newTime);
+                    mediaPlayer.start();
+                    isPaused = false;
+                    isSeekUsedWhilePaused = false;
+
+
+                } else {
+
+                    mediaPlayer.seekTo(songPausePosition);
+                    mediaPlayer.start();
+                    isPaused = false;
+
+
+                }
+
+
+            }
+        }
+
 
     }
+
 
     /**
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -212,9 +364,7 @@ public class PlayMusic extends AppCompatActivity {
      */
 
 
-
-
-    public void playSong() {
+    public void playSongFromServer() {
 
 
         //playButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
@@ -407,7 +557,6 @@ public class PlayMusic extends AppCompatActivity {
             File myFile = new File(downloadLocation, songTitle + fileType); //GET THE FILE NAME AND EXTENSION AND USE IT TO CREATE THE FILE OBJECT
 
 
-
             fetchConfiguration = new FetchConfiguration.Builder(this)
                     .setDownloadConcurrentLimit(3)
                     .build();
@@ -418,13 +567,14 @@ public class PlayMusic extends AppCompatActivity {
             final Request request = new Request(songFileReference, fileName);
             request.setPriority(Priority.HIGH);
             request.setNetworkType(NetworkType.ALL);
-           // request.addHeader("clientKey", "SD78DF93_3947&MVNGHE1WONG"); //don't know what this does so its commented out for now
+            request.setIdentifier(1);
+            // request.addHeader("clientKey", "SD78DF93_3947&MVNGHE1WONG"); //don't know what this does so its commented out for now
 
             fetch.enqueue(request, new Func<Request>() {
                 @Override
                 public void call(@NotNull Request updatedRequest) {
                     //Request was successfully enqueued for download.
-                    Log.d("myLogsDownloadRequest", "everything seems fine" + updatedRequest.getFile() +" > " + updatedRequest.getFileUri());
+                    Log.d("myLogsDownloadRequest", "everything seems fine" + updatedRequest.getFile() + " > " + updatedRequest.getFileUri());
                     Log.d("myLogsDownloadRequest2", updatedRequest.getUrl());
 
 
@@ -438,6 +588,8 @@ public class PlayMusic extends AppCompatActivity {
                 }
             });
 
+            requestId = request.getId();  //this is used to identify the download when the user wants to pause or cancel it
+
 
             fetchListener = new FetchListener() {
                 @Override
@@ -446,8 +598,8 @@ public class PlayMusic extends AppCompatActivity {
                     Toast.makeText(PlayMusic.this, download.getFile() + " " + "is queued!", Toast.LENGTH_LONG).show();
 
                     //display the notification for the first time
-                    mNotificationBuilder.setProgress(100,0,false);
-                    mNotifyManager.notify(downloadProgressNotificationId,mNotificationBuilder.build());
+                    mNotificationBuilder.setProgress(100, 0, false);
+                    mNotifyManager.notify(downloadProgressNotificationId, mNotificationBuilder.build());
 
 
                 }
@@ -482,8 +634,16 @@ public class PlayMusic extends AppCompatActivity {
                         mNotificationBuilder.setProgress(0, 0, false);
                         mNotifyManager.notify(downloadProgressNotificationId, mNotificationBuilder.build());
 
+
+                        downloadButton.setImageResource(R.drawable.download_black);
+                        isCurrentlyDownloading = false;
+
                         Toast.makeText(PlayMusic.this, download.getFile() + " download has been completed!", Toast.LENGTH_LONG).show();
                         Log.d("myLogsDLC", "file download is completed");
+
+
+                        songURI = download.getFileUri();  //the variable that is used to play the song from external storage
+                        Log.d("myLogsDLC", "SONG URI" + songURI);
 
 
                     }
@@ -501,7 +661,11 @@ public class PlayMusic extends AppCompatActivity {
                         //Log.d("myLogsDLE", error.getHttpResponse().getErrorResponse());
 
                         Log.d("myLogsDLE", throwable.getMessage());
-                        Log.d("myLogsDLE", throwable.getCause().toString());
+//                        Log.d("myLogsDLE", throwable.getCause().toString());
+                        mNotificationBuilder.setContentText("Download Error!");
+                        // Removes the progress bar
+                        mNotificationBuilder.setProgress(0, 0, false);
+                        mNotifyManager.notify(downloadProgressNotificationId, mNotificationBuilder.build());
 
 
                     }
@@ -518,14 +682,17 @@ public class PlayMusic extends AppCompatActivity {
                 public void onStarted(@NotNull Download download, @NotNull List<? extends DownloadBlock> list, int i) {
 
                     Log.d("myLogsDLS", "file has started downloading");
+                    downloadButton.setImageResource(R.drawable.cancel_red_filled);
+                    isCurrentlyDownloading = true;
+
 
                 }
 
                 @Override
                 public void onProgress(@NotNull Download download, long l, long l1) {
 
-                    mNotificationBuilder.setProgress(100,download.getProgress(),false);
-                    mNotifyManager.notify(downloadProgressNotificationId,mNotificationBuilder.build());
+                    mNotificationBuilder.setProgress(100, download.getProgress(), false);
+                    mNotifyManager.notify(downloadProgressNotificationId, mNotificationBuilder.build());
                     Log.d("myLogsDLP", "downloaded so far: " + download.getProgress());
 
 
@@ -544,6 +711,14 @@ public class PlayMusic extends AppCompatActivity {
                 @Override
                 public void onCancelled(@NotNull Download download) {
 
+                    downloadButton.setImageResource(R.drawable.download_black);
+                    isCurrentlyDownloading = false;
+                    mNotificationBuilder.setContentText("Download Cancelled!");
+                    // Removes the progress bar
+                    mNotificationBuilder.setProgress(0, 0, false);
+                    mNotifyManager.notify(downloadProgressNotificationId, mNotificationBuilder.build());
+
+
                 }
 
                 @Override
@@ -557,10 +732,14 @@ public class PlayMusic extends AppCompatActivity {
                 }
 
 
-
             };
 
             fetch.addListener(fetchListener);
+
+        } else {
+
+            Toast.makeText(PlayMusic.this, " The storage is not available !", Toast.LENGTH_LONG).show();
+
 
         }
 
@@ -569,6 +748,33 @@ public class PlayMusic extends AppCompatActivity {
         //fetch.removeListener(fetchListener);
 
     }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+    public void cancelDownload() {
+
+        if (fetch != null) {
+
+            fetch.cancel(requestId);
+            Toast.makeText(PlayMusic.this, " The download has been cancelled!", Toast.LENGTH_LONG).show();
+            isCurrentlyDownloading = false;
+
+
+        }
+
+
+    }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
 
 
     public void getWritePermission() {
@@ -687,11 +893,15 @@ public class PlayMusic extends AppCompatActivity {
  */
 
 /*
+TODO ERROR MediaPlayer: Error (1,-1004)
+TODO SITUATION WEA DL GOES TO ERROR FOR PLAY FROM STORAGE
+TODO CREATE THE FILE URI STRINGS YOURSELF
+TODO CHANGE THE DOWNLOAD BUTTON TO A CANCEL BUTTON WHEN THE USER IS DOWNLOADING  //DONE
 TODO ADD A SHARE BUTTON
 TODO ADD A LIKE BUTTON  //PURCHASE BUTTON WITH PRICE AND SUPPORT ARTIST DIALOG
 TODO TIME SHOWING LIKE 1:9 INSTEAD OF 1:09  //DONE
 todo ERROR WHEN THE PLAY BUTTON IS PRESSED TWICE DURING A SONG PLAYING //DONE
-TODO ERROR AT A CERTAIN POINT DURING THE DOWNLOAD
+TODO ERROR AT A CERTAIN POINT DURING THE DOWNLOAD   //FALSE ALARM
 TODO CHANGE THE BACKGROUND COLOR WHEN THE USER CLICKS BUTTONS
 TODO IMPLEMENT MULTITHREADING FOR FASTER DOWNLOADING
 TODO IMPLEMENT CACHING FOR RECENTLY PLAYED SONGS
@@ -705,3 +915,6 @@ todo get a dependency for the round image view //done
 TODO ON SONG COMPLETION LITSENER AND WHTA HAPPENS WHEN A SONG COMPLETES
 
 */
+
+
+//file:///storage/emulated/0/Music/Complicated.m4a

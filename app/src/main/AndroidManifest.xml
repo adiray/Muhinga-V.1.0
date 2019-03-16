@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
+        android:name=".AppNotifications"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -30,6 +31,7 @@
         <activity android:name=".Artist" />
         <activity android:name=".Album" />
         <activity android:name=".PlayMusic" />
+        <receiver android:name=".NotificationReceiver" />
     </application>
 
 </manifest>
