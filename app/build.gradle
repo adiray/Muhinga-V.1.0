@@ -23,14 +23,24 @@ dependencies {
     implementation('com.mikepenz:fastadapter:2.6.3@aar') {
         transitive = true
     }
+    //used for the rotating reply song view
+    implementation 'theanilpaudel:rotatinganimation:1.0.0'
+    //used for the circular image view in the play song activity
     implementation 'de.hdodenhof:circleimageview:3.0.0'
+    //used to manage downloads
     implementation "com.tonyodev.fetch2:fetch2:3.0.1"
+    //used with the recycler view adapter for extra features
     implementation 'com.mikepenz:fastadapter-extensions:1.5.1@aar'
     implementation 'com.mikepenz:fastadapter-commons:2.6.3@aar'
     implementation 'com.mikepenz:fastadapter-extensions:2.6.3@aar'
+    //used to implement the customized dialog with an image
+    implementation 'com.bestsoft32.tayyab:tt-fancy-gif-dialog:1.0.2'
 //The tiny Materialize library used for its useful helper classes
     implementation 'com.mikepenz:materialize:1.0.3@aar'
+    //used to implement caching of housed and other objects within the app
     implementation 'com.github.Guilherme-HRamos:Easy-Save:1.2.1'
+    //used to implement the like button animation in the play music activity
+    implementation 'com.github.varunest:sparkbutton:1.0.6'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'

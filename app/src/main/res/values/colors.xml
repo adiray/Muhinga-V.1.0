@@ -10,6 +10,7 @@
     <color name="my_color_alternative_shade">#98133F</color>
     <color name="my_color_bg">#ECEDEA</color>
     <color name="my_color_white">#FFFFFF</color>
+    <color name="my_color_like_button_active">#FF3D00</color>
 
 
 </resources>

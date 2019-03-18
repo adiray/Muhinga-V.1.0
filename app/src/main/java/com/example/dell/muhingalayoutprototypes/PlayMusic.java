@@ -22,7 +22,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.net.Uri;
 
+import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialog;
+import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialogListener;
 import com.bumptech.glide.Glide;
+import com.theanilpaudel.rotatinganimation.Rotation;
 import com.tonyodev.fetch2.Download;
 import com.tonyodev.fetch2.Error;
 import com.tonyodev.fetch2.Fetch;
@@ -33,6 +36,7 @@ import com.tonyodev.fetch2.Priority;
 import com.tonyodev.fetch2.Request;
 import com.tonyodev.fetch2core.DownloadBlock;
 import com.tonyodev.fetch2core.Func;
+import com.varunest.sparkbutton.SparkButton;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,16 +93,19 @@ public class PlayMusic extends AppCompatActivity {
 
     //initialize the views
     TextView songTitleTv, artistNameTv, elapsedTimeTv, songDurationTv;
-    ImageButton playButton, downloadButton, pauseButton, stopButton;
+    ImageButton playButton, downloadButton, pauseButton, stopButton, replayButton;
     CircleImageView coverImageImgView;
     //ImageView coverImageImgView;
     SeekBar songSeekBar;
+    Rotation rotation;
+    SparkButton likeButton;
 
     //Media player objects
     MediaPlayer mediaPlayer = null;
     Integer songPausePosition;
     Boolean isPaused = false, isStopped = false, isPlayPressed = false;
     Uri songURI;
+    Boolean isOnCompletionListenerAttached = false;
 
 
     //Fetch downloader objects
@@ -108,7 +115,7 @@ public class PlayMusic extends AppCompatActivity {
     String url, fileName, fileType, downloadLocation;
     FetchListener fetchListener;
     Boolean isCurrentlyDownloading = false;  //used to determine whether the download button should be displayed or the cancel download button should be displayed
-
+    File songFile;
     //file downloading objects
 
     private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
@@ -140,6 +147,8 @@ public class PlayMusic extends AppCompatActivity {
         songSeekBar = findViewById(R.id.song_seek_bar);
         elapsedTimeTv = findViewById(R.id.song_elapsed_duration);
         songDurationTv = findViewById(R.id.song_total_duration);
+        replayButton = findViewById(R.id.play_music_replay_button);
+        likeButton = findViewById(R.id.play_music_like_button);
 
 
         //assign the text to the textViews
@@ -166,38 +175,41 @@ public class PlayMusic extends AppCompatActivity {
         fileType = songFileReference.substring(songFileReference.length() - 4);
 
 
+        createSongFile();  //assign the uri to the songURI value so we can determine if the song exists on the device
+
+
         //set onClickListeners to the control buttons
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Boolean songFileExists = false;
+                //  Boolean songFileExists = false;
 
-             if (songURI != null){
 
-                 File songFile = new File(songURI.getPath());
-
+                //  songFile = new File(songURI.getPath());
+/*
                  if (songFile.exists()){
                      songFileExists =true;
 
                  }
-
-             }
-
+*/
 
 
-
-                if (songFileExists) {
+                if (songFile.exists()) {
 
                     playSongFromStorage();
+                 //   playerCleanup();
 
                 } else {
 
                     playSongFromServer();
+                   // playerCleanup();
 
                 }
 
-
+                if (!isOnCompletionListenerAttached){
+                    playerCleanup();
+                }
 
 
             }
@@ -222,16 +234,37 @@ public class PlayMusic extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (isCurrentlyDownloading) {
 
-                    cancelDownload();
+                if (songFile.exists()){
+
+                    Toast.makeText(PlayMusic.this, songFile.getName() + " " + "has already been downloaded!", Toast.LENGTH_LONG).show();
 
                 } else {
 
-                    downloadSong();
+                    if (isCurrentlyDownloading) {
+
+                        cancelDownload();
+
+                    } else {
+
+                        downloadSong();
+                    }
+
+
+
                 }
 
 
+
+
+            }
+        });
+
+        replayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                replaySong();
             }
         });
 
@@ -240,6 +273,22 @@ public class PlayMusic extends AppCompatActivity {
         buildNotifications();
 
 
+    }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+    public void createSongFile() {
+
+        if (ExternalStorageUtil.isExternalStorageMounted()) {  //CHECK IF EXTERNAL STORAGE IS AVAILABLE
+
+            downloadLocation = ExternalStorageUtil.getPublicExternalStorageBaseDir(Environment.DIRECTORY_MUSIC); //GET THE FILE PATH TO THE DOWNLOAD DIRECTORY
+
+            songFile = new File(downloadLocation, songTitle + fileType); //GET THE FILE NAME AND EXTENSION AND USE IT TO CREATE THE FILE OBJECT
+
+        }
 
 
     }
@@ -290,12 +339,14 @@ public class PlayMusic extends AppCompatActivity {
 
         if (!isPlayPressed) {
             if (!isPaused) {
+
+                songURI = Uri.fromFile(songFile);
                 mediaPlayer = new android.media.MediaPlayer();
                 isPlayPressed = true;
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 try {
 
-                    mediaPlayer.setDataSource(this,songURI);
+                    mediaPlayer.setDataSource(this, songURI);
 
                 } catch (IllegalArgumentException | SecurityException | IllegalStateException e) {
 
@@ -357,6 +408,70 @@ public class PlayMusic extends AppCompatActivity {
 
     }
 
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+    public void playerCleanup(){
+
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+
+                //set progress to 0
+
+
+
+                //set timer to 0
+
+                elapsedTimeTv.setText("0:00");
+                getTotalTime();
+                songSeekBar.setProgress(0);
+                //stop the player
+                stopButton.callOnClick();
+
+
+
+            }
+
+        });
+
+
+ isOnCompletionListenerAttached =true;
+
+    }
+
+
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+    public void replaySong() {
+
+        //replayButton.getPivotX();
+
+        int halfX = replayButton.getWidth()  / 2;
+        int halfY =  replayButton.getHeight() / 2;
+
+
+
+        //Log.d("myLogsReplayButton", "halfX: " + halfX + "halfY: " + halfY + "centerX :" + centreX + "centerY :"+ centerY );
+        //rotation =new Rotation(replayButton,0,340);
+
+       rotation = new Rotation(replayButton,0,350,halfX,halfY,Rotation.ABSOLUTE,Rotation.ABSOLUTE);
+        rotation.roatateView(700);
+        rotation.stopRotation(350);
+
+        stopButton.callOnClick();
+        playButton.callOnClick();
+
+    }
+
 
     /**
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -382,7 +497,7 @@ public class PlayMusic extends AppCompatActivity {
 
                 } catch (IllegalArgumentException | SecurityException | IllegalStateException e) {
 
-                    android.widget.Toast.makeText(getApplicationContext(), "You might not set the URI correctly!", android.widget.Toast.LENGTH_LONG).show();
+                    android.widget.Toast.makeText(getApplicationContext(), "You might not have set the URI correctly!", android.widget.Toast.LENGTH_LONG).show();
 
                 } catch (java.io.IOException e) {
 
@@ -521,19 +636,68 @@ public class PlayMusic extends AppCompatActivity {
 
         if (mediaPlayer != null) {
 
+            if (mediaPlayer.isPlaying()) {
+
+                mediaPlayer.stop();
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                mediaPlayer = null;
+                isPaused = false;
+                isStopped = true;
+                isPlayPressed = false;
+                elapsedTimeTv.setText("0:00");
+                getTotalTime();
+                songSeekBar.setProgress(0);
+
+
+            } else {
+
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                mediaPlayer = null;
+                isPaused = false;
+                isStopped = true;
+                isPlayPressed = false;
+            }
+
             playButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
             pauseButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
             stopButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
+            isOnCompletionListenerAttached = false;
 
+           /*
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
             isPaused = false;
             isStopped = true;
             isPlayPressed = false;
+*/
+
 
         }
 
+
+    }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+    //public static final String PREFS_NAME = "AOP_PREFS";
+    //public static final String PREFS_KEY = "AOP_PREFS_String";
+    public void songLookUp() {
+
+
+        if (ExternalStorageUtil.isExternalStorageMounted()) {  //CHECK IF EXTERNAL STORAGE IS AVAILABLE
+
+            String musicLocation = ExternalStorageUtil.getPublicExternalStorageBaseDir(Environment.DIRECTORY_MUSIC); //GET THE FILE PATH TO THE DOWNLOAD DIRECTORY
+
+
+        }
 
     }
 
@@ -652,7 +816,7 @@ public class PlayMusic extends AppCompatActivity {
                 }
 
                 @Override
-                public void onError(@NotNull Download download, @NotNull Error error, @Nullable Throwable throwable) {
+                public void onError(@NotNull final Download download, @NotNull Error error, @Nullable Throwable throwable) {
 
                     if (request.getId() == download.getId()) {
 
@@ -666,6 +830,36 @@ public class PlayMusic extends AppCompatActivity {
                         // Removes the progress bar
                         mNotificationBuilder.setProgress(0, 0, false);
                         mNotifyManager.notify(downloadProgressNotificationId, mNotificationBuilder.build());
+
+
+                        new TTFancyGifDialog.Builder(PlayMusic.this)
+                                .setTitle("Download Error")
+                                .setMessage("The download encountered an error. Would you like to cancel or try to resume downloading?")
+                                .setPositiveBtnText("Resume")
+                                .setPositiveBtnBackground("#22b573")
+                                .setNegativeBtnText("Cancel")
+                                .setNegativeBtnBackground("#c1272d")
+                                .setGifResource(R.drawable.error_404_travolta)      //pass your gif, png or jpg
+                                .isCancellable(true)
+                                .OnPositiveClicked(new TTFancyGifDialogListener() {
+                                    @Override
+                                    public void OnClick() {
+
+                                        downloadSong();
+                                        Toast.makeText(PlayMusic.this, "Download will be resumed", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .OnNegativeClicked(new TTFancyGifDialogListener() {
+                                    @Override
+                                    public void OnClick() {
+
+                                        Toast.makeText(PlayMusic.this, "The download has been removed", Toast.LENGTH_SHORT).show();
+
+                                        fetch.delete(requestId);
+
+                                    }
+                                })
+                                .build();
 
 
                     }
@@ -758,14 +952,41 @@ public class PlayMusic extends AppCompatActivity {
 
     public void cancelDownload() {
 
-        if (fetch != null) {
 
-            fetch.cancel(requestId);
-            Toast.makeText(PlayMusic.this, " The download has been cancelled!", Toast.LENGTH_LONG).show();
-            isCurrentlyDownloading = false;
+        new TTFancyGifDialog.Builder(PlayMusic.this)
+                .setTitle("Download Error")
+                .setMessage("Are you sure you want to cancel the download? This action can't be undone!")
+                .setPositiveBtnText("Resume")
+                .setPositiveBtnBackground("#22b573")
+                .setNegativeBtnText("Cancel")
+                .setNegativeBtnBackground("#c1272d")
+                .setGifResource(R.drawable.confirm_delete_holding_nose)      //pass your gif, png or jpg
+                .isCancellable(true)
+                .OnPositiveClicked(new TTFancyGifDialogListener() {
+                    @Override
+                    public void OnClick() {
+
+                        Toast.makeText(PlayMusic.this, "Download will be resumed", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .OnNegativeClicked(new TTFancyGifDialogListener() {
+                    @Override
+                    public void OnClick() {
 
 
-        }
+                        if (fetch != null) {
+
+                            fetch.cancel(requestId);
+                            Toast.makeText(PlayMusic.this, " The download has been cancelled!", Toast.LENGTH_LONG).show();
+                            isCurrentlyDownloading = false;
+                            fetch.delete(requestId);
+
+
+                        }
+
+                    }
+                })
+                .build();
 
 
     }
@@ -859,6 +1080,11 @@ public class PlayMusic extends AppCompatActivity {
 
     }
 
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
 
 }
 
@@ -893,9 +1119,15 @@ public class PlayMusic extends AppCompatActivity {
  */
 
 /*
-TODO ERROR MediaPlayer: Error (1,-1004)
-TODO SITUATION WEA DL GOES TO ERROR FOR PLAY FROM STORAGE
-TODO CREATE THE FILE URI STRINGS YOURSELF
+todo fix the seek bar listenre incase user seek without valid medai player
+todo add a prompt to tell the user the song has already been downloaded  //done
+TODO PROGRESS NOTIFICATION KEEPS FLICKERING
+TODO WHAT IF USER SEEKS AFTER SONG IS DONE PLAYING. HANDLE PLAYER EVENTS //done
+TODO AFTER SONG HAS PLAYED STOP OR PAUSE THE MEDIA PLAYER  //done
+TODO AFTER THE DOWNLOAD BUTTON IS CLICKED FOR AN ALREADY DOWNLOADED SONG IT DOES NOT DOWNLOAD  //temp fix
+TODO ERROR MediaPlayer: Error (1,-1004)  //done
+TODO SITUATION WEA DL GOES TO ERROR FOR PLAY FROM STORAGE //done
+TODO CREATE THE FILE URI STRINGS YOURSELF  //done
 TODO CHANGE THE DOWNLOAD BUTTON TO A CANCEL BUTTON WHEN THE USER IS DOWNLOADING  //DONE
 TODO ADD A SHARE BUTTON
 TODO ADD A LIKE BUTTON  //PURCHASE BUTTON WITH PRICE AND SUPPORT ARTIST DIALOG
@@ -909,11 +1141,12 @@ todo USE A RUNNABLE TO ADD THE PROGRESS UPDATE WITH A DELAY BEFORE CHECKING //do
 todo HANDLE THE LIFECYCLE EVENTS FOR THE MEDIA PLAYER
 TODO SET THE INITIAL SEEK BAR TO ZERO //done
 todo add a timer to show duration and other details //done
-todo onStop reset the UI so that the user is not confused
+todo onStop reset the UI so that the user is not confused  //done
 todo work on the UI
 todo get a dependency for the round image view //done
-TODO ON SONG COMPLETION LITSENER AND WHTA HAPPENS WHEN A SONG COMPLETES
-
+TODO ON SONG COMPLETION LITSENER AND WHTA HAPPENS WHEN A SONG COMPLETES //done
+//todo set links to icons 8 and ouch pics https://icons8.com
+//todo set
 */
 
 
