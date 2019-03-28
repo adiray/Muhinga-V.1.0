@@ -159,6 +159,7 @@ public class SongsItem extends AbstractItem<SongsItem, SongsItem.SongItemViewHol
 
 
         holder.title_vh.setText(getTitle());
+        holder.artistNameVh.setText(getArtist());
         Glide.with(holder.itemView).load(getCoverImage()).into(holder.song_cover_vh);
 
 
@@ -167,7 +168,7 @@ public class SongsItem extends AbstractItem<SongsItem, SongsItem.SongItemViewHol
     protected static class SongItemViewHolder extends RecyclerView.ViewHolder {
 
         //declaring the views
-        TextView title_vh;
+        TextView title_vh, artistNameVh;
         ImageView song_cover_vh;
 
 
@@ -177,6 +178,7 @@ public class SongsItem extends AbstractItem<SongsItem, SongsItem.SongItemViewHol
             //assigning the previously declared views
             title_vh = itemView.findViewById(R.id.single_song_item_song_name);
             song_cover_vh = itemView.findViewById(R.id.single_song_song_cover_image);
+            artistNameVh = itemView.findViewById(R.id.album_view_songs_rec_view_single_object_artist_name);
 
 
         }

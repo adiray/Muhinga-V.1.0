@@ -59,12 +59,24 @@ public class VenuesResponse extends AbstractItem<VenuesResponse, VenuesResponse.
     @SerializedName("objectId")
     private String objectId;
 
+    @SerializedName("phone")
+    private String phone;
+
     public void setImg4(Object img4) {
         this.img4 = img4;
     }
 
     public Object getImg4() {
         return img4;
+    }
+
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getPhone() {
+        return phone;
     }
 
     public void setImg5(Object img5) {
@@ -256,3 +268,311 @@ public class VenuesResponse extends AbstractItem<VenuesResponse, VenuesResponse.
 
 
 }
+
+
+
+
+
+
+
+
+
+
+/*
+* <?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/venues_details_item_price"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:text="TextView"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="15sp"
+        app:layout_constraintStart_toEndOf="@+id/venues_details_item_location"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_title" />
+
+    <TextView
+        android:id="@+id/venues_details_item_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:text="TextView"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_title" />
+
+    <TextView
+        android:id="@+id/venues_details_item_title"
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/montserrat_bold"
+        android:text="TextView"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/venues_details_item_size_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:text="@string/capacitycolon"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="15sp"
+        app:layout_constraintStart_toEndOf="@+id/venues_details_item_price"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_title" />
+
+
+    <TextView
+        android:id="@+id/venues_details_item_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:text="TextView"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="15sp"
+        app:layout_constraintStart_toEndOf="@+id/venues_details_item_size_label"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_title" />
+
+    <TextView
+        android:id="@+id/venues_details_item_description"
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:scrollbars="vertical"
+        android:text="TextView thdysh sjshsns shsjsjsnsh susn,sdnsdkjkdsk sailsidhnkd dlashdnxdis adlhlhdsjskl skllck"
+        android:textAlignment="viewStart"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="3dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@color/my_color_bg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_size" />
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayout2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_description">
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp"
+            app:contentPadding="10dp"
+
+            >
+
+            <ImageView
+                android:id="@+id/venues_details_call_owner"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/phone_colored_green_filled" />
+
+        </android.support.v7.widget.CardView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/call"
+            android:textSize="12sp"
+            app:fontFamily="@font/montserrat_regular" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayout3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/linearLayout1"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_description">
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp"
+            app:contentPadding="10dp"
+
+            >
+
+            <ImageView
+                android:id="@+id/save_venue_venues_details_layout"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/cash_hand_colored_filled" />
+
+        </android.support.v7.widget.CardView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/book"
+            android:textSize="12sp"
+            app:fontFamily="@font/montserrat_regular" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayout4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/linearLayout2"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_description">
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp"
+            app:contentPadding="10dp"
+
+            >
+
+            <ImageView
+                android:id="@+id/book_venue_venues_details_layout"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/share_colored_blue_filled" />
+
+        </android.support.v7.widget.CardView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/share"
+            android:textSize="12sp"
+            app:fontFamily="@font/montserrat_regular" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/linearLayout3"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_description">
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp"
+            app:contentPadding="10dp"
+
+            >
+
+            <ImageView
+                android:id="@+id/share_venue_venues_details_layout"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/contacts_colored_red_filled" />
+
+        </android.support.v7.widget.CardView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/save"
+            android:textSize="12sp"
+            app:fontFamily="@font/montserrat_regular" />
+
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>
+*
+*
+*
+* */
+
+
+
+

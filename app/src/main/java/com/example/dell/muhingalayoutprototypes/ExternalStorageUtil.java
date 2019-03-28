@@ -33,3 +33,16 @@ public class ExternalStorageUtil {
     }
 
 }
+
+
+
+/*
+* TODO ADD A SEARCHBAR ON ALL ACTIVITIES
+* TODO TRY TO PUT THE FILTER IN A SLIDEOUT OR FRAGMENT
+* TODO ADD A NO INTERNET INDICATOR
+*
+*
+*
+*
+*
+* */

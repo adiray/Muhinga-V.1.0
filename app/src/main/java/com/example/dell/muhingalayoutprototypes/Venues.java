@@ -81,6 +81,8 @@ public class Venues extends AppCompatActivity {
     public static final String EXTRA_PRICE = "com.example.muhinga.venuesItemPrice";
     public static final String EXTRA_LOCATION = "com.example.muhinga.venuesItemLocation";
     public static final String EXTRA_SIZE = "com.example.muhinga.venuesItemSize";
+    public static final String EXTRA_PHONE = "com.example.muhinga.venuesOwnerPhone";
+
 
 
     @Override
@@ -176,7 +178,7 @@ public class Venues extends AppCompatActivity {
 
                 Intent intent = new Intent(Venues.this, VenuesDetails.class);
                 ArrayList<Object> venuesItemImageReferences = new ArrayList<>();
-                String location, title, price, size, description;
+                String location, title, price, size, description, ownerPhone;
 
                 //add the image references to the image reference array
                 venuesItemImageReferences.add(item.getMainImageReference());
@@ -191,6 +193,7 @@ public class Venues extends AppCompatActivity {
                 price = item.getPrice();
                 size = item.getCapacity();
                 description = item.getDescription();
+                ownerPhone = item.getPhone();
 
                 intent.putExtra(EXTRA_ARRAY, venuesItemImageReferences);
                 intent.putExtra(EXTRA_LOCATION, location);
@@ -198,6 +201,7 @@ public class Venues extends AppCompatActivity {
                 intent.putExtra(EXTRA_PRICE, price);
                 intent.putExtra(EXTRA_SIZE, size);
                 intent.putExtra(EXTRA_DESCRIPTION, description);
+                intent.putExtra(EXTRA_PHONE,ownerPhone);
                 startActivity(intent);
 
 

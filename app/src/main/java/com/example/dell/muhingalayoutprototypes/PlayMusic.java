@@ -1151,3 +1151,43 @@ TODO ON SONG COMPLETION LITSENER AND WHTA HAPPENS WHEN A SONG COMPLETES //done
 
 
 //file:///storage/emulated/0/Music/Complicated.m4a
+
+
+
+
+/* <android.support.v7.widget.CardView
+        android:id="@+id/call_owner_venues_details_card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        app:cardCornerRadius="4dp"
+
+        app:cardElevation="2dp"
+        app:contentPadding="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/venues_details_item_description">
+
+        <ImageView
+            android:id="@+id/call_owner_venues_details"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/music_icon_filled_colored" />
+
+    </android.support.v7.widget.CardView>
+
+
+    <TextView
+        android:layout_width="50dp"
+        android:textAlignment="center"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/call"
+        android:textSize="12sp"
+        app:fontFamily="@font/montserrat_regular"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/call_owner_venues_details_card" />
+
+
+
+    */

@@ -25,6 +25,7 @@
             app:layout_constraintVertical_chainStyle="packed" />
 
         <TextView
+            android:fontFamily="@font/montserrat_regular"
             android:id="@+id/land_rec_view_object_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -44,6 +45,8 @@
 
 
         <TextView
+            android:fontFamily="@font/montserrat_regular"
+
             android:id="@+id/land_rec_view_object_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -60,6 +63,7 @@
             app:layout_constraintTop_toBottomOf="@+id/land_rec_view_object_title" />
 
         <TextView
+            android:fontFamily="@font/montserrat_regular"
 
             android:id="@+id/land_rec_view_object_size"
             android:layout_width="wrap_content"
@@ -75,6 +79,8 @@
             app:layout_constraintTop_toBottomOf="@+id/land_rec_view_object_title" />
 
         <TextView
+            android:fontFamily="@font/montserrat_regular"
+
             android:id="@+id/land_rec_view_object_price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
