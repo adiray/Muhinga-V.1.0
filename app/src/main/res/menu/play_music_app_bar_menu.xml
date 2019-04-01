@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+
+
+    <item
+        android:title="Liked"
+        android:id="@+id/play_music_liked_songs"
+        app:showAsAction="ifRoom"
+        android:orderInCategory="100"
+        android:icon="@drawable/heart_white_outline"
+        />
+
+
+    <item
+        android:title="Contact artist"
+        android:id="@+id/play_music_contact_artist"
+        app:showAsAction="never"
+        android:orderInCategory="100"
+        />
+
+
+</menu>

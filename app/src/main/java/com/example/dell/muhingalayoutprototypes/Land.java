@@ -8,6 +8,9 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,6 +24,8 @@ import com.mikepenz.fastadapter.adapters.FooterAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter_extensions.items.ProgressItem;
 import com.mikepenz.fastadapter_extensions.scroll.EndlessRecyclerOnScrollListener;
+
+import net.cachapa.expandablelayout.ExpandableLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,7 +61,16 @@ public class Land extends AppCompatActivity {
     EditText landPriceEditText, landSizeEditText;
     Button filterLandButton;
     Spinner landLocationSpinner;
-    Toolbar mainToolbar;
+
+
+
+
+
+    //Toolbar objects
+    Toolbar landMainToolBar;
+
+    //expandable layout
+    ExpandableLayout expandableLayout;
 
 
     //declare the recycler view objects
@@ -91,8 +105,15 @@ public class Land extends AppCompatActivity {
         filterLandButton = findViewById(R.id.submit_land_filter_button);
         landLocationSpinner = findViewById(R.id.land_home_location_spinner);
         landSwipeRefresh = findViewById(R.id.land_swipe_refresh);
-        mainToolbar = findViewById(R.id.land_home_app_bar);
-        //setSupportActionBar(mainToolbar);
+
+
+        //toolbar
+        landMainToolBar = findViewById(R.id.land_action_bar);
+        landMainToolBar.setTitle(R.string.add_filters);
+        setSupportActionBar(landMainToolBar);
+
+        //expandable layout
+        expandableLayout = findViewById(R.id.land_filter_area_expandable_layout);
 
 
         //build out the main recycler view
@@ -215,6 +236,44 @@ public class Land extends AppCompatActivity {
 
 
     }
+
+
+
+    //inflate the menu layout file for the toolbar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.house_app_bar_menu, menu);
+        return true;
+    }
+
+
+
+    //specify the actions that happen when each menu item is clicked
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.toggle_filters):
+                if (expandableLayout.isExpanded()) {
+                    expandableLayout.collapse();
+                } else {
+                    expandableLayout.expand();
+                }
+
+
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+
+
+
+
+
+
 
 
     /*************************************************************************************************************************************************/

@@ -8,14 +8,21 @@
     tools:context=".PlayMusic">
 
 
-    <include
+
+
+    <android.support.v7.widget.Toolbar
         android:id="@+id/play_music_app_bar"
-        layout="@layout/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/my_color_primary"
+        android:minHeight="64dp"
+        app:titleTextColor="@color/my_color_bg"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+
 
 
     <TextView

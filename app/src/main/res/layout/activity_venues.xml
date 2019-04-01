@@ -8,12 +8,23 @@
     tools:context=".Venues">
 
 
-    <include
-        android:id="@+id/venues_activity_app_bar"
-        layout="@layout/app_bar"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/venues_action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-         />
+        android:background="@color/my_color_primary"
+        android:minHeight="64dp"
+        app:titleTextColor="@color/my_color_bg"
+        />
+
+
+    <net.cachapa.expandablelayout.ExpandableLayout
+        android:id="@+id/venues_filter_area_expandable_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:el_duration="400"
+        app:el_expanded="false"
+        app:el_parallax="0.5">
 
 
     <include
@@ -26,6 +37,9 @@
          />
 
 
+
+    </net.cachapa.expandablelayout.ExpandableLayout>
+
     <TextView
         android:id="@+id/venues_rec_view_heading"
         android:layout_width="match_parent"
@@ -34,8 +48,8 @@
         android:gravity="center_horizontal"
         android:text="@string/venues"
         android:textColor="@color/my_color_secondary"
-        android:textSize="12sp"
-        app:fontFamily="@font/montserrat_bold"
+        android:textSize="17sp"
+        app:fontFamily="@font/montserrat_medium"
         />
 
 

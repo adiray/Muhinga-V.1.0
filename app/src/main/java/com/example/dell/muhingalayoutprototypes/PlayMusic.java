@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Environment;
@@ -14,7 +15,11 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -44,6 +49,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -63,6 +69,10 @@ public class PlayMusic extends AppCompatActivity {
     int downloadProgressNotificationId = 1;
     //String channelId1 = "1", channelName1= "channel1";
     String downloadTitle;
+
+
+    //app bar objects
+    Toolbar playMusicMainToolBar;
 
 
   /*  //notification objects
@@ -149,6 +159,15 @@ public class PlayMusic extends AppCompatActivity {
         songDurationTv = findViewById(R.id.song_total_duration);
         replayButton = findViewById(R.id.play_music_replay_button);
         likeButton = findViewById(R.id.play_music_like_button);
+
+
+
+        //toolbar views
+        playMusicMainToolBar = findViewById(R.id.play_music_app_bar);
+        playMusicMainToolBar.setTitle("Play Music");
+        Objects.requireNonNull(playMusicMainToolBar.getOverflowIcon()).setColorFilter(getResources().getColor(R.color.my_color_white), PorterDuff.Mode.SRC_ATOP);
+        setSupportActionBar(playMusicMainToolBar);
+
 
 
         //assign the text to the textViews
@@ -274,6 +293,35 @@ public class PlayMusic extends AppCompatActivity {
 
 
     }
+
+
+
+    //inflate the menu layout file for the toolbar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.play_music_app_bar_menu, menu);
+        return true;
+    }
+
+
+    //specify the actions that happen when each menu item is clicked
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.play_music_liked_songs):
+
+
+
+
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+
 
 
     /**

@@ -6,11 +6,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -21,6 +24,8 @@ import com.mikepenz.fastadapter.adapters.FooterAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter_extensions.items.ProgressItem;
 import com.mikepenz.fastadapter_extensions.scroll.EndlessRecyclerOnScrollListener;
+
+import net.cachapa.expandablelayout.ExpandableLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +54,12 @@ public class Venues extends AppCompatActivity {
     Button filterVenuesButton;
     EditText venuesPriceEditText;
     Spinner venuesLocationSpinner;
+
+    //toolbar objects
+    Toolbar venuesMainToolbar;
+
+    //expandable layout objects
+    ExpandableLayout venuesExpandableLayout;
 
 
     //recycler view objects
@@ -96,6 +107,16 @@ public class Venues extends AppCompatActivity {
         filterVenuesButton = findViewById(R.id.submit_venues_filter_button);
         venuesLocationSpinner = findViewById(R.id.venues_location_spinner);
         venuesPriceEditText = findViewById(R.id.venues_max_price_edit_text);
+
+
+        //Toolbar
+        venuesMainToolbar = findViewById(R.id.venues_action_bar);
+        venuesMainToolbar.setTitle(R.string.add_filters);
+        setSupportActionBar(venuesMainToolbar);
+
+        //expandable layout
+        venuesExpandableLayout = findViewById(R.id.venues_filter_area_expandable_layout);
+
 
 
         //build out main recycler view
@@ -211,6 +232,38 @@ public class Venues extends AppCompatActivity {
 
 
     }
+
+
+
+    //inflate the menu layout file for the toolbar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.house_app_bar_menu, menu);
+        return true;
+    }
+
+
+    //specify the actions that happen when each menu item is clicked
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.toggle_filters):
+                if (venuesExpandableLayout.isExpanded()) {
+                    venuesExpandableLayout.collapse();
+                } else {
+                    venuesExpandableLayout.expand();
+                }
+
+
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+
 
 
     /*************************************************************************************************************************************************/

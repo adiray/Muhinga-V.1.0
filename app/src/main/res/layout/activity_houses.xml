@@ -9,16 +9,21 @@
     >
 
 
-    <include
-        android:id="@+id/artist_activity_app_bar"
-        layout="@layout/app_bar"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/houses_action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/my_color_primary"
+        android:minHeight="64dp"
+        app:titleTextColor="@color/my_color_bg"
         />
+
+
 
 
     <include
         android:layout_marginTop="10dp"
+        android:layout_marginBottom="8dp"
         android:id="@+id/houses_filter_area_layout"
         layout="@layout/houses_filter_area"
         android:layout_width="match_parent"

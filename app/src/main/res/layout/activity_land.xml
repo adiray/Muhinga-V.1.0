@@ -4,9 +4,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#DBDBDD"
     tools:context=".Land"
     android:orientation="vertical"
     >
+
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/land_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/my_color_primary"
+        android:minHeight="64dp"
+        app:titleTextColor="@color/my_color_bg"
+        />
+
+
+
 
     <include
         android:id="@+id/filter_area"

@@ -6,7 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -22,6 +26,8 @@ import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter_extensions.items.ProgressItem;
 import com.mikepenz.fastadapter_extensions.scroll.EndlessRecyclerOnScrollListener;
 
+import net.cachapa.expandablelayout.ExpandableLayout;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +39,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Houses extends AppCompatActivity {
+
 
     //miscellaneous objects
     Boolean onRefreshing = false, infiniteLoading = false;  //shows weather the user is refreshing or loading more items respectively
@@ -51,6 +58,12 @@ public class Houses extends AppCompatActivity {
     Button filterHousesButton;
     SwipeRefreshLayout housesSwipeRefresh;  //swipe to refresh view for the houses recycler view
     Spinner houseLocationSpinner;
+
+    //Toolbar objects
+    Toolbar mainToolBar;
+
+    //Expandable Layout objects
+    ExpandableLayout housesExpandableLayout;
 
 
     //declare recycler view objects
@@ -98,6 +111,18 @@ public class Houses extends AppCompatActivity {
         forSaleCheck = findViewById(R.id.houses_for_sale_check_box);
         filterHousesButton = findViewById(R.id.submit_houses_filter_button);
         houseLocationSpinner = findViewById(R.id.houses_location_spinner);
+
+        //Expandable layout views
+        housesExpandableLayout = findViewById(R.id.expandable_layout);
+
+        //initialize the toolbar
+        mainToolBar = findViewById(R.id.houses_action_bar);
+        mainToolBar.setTitle(R.string.add_filters);
+        setSupportActionBar(mainToolBar);
+
+
+
+
 
 
         //build out the main recycler view
@@ -225,6 +250,71 @@ public class Houses extends AppCompatActivity {
         });
 
 
+
+      /*  toggleExpandableLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(housesExpandableLayout.isExpanded()){
+
+                    housesExpandableLayout.collapse();
+
+                }else {
+
+                    housesExpandableLayout.expand();
+
+                }
+
+            }
+        });
+
+
+
+          <TextView
+        android:id="@+id/toggle_filters_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_horizontal"
+        android:text="TOGGLE FILTERS"
+        android:textSize="15sp"
+        app:fontFamily="@font/montserrat_bold" />
+
+
+
+*/
+
+
+    }
+
+
+    //inflate the menu layout file for the toolbar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.house_app_bar_menu, menu);
+        return true;
+    }
+
+
+    //specify the actions that happen when each menu item is clicked
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.toggle_filters):
+                if (housesExpandableLayout.isExpanded()) {
+                    housesExpandableLayout.collapse();
+                } else {
+                    housesExpandableLayout.expand();
+                }
+
+
+                break;
+            default:
+                break;
+        }
+        return true;
     }
 
 
@@ -594,3 +684,6 @@ public class Houses extends AppCompatActivity {
 
 
 }
+
+
+//todo there is no way for the user to refresh locations

@@ -2,6 +2,8 @@
     <string name="app_name">MuhingaLayoutPrototypes</string>
     <string name="max_price">Max price</string>
     <string name="ALL">ALL</string>
+    <string name="Add_filters">ADD FILTERS</string>
+
     <string name="my_app_name">Muhinga</string>
     <string name="history">History</string>
     <string name="saved">Saved</string>
@@ -40,6 +42,12 @@
     <string name="capacity">Capacity</string>
     <string name="capacitycolon">Capacity:</string>
     <string name="buy">Buy</string>
+    <string name="artists">Artists</string>
+    <string name="liked">Liked</string>
+    <string name="contact_artist">Contact artist</string>
+    <string name="settings">Settings</string>
+    <string name="sign_up">Sign up</string>
+    <string name="purchase">Purchase</string>
 
 
 </resources>

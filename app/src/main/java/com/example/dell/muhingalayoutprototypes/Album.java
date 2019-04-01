@@ -1,6 +1,7 @@
 package com.example.dell.muhingalayoutprototypes;
 
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -8,7 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,6 +48,10 @@ public class Album extends AppCompatActivity {
     //declare the view objects
     SwipeRefreshLayout songsSwipeRefreshLayout;
     TextView artistNameTv, albumNameTv;
+
+
+    //toolbar objects
+    Toolbar albumViewMainToolbar;
 
 
     //Recycler View objects
@@ -89,6 +99,13 @@ public class Album extends AppCompatActivity {
         songsSwipeRefreshLayout = findViewById(R.id.album_view_songs_rec_view_swipe_refresh);
         albumNameTv = findViewById(R.id.album_view_album_name);
         artistNameTv = findViewById(R.id.album_view_artist_name);
+
+
+        //TOOLBAR
+        albumViewMainToolbar = findViewById(R.id.album_view_app_bar);
+        albumViewMainToolbar.setTitle("Songs");
+        Objects.requireNonNull(albumViewMainToolbar.getOverflowIcon()).setColorFilter(getResources().getColor(R.color.my_color_white), PorterDuff.Mode.SRC_ATOP);
+        setSupportActionBar(albumViewMainToolbar);
 
 
         //set up the albums recycler view
@@ -150,7 +167,7 @@ public class Album extends AppCompatActivity {
 
 //set the text to the textViews
         artistNameTv.setText(selectedArtistName);
-        albumNameTv.setText(selectedAlbumName);
+        albumNameTv.setText(String.format("%s - ", selectedAlbumName));
 
 
         buildRetrofitClient();  //build the retrofit client
@@ -181,6 +198,43 @@ public class Album extends AppCompatActivity {
         });
 
     }
+
+
+
+
+
+
+    //inflate the menu layout file for the toolbar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.view_songs_app_bar_menu, menu);
+        return true;
+    }
+
+
+    //specify the actions that happen when each menu item is clicked
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case (R.id.view_songs_like_album_button):
+
+            case (R.id.view_songs_buy_album_button):
+
+            case (R.id.view_songs_contact_artist):
+
+
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+
+
+
+
 
 
     /*************************************************************************************************************************************************/
@@ -330,3 +384,80 @@ public class Album extends AppCompatActivity {
 
 
 }
+
+
+
+
+
+
+
+
+/*apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "com.example.dell.muhingalayoutprototypes"
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation 'net.cachapa.expandablelayout:expandablelayout:2.9.2'
+    implementation('com.mikepenz:fastadapter:2.6.3@aar') {
+        transitive = true
+    }
+    //used for the rotating reply song view
+    implementation 'theanilpaudel:rotatinganimation:1.0.0'
+    //used for the circular image view in the play song activity
+    implementation 'de.hdodenhof:circleimageview:3.0.0'
+    //used to manage downloads
+    implementation "com.tonyodev.fetch2:fetch2:3.0.1"
+    //used with the recycler view adapter for extra features
+    implementation 'com.mikepenz:fastadapter-extensions:1.5.1@aar'
+    implementation 'com.mikepenz:fastadapter-commons:2.6.3@aar'
+    implementation 'com.mikepenz:fastadapter-extensions:2.6.3@aar'
+    //used to implement the customized dialog with an image
+    implementation 'com.bestsoft32.tayyab:tt-fancy-gif-dialog:1.0.2'
+//The tiny Materialize library used for its useful helper classes
+    implementation 'com.mikepenz:materialize:1.0.3@aar'
+    //used to implement caching of houses and other objects within the app
+    implementation 'com.github.Guilherme-HRamos:Easy-Save:1.2.1'
+    //used to implement the like button animation in the play music activity
+    implementation 'com.github.varunest:sparkbutton:1.0.6'
+//for the filter toggle view
+    implementation 'com.github.fenjuly:ToggleExpandLayout:774e497692'
+    //for the filter expandable layout
+    implementation 'net.cachapa.expandablelayout:expandablelayout:2.9.2'
+    //nice bottom bar
+    implementation 'com.irozon.justbar:justbar:1.0.1'
+    //floating search bar
+    implementation 'com.github.mancj:MaterialSearchBar:0.8.2'
+
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation 'com.github.bumptech.glide:glide:4.7.1'
+    implementation 'com.android.support:design:27.+'
+    implementation 'com.android.support:cardview-v7:27.+'
+    implementation 'com.android.support:recyclerview-v7:27.+'
+    implementation 'com.android.support:support-v4:27.+'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:27.+'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+*/

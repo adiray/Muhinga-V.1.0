@@ -6,19 +6,26 @@ import android.content.Intent;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import com.mancj.materialsearchbar.MaterialSearchBar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.FooterAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter_extensions.items.ProgressItem;
 import com.mikepenz.fastadapter_extensions.scroll.EndlessRecyclerOnScrollListener;
+import com.yalantis.jellytoolbar.listener.JellyListener;
+import com.yalantis.jellytoolbar.widget.JellyToolbar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -36,6 +43,10 @@ public class Music extends AppCompatActivity {
 
     //declare the view objects
     SwipeRefreshLayout artistSwipeRefresh; //swipe to refresh view for the land recycler view
+
+    //Floating Search bar objects
+    MaterialSearchBar artistSearchBar;
+    List artistSearchSuggestions;
 
     //recycler view objects
     RecyclerView artistRecyclerView;
@@ -66,9 +77,68 @@ public class Music extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music);
 
+
+
+
         //initialize the views
         artistSwipeRefresh = findViewById(R.id.activity_music_home_artist_swipe_refresh);
 
+
+        //Floating Search Bar
+        artistSearchBar = findViewById(R.id.music_search_bar);
+        artistSearchSuggestions =  artistSearchBar.getLastSuggestions();
+        artistSearchBar.setLastSuggestions(artistSearchSuggestions);
+
+        artistSearchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
+            @Override
+            public void onSearchStateChanged(boolean enabled) {
+
+            }
+
+            @Override
+            public void onSearchConfirmed(CharSequence text) {
+
+            }
+
+            @Override
+            public void onButtonClicked(int buttonCode) {
+
+            }
+        });
+
+
+
+
+
+     /*   //toolbar
+        musicMainToolbar = findViewById(R.id.music_main_toolbar);
+
+        searchArtistEditText = (EditText) LayoutInflater.from(this).inflate(R.layout.music_activity_search_view, null);
+        searchArtistEditText.setBackgroundResource(R.color.colorTransparent);
+
+        musicMainToolbar.setContentView(searchArtistEditText);
+
+        musicMainToolbar.setJellyListener(new JellyListener() {
+            @Override
+            public void onCancelIconClicked() {
+
+                if (TextUtils.isEmpty(searchArtistEditText.getText())) {
+                    musicMainToolbar.collapse();
+                } else {
+
+                    searchArtistEditText.getText().clear();
+                }
+            }
+        });*/
+
+        /*
+        toolbar.getToolbar().setNavigationIcon(R.drawable.ic_menu);
+        toolbar.setJellyListener(jellyListener);
+
+        editText = (AppCompatEditText) LayoutInflater.from(this).inflate(R.layout.edit_text, null);
+        editText.setBackgroundResource(R.color.colorTransparent);
+        toolbar.setContentView(editText);
+*/
 
         //Build out the recycler view
         artistRecyclerView = findViewById(R.id.music_main_recycler_view);
@@ -151,6 +221,8 @@ public class Music extends AppCompatActivity {
 
 
     }
+
+
 
 
     /*************************************************************************************************************************************************/
@@ -281,3 +353,27 @@ public class Music extends AppCompatActivity {
 
 
 }
+
+
+
+
+
+
+
+/*  <com.yalantis.jellytoolbar.widget.JellyToolbar
+        android:id="@+id/music_main_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/my_color_primary"
+        android:paddingStart="8dp"
+        app:cancelIcon="@drawable/cancel_black_simple"
+        app:endColor="@color/my_color_primary"
+        app:icon="@drawable/search_black_simple"
+        app:startColor="@color/my_color_primary_darker_shade"
+        app:title="Search Artists"
+        app:titleTextColor="@android:color/white" />
+
+*/
+
+
+

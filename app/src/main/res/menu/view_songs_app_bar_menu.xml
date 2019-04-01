@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+
+    <item
+        android:title="@string/liked"
+        android:id="@+id/view_songs_like_album_button"
+        app:showAsAction="ifRoom"
+        android:orderInCategory="100"
+        android:icon="@drawable/heart_white_outline"
+        />
+
+
+
+    <item
+        android:title="@string/purchase"
+        android:id="@+id/view_songs_buy_album_button"
+        app:showAsAction="ifRoom"
+        android:orderInCategory="100"
+        android:icon="@drawable/buy_color_filled"
+        />
+
+
+    <item
+        android:title="@string/contact_artist"
+        android:id="@+id/view_songs_contact_artist"
+        app:showAsAction="never"
+        android:orderInCategory="100"
+        />
+
+</menu>
