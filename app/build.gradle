@@ -51,8 +51,11 @@ dependencies {
     //jelly toolbar
     implementation 'com.github.yalantis:jellytoolbar:v1.0'
 
-    //search bar
+    //search bar library
     implementation 'com.github.mancj:MaterialSearchBar:0.8.2'
+
+    //floating edit text for the sign up page
+    implementation 'com.github.florent37:materialtextfield:1.0.7'
 
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'

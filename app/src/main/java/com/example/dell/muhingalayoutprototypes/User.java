@@ -2,44 +2,93 @@ package com.example.dell.muhingalayoutprototypes;
 
 public class User {
 
-    String eMail, passWord, firstName, lastName;
+    String email, password, first_name, last_name;
 
-    public String geteMail() {
-        return eMail;
+    public String getEmail() {
+        return email;
     }
 
-    public void seteMail(String eMail) {
-        this.eMail = eMail;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getPassWord() {
-        return passWord;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPassWord(String passWord) {
-        this.passWord = passWord;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getFirst_name() {
+        return first_name;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setFirst_name(String first_name) {
+        this.first_name = first_name;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getLast_name() {
+        return last_name;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
     }
 
-    public User(String eMail, String passWord, String firstName, String lastName) {
-        this.eMail = eMail;
-        this.passWord = passWord;
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public User(String eMail, String passWord, String first_name, String last_name) {
+        this.email = eMail;
+        this.password = passWord;
+        this.first_name = first_name;
+        this.last_name = last_name;
     }
 }
+
+
+
+/*
+
+
+todo https://icons8.com  ILLUSTRATIONS BY OUCH LINKS
+
+[
+	{
+		"lastLogin": null,
+		"userStatus": "ENABLED",
+		"socialAccount": "BACKENDLESS",
+		"created": 1554126863555,
+		"email": "adiray1@outlook.com",
+		"updated": null,
+		"objectId": "5B1CB332-745B-45DA-FF94-2DE2CEC28700",
+		"last_name": "Raymond",
+		"first_name": "Adibaku",
+		"ownerId": "5B1CB332-745B-45DA-FF94-2DE2CEC28700",
+		"___class": "Users"
+	}
+]
+
+***********************************************************************************
+
+	{
+		"email": "adibakuray@gmail.com",
+		"last_name": "Raymond",
+		"first_name": "Adibaku",
+		"password":"123"
+		}
+
+		*********************************************************************************
+
+		{
+	"userStatus": "ENABLED",
+	"created": 1554127402767,
+	"___class": "Users",
+	"last_name": "Raymond",
+	"ownerId": "6EAFFE12-B424-8C51-FFB0-FE99548CAA00",
+	"first_name": "Adibaku",
+	"updated": null,
+	"email": "adibakuray@gmail.com",
+	"objectId": "6EAFFE12-B424-8C51-FFB0-FE99548CAA00"
+}
+
+
+*/

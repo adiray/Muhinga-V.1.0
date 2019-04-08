@@ -60,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
             case (R.id.home_app_bar_settings_button):
 
             case (R.id.home_sign_up_button):
+                //open sign up activity
+                Intent intent = new Intent(MainActivity.this, SignUp.class);
+                MainActivity.this.startActivity(intent);
 
 
                 break;

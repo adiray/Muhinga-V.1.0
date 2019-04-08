@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
+import retrofit2.http.POST;
 import retrofit2.http.QueryMap;
 
 public interface RetrofitClient {
@@ -27,6 +30,12 @@ public interface RetrofitClient {
 
     @GET("album")
     Call<ArrayList<SongResponse>> getAlbumWithSongs(@QueryMap(encoded = true) Map<String, String> userFilters_Album_with_Songs);
+
+    @Headers("Content-Type:application/json")
+    @POST("Users")
+    Call<User> createUser(@Body User newUser);
+
+
 
 
 }
