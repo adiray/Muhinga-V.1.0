@@ -11,6 +11,8 @@ import android.widget.TextView;
 import com.github.florent37.materialtextfield.MaterialTextField;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -21,18 +23,24 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SignUp extends AppCompatActivity {
 
 
+    //miscellaneous objects
+    String firstName, lastName, password, email;  //these hold the user's submitted details. Updated when the user hits submit button
+
     //declare views
     EditText emailET, firstNameET, lastNameET, passwordET;
     Button submitDetailsButton;
-    //MaterialTextField materialTextField;
 
 
     //declare the retrofit objects. All these are used with retrofit
     Retrofit.Builder builder;
     Retrofit myRetrofit;
     RetrofitClient myWebClient;
-    retrofit2.Call<User> registerNewUserCall;
+    retrofit2.Call<User> registerNewUserCall ;  //call to register the user
+    retrofit2.Call<ArrayList<UserResponse>> checkRegistrationSuccess;  //call to retrieve the newly registered user
     User newUserObject;
+    Map<String, String> registrationCheckParameters = new HashMap<>(); //hash map containing the where clause for the request URL when confirming successful registration
+
+
 
 
     @Override
@@ -56,7 +64,7 @@ public class SignUp extends AppCompatActivity {
             public void onClick(View v) {
                 createUserObject();
                 postUserObject();
-            }
+             }
         });
 
 
@@ -87,8 +95,7 @@ public class SignUp extends AppCompatActivity {
 
     void createUserObject() {
 
-        String firstName, lastName, password, email;
-
+    //get the users details from the edit texts and create the user object
 
         email = emailET.getText().toString();
         lastName = lastNameET.getText().toString();
@@ -98,6 +105,10 @@ public class SignUp extends AppCompatActivity {
         newUserObject = new User(email, password, firstName, lastName);
 
 
+        registrationCheckParameters.put("email", email);
+
+
+
     }
 
 
@@ -105,18 +116,17 @@ public class SignUp extends AppCompatActivity {
 
     void postUserObject() {
 
-        Log.d("myLogsRegister", "user object" + newUserObject.getEmail());
-
-
         //create your call using the retrofit client
         registerNewUserCall = myWebClient.createUser(newUserObject);
 
         registerNewUserCall.clone().enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
-                
 
-                Log.d("myLogsRegister", "response received");
+
+               // Log.d("myLogsRegister", "response received");
+                //successfulRegistration = true;
+                verifyRegistrationSuccess();
 
 
             }
@@ -141,6 +151,55 @@ public class SignUp extends AppCompatActivity {
 
 
     }
+
+
+
+    /*************************************************************************************************************************************************/
+
+
+    void verifyRegistrationSuccess(){
+
+
+        checkRegistrationSuccess = myWebClient.verifyRegistrationSuccess(registrationCheckParameters);
+
+      checkRegistrationSuccess.clone().enqueue(new Callback<ArrayList<UserResponse>>() {
+          @Override
+          public void onResponse(Call<ArrayList<UserResponse>> call, Response<ArrayList<UserResponse>> response) {
+
+              Log.d("myLogsRegisterVerify", "response received");
+              if (response.body() != null) {
+                  Log.d("myLogsRegisterVerify", response.body().get(0).getSocialAccount());
+              }
+
+              //todo cache user object to auto log in next time
+
+
+          }
+
+          @Override
+          public void onFailure(Call<ArrayList<UserResponse>> call, Throwable t) {
+
+
+              String causes;
+
+              if (t.getCause() != null) {
+                  causes = t.getCause().toString();
+                  Log.d("myLogsRegVerError", "error cause " + causes);
+              }
+
+              Log.d("myLogsRegVerError", "error message " + t.getMessage());
+
+              t.printStackTrace();
+
+
+          }
+      });
+
+
+
+    }
+
+
 
 
 }

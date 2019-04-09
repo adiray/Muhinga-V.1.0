@@ -37,5 +37,9 @@ public interface RetrofitClient {
 
 
 
+    @GET("Users")
+    Call<ArrayList<UserResponse>> verifyRegistrationSuccess(@QueryMap(encoded = true) Map<String, String> newUser);
+
+
 
 }
