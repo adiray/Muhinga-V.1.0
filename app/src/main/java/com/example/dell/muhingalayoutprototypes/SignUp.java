@@ -9,6 +9,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
 import com.github.florent37.materialtextfield.MaterialTextField;
 
 import java.util.ArrayList;
@@ -26,6 +30,8 @@ public class SignUp extends AppCompatActivity {
 
     //miscellaneous objects
     String firstName, lastName, password, email;  //these hold the user's submitted details. Updated when the user hits submit button
+    Map<String, Object> userDetailsMap = new HashMap<>();
+
 
     //declare views
     EditText emailET, firstNameET, lastNameET, passwordET;
@@ -66,7 +72,8 @@ public class SignUp extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 createUserObject();
-                postUserObject();
+              //  postUserObject();
+                userSignUpBackendless();
              }
         });
 
@@ -117,6 +124,11 @@ public class SignUp extends AppCompatActivity {
         password = passwordET.getText().toString();
 
         newUserObject = new User(email, password, firstName, lastName);
+
+        userDetailsMap.put("email",email);
+        userDetailsMap.put("password",password);
+        userDetailsMap.put("first_name",firstName);
+        userDetailsMap.put("last_name",lastName);
 
 
         registrationCheckParameters.put("email", email);
@@ -211,6 +223,38 @@ public class SignUp extends AppCompatActivity {
 
           }
       });
+
+
+
+    }
+
+
+
+    void userSignUpBackendless(){
+
+        BackendlessUser newBackendlessUser = new BackendlessUser();
+        newBackendlessUser.putProperties(userDetailsMap);
+
+
+        Backendless.UserService.register(newBackendlessUser, new AsyncCallback<BackendlessUser>() {
+            @Override
+            public void handleResponse(BackendlessUser response) {
+
+                Log.d("myLogsBkReg", response.getProperties().toString());
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsBkReg", fault.toString());
+
+
+
+            }
+        });
+
 
 
 

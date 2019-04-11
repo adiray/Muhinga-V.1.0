@@ -7,6 +7,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
+import com.backendless.UserService;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
@@ -56,7 +61,8 @@ public class Login extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 createLoginDetails();
-                logUserIn();
+      //          logUserIn();
+                logUserInBackendless();
             }
         });
 
@@ -173,6 +179,40 @@ public class Login extends AppCompatActivity {
     }
 
 
+
+    void logUserInBackendless(){
+
+
+
+       Backendless.UserService.login(email, password, new AsyncCallback<BackendlessUser>() {
+           @Override
+           public void handleResponse(BackendlessUser response) {
+
+               userSessionToken = response.getProperties().toString();
+               Log.d("myLogsBackSxProps", userSessionToken);
+
+
+           }
+
+           @Override
+           public void handleFault(BackendlessFault fault) {
+
+
+
+               Log.d("myLogsBackFailError", fault.toString());
+
+
+
+           }
+       });
+
+
+
+
+
+    }
+
+
 }
 
 
@@ -181,70 +221,6 @@ public class Login extends AppCompatActivity {
 
 
 
-
-/*
-        loginUserCall.clone().enqueue(new Callback<UserLoginResponse>() {
-            @Override
-            public void onResponse(Call<UserLoginResponse> call, Response<UserLoginResponse> response) {
-
-                Log.d("myLogsLogInSuccess", "got a response");
-
-
-                if (response.isSuccessful()) {
-
-
-                    Log.d("myLogsLogInSuccess", "got a response, level 2");
-
-
-
-                    if (response.body() != null) {
-
-                        Log.d("myLogsLogInSuccess", "got a response, level 3");
-
-
-
-                        if (response.body().getCode() == null) {//check if it is an error response
-                            Log.d("myLogsLogInSuccess", "got a response, level 4");
-
-                            userSessionToken = response.body().getUser_token();
-                            Log.d("myLogsLogInSuccess", "userToken : " + userSessionToken);
-                        } else {
-                            Log.d("myLogsLogInResponse", "error message : " + response.body().getMessage() + " code " + response.body().getCode());
-                        }
-
-
-
-
-                    }
-
-
-                }
-
-
-
-
-
-
-
-
-
-
-
-            }
-
-            @Override
-            public void onFailure(Call<UserLoginResponse> call, Throwable t) {
-
-                Log.d("myLogsLogInError", "error message : " + t.getCause());
-                Log.d("myLogsLogInError", "error message : " + t.getMessage());
-                t.printStackTrace();
-
-
-
-            }
-        });
-
-   */
 
 
 

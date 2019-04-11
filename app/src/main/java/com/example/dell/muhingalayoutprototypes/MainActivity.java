@@ -14,6 +14,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
+
 import net.cachapa.expandablelayout.ExpandableLayout;
 
 import java.util.Objects;
@@ -33,6 +36,13 @@ public class MainActivity extends AppCompatActivity {
 
         //initialize the views
         initializeViews();
+
+        //initialize backendless
+        initializeBackendless();
+
+
+
+
 
 
     }
@@ -155,124 +165,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /*************************************************************************************************************************************************/
+
+
+
+
+    /*************************************************************************************************************************************************/
+
+
+
+
+
+    void initializeBackendless(){
+        //initialize backendless
+        Backendless.initApp( getApplicationContext(), "125AF8BD-1879-764A-FF22-13FB1C162400", "589220C9-1E2A-1EA2-FFCF-A0CFF76F5A00" );
+    }
+
+
+    /*************************************************************************************************************************************************/
+
+
 }
 
-
-/*<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/user_area_top_bar_layout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:background="@color/my_color_primary"
-    android:gravity="center_horizontal"
-    android:orientation="horizontal"
-    android:paddingBottom="5dp">
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="35dp"
-        android:layout_marginStart="20dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:src="@drawable/user_profile_icon_white_filled" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/profile"
-            android:textColor="@color/cardview_light_background"
-            android:textSize="12sp"
-            app:fontFamily="@font/montserrat_regular" />
-
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="35dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-
-        >
-
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:src="@drawable/user_wallet_icon_white_filled" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wallet"
-            android:textColor="@color/cardview_light_background"
-            android:textSize="12sp"
-            app:fontFamily="@font/montserrat_regular" />
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="35dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:src="@drawable/user_orders_icon_white_filled" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/history"
-            android:textColor="@color/cardview_light_background"
-            android:textSize="12sp"
-            app:fontFamily="@font/montserrat_regular" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="20dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:src="@drawable/user_likes_icon_white_filled"
-
-            />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/saved"
-            android:textColor="@color/cardview_light_background"
-            android:textSize="12sp"
-            app:fontFamily="@font/montserrat_regular" />
-
-
-    </LinearLayout>
-
-
-</LinearLayout>
-
-
-*/
+//todo edit the user sign up to use backendless
+//todo when user signs up, log them in
+//todo switch the activties so sign in shows up first and add option to stay signed in
+//todo add a profile pic field in backendless, a likes field
+//todo add a progress bar to the sign up and sign in actvity
+// todo add a masked input to the password field
+// todo add the eeror handling and error type information
+//todo handle the no internets situaton
