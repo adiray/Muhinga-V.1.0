@@ -58,7 +58,7 @@
     <string name="sign_in_caps">SIGN IN</string>
     <string name="have_an_account">Have an account?</string>
     <string name="title_activity_login">Sign in</string>
-    <!-- Strings related to login -->
+    <!-- Strings related to email -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>
     <string name="action_sign_in">Sign in or register</string>
@@ -71,6 +71,7 @@
         completions."
     </string>
     <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="sign_in">SIGN IN</string>
 
 
 </resources>

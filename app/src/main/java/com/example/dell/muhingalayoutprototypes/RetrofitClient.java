@@ -1,5 +1,7 @@
 package com.example.dell.muhingalayoutprototypes;
 
+import com.google.gson.JsonElement;
+
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -35,10 +37,25 @@ public interface RetrofitClient {
     @POST("Users")
     Call<User> createUser(@Body User newUser);
 
-
-
     @GET("Users")
     Call<ArrayList<UserResponse>> verifyRegistrationSuccess(@QueryMap(encoded = true) Map<String, String> newUser);
+
+   /* @Headers("Content-Type:application/json")
+    @POST("Users/login")
+    Call<JsonElement> loginUser (@Body UserLogin newUserLogin);
+
+*/
+
+    @Headers({
+            "Accept:application/json",
+            "Content-Type:application/json"
+    })
+    @POST("users/login")
+    Call<UserLoginResponse> loginUser(@Body UserLogin newUserLogin);
+
+
+
+
 
 
 

@@ -1,5 +1,6 @@
 package com.example.dell.muhingalayoutprototypes;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,6 +30,7 @@ public class SignUp extends AppCompatActivity {
     //declare views
     EditText emailET, firstNameET, lastNameET, passwordET;
     Button submitDetailsButton;
+    TextView signInTextButton;
 
 
     //declare the retrofit objects. All these are used with retrofit
@@ -55,6 +57,7 @@ public class SignUp extends AppCompatActivity {
         lastNameET = findViewById(R.id.sign_up_last_name);
         passwordET = findViewById(R.id.sign_up_password);
         submitDetailsButton = findViewById(R.id.sign_up_submit_button);
+        signInTextButton = findViewById(R.id.sign_up_sign_in_prompt_text);
 
         buildRetrofitClient();
 
@@ -67,6 +70,15 @@ public class SignUp extends AppCompatActivity {
              }
         });
 
+        signInTextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //open houses activity
+                Intent intent = new Intent(SignUp.this, Login.class);
+                SignUp.this.startActivity(intent);
+
+            }
+        });
 
     }
 
@@ -97,6 +109,8 @@ public class SignUp extends AppCompatActivity {
 
     //get the users details from the edit texts and create the user object
 
+        //todo check to make sure fiels are not null
+
         email = emailET.getText().toString();
         lastName = lastNameET.getText().toString();
         firstName = firstNameET.getText().toString();
@@ -122,6 +136,9 @@ public class SignUp extends AppCompatActivity {
         registerNewUserCall.clone().enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
+
+
+                //todo check if response is successful
 
 
                // Log.d("myLogsRegister", "response received");
