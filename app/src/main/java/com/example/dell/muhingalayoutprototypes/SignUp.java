@@ -1,11 +1,15 @@
 package com.example.dell.muhingalayoutprototypes;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -13,12 +17,16 @@ import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialog;
+import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialogListener;
 import com.github.florent37.materialtextfield.MaterialTextField;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import br.vince.easysave.EasySave;
+import br.vince.easysave.SaveAsyncCallback;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -30,31 +38,36 @@ public class SignUp extends AppCompatActivity {
 
     //miscellaneous objects
     String firstName, lastName, password, email;  //these hold the user's submitted details. Updated when the user hits submit button
-    Map<String, Object> userDetailsMap = new HashMap<>();
+    Map<String, Object> userDetailsMap = new HashMap<>();  //used to create a backendless user object
+    Boolean isStaySignedIn = false, canSignIn = false;
+    alertDialogHelper mAlertDialogHelper = new alertDialogHelper();
+    String startingActivity; //the name of the activity that sign up was started from
 
 
     //declare views
     EditText emailET, firstNameET, lastNameET, passwordET;
     Button submitDetailsButton;
     TextView signInTextButton;
-
-
-    //declare the retrofit objects. All these are used with retrofit
-    Retrofit.Builder builder;
-    Retrofit myRetrofit;
-    RetrofitClient myWebClient;
-    retrofit2.Call<User> registerNewUserCall ;  //call to register the user
-    retrofit2.Call<ArrayList<UserResponse>> checkRegistrationSuccess;  //call to retrieve the newly registered user
-    User newUserObject;
-    Map<String, String> registrationCheckParameters = new HashMap<>(); //hash map containing the where clause for the request URL when confirming successful registration
-
-
+    CheckBox termsAndConditionsCheckBox, stayLoggedInCheckBox;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+
+
+        //initialize views
+        initializeViews();
+
+
+    }
+
+
+    /*************************************************************************************************************************************************/
+
+
+    void initializeViews() {
 
 
         //get references to the views
@@ -64,17 +77,17 @@ public class SignUp extends AppCompatActivity {
         passwordET = findViewById(R.id.sign_up_password);
         submitDetailsButton = findViewById(R.id.sign_up_submit_button);
         signInTextButton = findViewById(R.id.sign_up_sign_in_prompt_text);
-
-        buildRetrofitClient();
-
+        termsAndConditionsCheckBox = findViewById(R.id.sign_up_terms_and_conditions_checkbox);
+        stayLoggedInCheckBox = findViewById(R.id.sign_up_stay_signed_in_checkbox);
 
         submitDetailsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 createUserObject();
-              //  postUserObject();
-                userSignUpBackendless();
-             }
+                if (canSignIn) {
+                    userSignUpBackendless();
+                }
+            }
         });
 
         signInTextButton.setOnClickListener(new View.OnClickListener() {
@@ -92,177 +105,300 @@ public class SignUp extends AppCompatActivity {
 
     /*************************************************************************************************************************************************/
 
-
-    void buildRetrofitClient() {
-
-        //initialize the retrofit client builder using the backendless.com api
-        builder = new Retrofit.Builder();
-        builder.baseUrl("http://api.backendless.com/125AF8BD-1879-764A-FF22-13FB1C162400/6F40C4D4-6CFB-E66A-FFC7-D71E4A8BF100/data/")
-                .addConverterFactory(GsonConverterFactory.create());
-
-        //use your builder to build a retrofit object
-        myRetrofit = builder.build();
-
-        //create a retrofit client using the retrofit object
-        myWebClient = myRetrofit.create(RetrofitClient.class);
-
-
-    }
-
-
-    /*************************************************************************************************************************************************/
-
     void createUserObject() {
 
-    //get the users details from the edit texts and create the user object
+        //get the users details from the edit texts and create the user object
 
-        //todo check to make sure fiels are not null
+        //todo check to make sure fields are not null
+        if (!TextUtils.isEmpty(emailET.getText()) && !TextUtils.isEmpty(passwordET.getText())) {
 
-        email = emailET.getText().toString();
-        lastName = lastNameET.getText().toString();
-        firstName = firstNameET.getText().toString();
-        password = passwordET.getText().toString();
+            if (termsAndConditionsCheckBox.isChecked()) {
 
-        newUserObject = new User(email, password, firstName, lastName);
-
-        userDetailsMap.put("email",email);
-        userDetailsMap.put("password",password);
-        userDetailsMap.put("first_name",firstName);
-        userDetailsMap.put("last_name",lastName);
-
-
-        registrationCheckParameters.put("email", email);
-
-
-
-    }
-
-
-    /*************************************************************************************************************************************************/
-
-    void postUserObject() {
-
-        //create your call using the retrofit client
-        registerNewUserCall = myWebClient.createUser(newUserObject);
-
-        registerNewUserCall.clone().enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-
-
-                //todo check if response is successful
-
-
-               // Log.d("myLogsRegister", "response received");
-                //successfulRegistration = true;
-                verifyRegistrationSuccess();
-
-
-            }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-
-                String causes;
-
-                if (t.getCause() != null) {
-                    causes = t.getCause().toString();
-                    Log.d("myLogsRegisterError", "error cause " + causes);
+                if (!TextUtils.isEmpty(lastNameET.getText())) {
+                    lastName = lastNameET.getText().toString();
+                    userDetailsMap.put("last_name", lastName);
                 }
 
-                Log.d("myLogsRegisterError", "error message " + t.getMessage());
+                if (!TextUtils.isEmpty(firstNameET.getText())) {
+                    firstName = firstNameET.getText().toString();
+                    userDetailsMap.put("first_name", firstName);
+                }
 
-                t.printStackTrace();
+                email = emailET.getText().toString();
+                password = passwordET.getText().toString();
+                isStaySignedIn = stayLoggedInCheckBox.isChecked();
+                canSignIn = true;
+                userDetailsMap.put("email", email);
+                userDetailsMap.put("password", password);
+            } else {
 
+
+                mAlertDialogHelper.createTermsAndConditionsDialog();
 
             }
-        });
+
+
+        } else {
+
+            mAlertDialogHelper.createEmailMissingDialog();
+
+
+        }
 
 
     }
-
 
 
     /*************************************************************************************************************************************************/
 
 
-    void verifyRegistrationSuccess(){
+    class alertDialogHelper {
 
 
-        checkRegistrationSuccess = myWebClient.verifyRegistrationSuccess(registrationCheckParameters);
+        void createEmailMissingDialog() {
 
-      checkRegistrationSuccess.clone().enqueue(new Callback<ArrayList<UserResponse>>() {
-          @Override
-          public void onResponse(Call<ArrayList<UserResponse>> call, Response<ArrayList<UserResponse>> response) {
+            new TTFancyGifDialog.Builder(SignUp.this)
+                    .setTitle("SORRY!")
+                    .setMessage("Email and Password are required fields!")
+                    .setPositiveBtnText("OK")
+                    .setPositiveBtnBackground("#22b573")
+                    .setGifResource(R.drawable.angry_missing_details)      //pass your gif, png or jpg
+                    .isCancellable(true)
+                    .OnPositiveClicked(new TTFancyGifDialogListener() {
+                        @Override
+                        public void OnClick() {
 
-              Log.d("myLogsRegisterVerify", "response received");
-              if (response.body() != null) {
-                  Log.d("myLogsRegisterVerify", response.body().get(0).getSocialAccount());
-              }
-
-              //todo cache user object to auto log in next time
-
-
-          }
-
-          @Override
-          public void onFailure(Call<ArrayList<UserResponse>> call, Throwable t) {
+                        }
+                    })
+                    .build();
 
 
-              String causes;
-
-              if (t.getCause() != null) {
-                  causes = t.getCause().toString();
-                  Log.d("myLogsRegVerError", "error cause " + causes);
-              }
-
-              Log.d("myLogsRegVerError", "error message " + t.getMessage());
-
-              t.printStackTrace();
+        }
 
 
-          }
-      });
+        void createTermsAndConditionsDialog() {
 
+            new TTFancyGifDialog.Builder(SignUp.this)
+                    .setTitle("SORRY!")
+                    .setMessage("You must agree to the terms and conditions!")
+                    .setPositiveBtnText("OK")
+                    .setPositiveBtnBackground("#22b573")
+                    .setGifResource(R.drawable.cat_reading_documents)      //pass your gif, png or jpg
+                    .isCancellable(true)
+                    .OnPositiveClicked(new TTFancyGifDialogListener() {
+                        @Override
+                        public void OnClick() {
+
+                        }
+                    })
+                    .build();
+
+        }
+
+
+        void createSignUpSuccessDialog() {
+
+            new TTFancyGifDialog.Builder(SignUp.this)
+                    .setTitle("SUCCESS")
+                    .setMessage("You have successfully signed up!")
+                    .setPositiveBtnText("Log in")
+                    .setPositiveBtnBackground("#22b573")
+                    .setNegativeBtnText("Go home")
+                    .setNegativeBtnBackground("#c1272d")
+                    .setGifResource(R.drawable.success_option_one)      //pass your gif, png or jpg
+                    .isCancellable(false)
+                    .OnPositiveClicked(new TTFancyGifDialogListener() {
+                        @Override
+                        public void OnClick() {
+
+                            submitDetailsButton.setEnabled(false);
+                            logUserInBackendless();
+
+                        }
+                    })
+                    .OnNegativeClicked(new TTFancyGifDialogListener() {
+                        @Override
+                        public void OnClick() {
+
+                            //sendUserActionEvent() mView == null
+
+                            Intent intentEndMainActivity = new Intent("finish_activity");
+                            sendBroadcast(intentEndMainActivity);
+                            Intent intentEndLogInActivity = new Intent("finish_activity");
+                            sendBroadcast(intentEndLogInActivity);
+
+                            Intent startMainActivity = new Intent( SignUp.this, MainActivity.class);
+                            startActivity(startMainActivity);
+
+                            finish();
+
+                        }
+                    })
+                    .build();
+
+
+        }
+
+
+        void createLogInSuccessDialog() {
+
+            new TTFancyGifDialog.Builder(SignUp.this)
+                    .setTitle("SUCCESS")
+                    .setMessage("You have successfully logged in")
+                    .setPositiveBtnText("OK")
+                    .setPositiveBtnBackground("#22b573")
+                    .setGifResource(R.drawable.thumbs_up_success)      //pass your gif, png or jpg
+                    .isCancellable(false)
+                    .OnPositiveClicked(new TTFancyGifDialogListener() {
+                        @Override
+                        public void OnClick() {
+
+                           //end main activity
+                            Intent intentEndMainActivity = new Intent("finish_activity");
+                            sendBroadcast(intentEndMainActivity);
+                            //end log in activity
+                            Intent intentEndLogInActivity = new Intent("finish_activity");
+                            sendBroadcast(intentEndLogInActivity);
+
+                            //restart main activity
+                            Intent startMainActivity = new Intent( SignUp.this, MainActivity.class);
+                            startActivity(startMainActivity);
+
+                           //end this activity
+                            finish();
+
+                        }
+                    })
+                    .build();
+
+
+        }
+    }
+
+        /*************************************************************************************************************************************************/
+
+
+        void logUserInBackendless() {
+
+            Backendless.UserService.login(email, password, new AsyncCallback<BackendlessUser>() {
+                @Override
+                public void handleResponse(BackendlessUser response) {
+
+                    cacheUserInstance(response);
+                    submitDetailsButton.setEnabled(true);
+                    mAlertDialogHelper.createLogInSuccessDialog();
+
+
+
+                }
+
+                @Override
+                public void handleFault(BackendlessFault fault) {
+
+                }
+            },isStaySignedIn);
+
+
+        }
+
+
+        /*************************************************************************************************************************************************/
+
+
+
+        void cacheUserInstance(BackendlessUser user){
+
+           if (isStaySignedIn){
+
+               //todo cache an instance of the user object
+               new EasySave(SignUp.this).saveModelAsync("current_saved_user", user, new SaveAsyncCallback<BackendlessUser>() {
+                   @Override
+                   public void onComplete(BackendlessUser backendlessUser) {
+
+                       if (backendlessUser != null) {
+                           Log.d("myLogsUserCacheSxSU", backendlessUser.toString());
+                       }
+                   }
+
+                   @Override
+                   public void onError(String s) {
+
+                       Log.d("myLogsUserCacheFailSU", s);
+
+
+                   }
+               });
+
+
+
+           }
+
+
+
+
+       }
+
+
+
+
+        /*************************************************************************************************************************************************/
+
+
+        void userSignUpBackendless() {
+
+            BackendlessUser newBackendlessUser = new BackendlessUser();
+            newBackendlessUser.putProperties(userDetailsMap);
+
+
+            Backendless.UserService.register(newBackendlessUser, new AsyncCallback<BackendlessUser>() {
+                @Override
+                public void handleResponse(BackendlessUser response) {
+
+                    Log.d("myLogsBkReg", response.getProperties().toString());
+                    mAlertDialogHelper.createSignUpSuccessDialog();
+
+
+                }
+
+                @Override
+                public void handleFault(BackendlessFault fault) {
+
+                    Log.d("myLogsBkReg", fault.toString());
+
+
+                }
+            });
+
+
+        }
+
+
+        /*************************************************************************************************************************************************/
 
 
     }
 
 
 
-    void userSignUpBackendless(){
-
-        BackendlessUser newBackendlessUser = new BackendlessUser();
-        newBackendlessUser.putProperties(userDetailsMap);
 
 
-        Backendless.UserService.register(newBackendlessUser, new AsyncCallback<BackendlessUser>() {
+
+/*  void createAlertDialogs() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(SignUp.this);
+        builder.setCancelable(true);
+        builder.setTitle(R.string.error);
+        builder.setMessage(R.string.email_is_required);
+        builder.setIcon(R.drawable.cancel_red_filled);
+        builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
             @Override
-            public void handleResponse(BackendlessUser response) {
-
-                Log.d("myLogsBkReg", response.getProperties().toString());
-
-
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-
-                Log.d("myLogsBkReg", fault.toString());
-
-
-
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
             }
         });
 
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
 
 
-
-    }
-
-
-
-
-}
-
-//todo make sure the edit text os not null before you pick up the text
+    }*/

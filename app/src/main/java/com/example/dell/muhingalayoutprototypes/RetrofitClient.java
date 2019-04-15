@@ -33,30 +33,40 @@ public interface RetrofitClient {
     @GET("album")
     Call<ArrayList<SongResponse>> getAlbumWithSongs(@QueryMap(encoded = true) Map<String, String> userFilters_Album_with_Songs);
 
+
+
+
+}
+
+
+
+
+
+
+/*
+
+
     @Headers("Content-Type:application/json")
     @POST("Users")
     Call<User> createUser(@Body User newUser);
 
-    @GET("Users")
-    Call<ArrayList<UserResponse>> verifyRegistrationSuccess(@QueryMap(encoded = true) Map<String, String> newUser);
 
-   /* @Headers("Content-Type:application/json")
-    @POST("Users/login")
-    Call<JsonElement> loginUser (@Body UserLogin newUserLogin);
-
-*/
-
-    @Headers({
+     @Headers({
             "Accept:application/json",
             "Content-Type:application/json"
     })
     @POST("users/login")
     Call<UserLoginResponse> loginUser(@Body UserLogin newUserLogin);
 
+      @GET("Users")
+    Call<ArrayList<UserResponse>> verifyRegistrationSuccess(@QueryMap(encoded = true) Map<String, String> newUser);
+
+     @Headers("Content-Type:application/json")
+    @POST("Users/login")
+    Call<JsonElement> loginUser (@Body UserLogin newUserLogin);
+
+*/
 
 
 
 
-
-
-}

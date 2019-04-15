@@ -23,10 +23,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:src="@drawable/user_profile_icon_white_filled" />
+       <de.hdodenhof.circleimageview.CircleImageView
+           android:id="@+id/home_profile_picture"
+           android:layout_width="25dp"
+           android:layout_height="25dp"
+           android:src="@drawable/user_profile_icon_white_filled"
+           />
 
         <TextView
             android:layout_width="wrap_content"
