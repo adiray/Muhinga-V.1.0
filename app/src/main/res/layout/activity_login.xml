@@ -83,6 +83,7 @@
             app:mtf_labelColor="#666">
 
             <EditText
+                android:inputType="textPassword"
                 android:id="@+id/sign_in_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

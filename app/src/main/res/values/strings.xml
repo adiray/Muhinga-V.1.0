@@ -80,6 +80,7 @@
     <string name="don_t_have_an_account">Don\'t have an account?</string>
     <string name="sign_in">SIGN IN</string>
     <string name="stay_signed_in">Stay signed in</string>
+    <string name="log_out">Log out</string>
 
 
 </resources>

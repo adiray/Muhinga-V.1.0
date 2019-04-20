@@ -21,6 +21,8 @@ import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.local.UserTokenStorageFactory;
 import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialog;
 import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialogListener;
@@ -31,6 +33,10 @@ import com.bumptech.glide.request.RequestOptions;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 
+import org.apache.commons.io.FileUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import br.vince.easysave.EasySave;
@@ -38,6 +44,7 @@ import br.vince.easysave.LoadAsyncCallback;
 
 public class MainActivity extends AppCompatActivity {
 
+    //Declare views
     ImageView housesButton, landButton, venuesButton, musicButton, profilePictureButton;
 
     //TOOLBAR VIEWS
@@ -45,6 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
     //Utilities
     BroadcastReceiver broadcastReceiverLogin;
+
+    //others
+    Boolean isLoggedIn = false; //value of the 'logged_in' user property. it's pulled from the server
+    BackendlessUser globalCurrentUser = new BackendlessUser(); //the currently logged in user
 
 
     @Override
@@ -55,17 +66,16 @@ public class MainActivity extends AppCompatActivity {
         //initialize the views
         initializeViews();
 
+
         //initialize backendless
         initializeBackendless();
+
 
         //automatically log the user in
         automaticallyLogUserIn();
 
 
-
-
         //todo you stopped here
-
 
 
     }
@@ -124,8 +134,16 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case (R.id.home_app_bar_settings_button):
 
+                break;
+
             case (R.id.home_sign_up_button):
-               createSignupOrLoginDialog();
+                createSignupOrLoginDialog();
+
+                break;
+
+            case (R.id.home_app_bar_log_out_button):
+
+                if(isLoggedIn){createLogoutConfirmationDialog();}
 
                 break;
             default:
@@ -226,12 +244,18 @@ public class MainActivity extends AppCompatActivity {
 
     void automaticallyLogUserIn() {
 
+
         String userToken = UserTokenStorageFactory.instance().getStorage().get();
 
+        //todo find a way of retreiving the user object
+
+
         if (userToken != null && !userToken.equals("")) {
+
             // user login is available, skip the login activity/login form
             Log.d("myLogsUserLogMATkn", userToken);
             retrieveCachedUser();
+
         }
 
 
@@ -251,7 +275,6 @@ public class MainActivity extends AppCompatActivity {
     void retrieveCachedUser() {
 
 
-
         new EasySave(MainActivity.this).retrieveModelAsync("current_saved_user", BackendlessUser.class, new LoadAsyncCallback<BackendlessUser>() {
             @Override
             public void onComplete(BackendlessUser backendlessUser) {
@@ -260,27 +283,65 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.d("myLogsUserCacheRetSx", backendlessUser.toString());
 
-                    String profilePicture = (String) backendlessUser.getProperty("profile_picture");
-                    if (profilePicture != null) {
+                    final BackendlessUser innerClassUser = backendlessUser;
+                    globalCurrentUser = backendlessUser;
 
 
-                        RequestOptions options = new RequestOptions()
-                                .centerCrop()
-                                .placeholder(R.drawable.user_profile_icon_white_filled)
-                                .error(R.drawable.user_profile_icon_white_filled)
-                                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                .priority(Priority.HIGH)
-                                .dontAnimate()
-                                .dontTransform();
+                    //retrieving user properties using the user Id and then determining if the user has logged in
+                    BackendlessUser currentUser = new BackendlessUser();
+                    Map<String, Object> userDetailsMap = new HashMap<>();
+                    Backendless.Data.of(BackendlessUser.class).findById(backendlessUser.getObjectId(), new AsyncCallback<BackendlessUser>() {
+                        @Override
+                        public void handleResponse(BackendlessUser response) {
 
-                        Glide.with(MainActivity.this).load(profilePicture).apply(options).into(profilePictureButton);
-                        Log.d("myLogsUserCacheRetSx", profilePicture);
 
-                    }
+                            isLoggedIn = (Boolean) response.getProperty("logged_in");
+                            if (isLoggedIn != null) {
+                                Log.d("myLogsUsrCcheRetSxLgdIn", isLoggedIn.toString());
+
+                                if (isLoggedIn) {
+                                    String profilePicture = (String) response.getProperty("profile_picture");
+                                    if (profilePicture != null) {
+
+                                        RequestOptions options = new RequestOptions()
+                                                .centerCrop()
+                                                .placeholder(R.drawable.user_profile_icon_white_filled)
+                                                .error(R.drawable.user_profile_icon_white_filled)
+                                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                                .priority(Priority.HIGH)
+                                                .dontAnimate()
+                                                .dontTransform();
+
+                                        Glide.with(MainActivity.this).load(profilePicture).apply(options).into(profilePictureButton);
+                                        Log.d("myLogsUserCacheRetSx", profilePicture);
+                                    }
+
+
+                                }
+
+                            }
+
+
+
+
+
+
+                        }
+
+                        @Override
+                        public void handleFault(BackendlessFault fault) {
+
+                            Log.d("myLogsUserCacheRetSx", "user retrieval failed : error: " + fault.toString());
+
+
+                        }
+                    });
 
 
 
                 }
+
+
             }
 
             @Override
@@ -297,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
 
     /*************************************************************************************************************************************************/
 
-    void createSignupOrLoginDialog(){
+    void createSignupOrLoginDialog() {
 
         new TTFancyGifDialog.Builder(MainActivity.this)
                 .setTitle("Confirm")
@@ -334,11 +395,117 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
 
+    }
 
+
+    /*************************************************************************************************************************************************/
+
+    void createLogoutConfirmationDialog() {
+
+        new TTFancyGifDialog.Builder(MainActivity.this)
+                .setTitle("Confirm")
+                .setMessage("Are you sure you want to log out?")
+                .setPositiveBtnText("LOG OUT")
+                .setPositiveBtnBackground("#22b573")
+                .setNegativeBtnText("CANCEL")
+                .setNegativeBtnBackground("#FF3D00")
+                .setGifResource(R.drawable.sign_in_opt_one)      //pass your gif, png or jpg
+                .isCancellable(true)
+                .OnPositiveClicked(new TTFancyGifDialogListener() {
+                    @Override
+                    public void OnClick() {
+
+                        logUserOutBackendless();
+
+                    }
+                })
+                .OnNegativeClicked(new TTFancyGifDialogListener() {
+                    @Override
+                    public void OnClick() {
+
+                    }
+                })
+                .build();
 
 
     }
 
+
+    /*************************************************************************************************************************************************/
+
+    void logUserOutBackendless() {
+
+        BackendlessUser localUser = new BackendlessUser();
+        localUser = globalCurrentUser;
+        localUser.setProperty("logged_in", false);
+        final BackendlessUser finalLocalUser = globalCurrentUser;
+
+
+        Backendless.UserService.update(localUser, new AsyncCallback<BackendlessUser>() {
+            @Override
+            public void handleResponse(BackendlessUser response) {
+
+
+                Backendless.UserService.logout(new AsyncCallback<Void>() {
+                    @Override
+                    public void handleResponse(Void response) {
+
+                        //todo this is wea you stopped
+
+                        Toast.makeText(MainActivity.this, "You have successfully logged out", Toast.LENGTH_LONG).show();
+                        UserTokenStorageFactory.instance().getStorage().set(null);
+                        Log.d("myLogsLogOutSuccess", "logged user out after update to logged in value: RESPONSE: ");
+
+                        // Delete local cache dir (ignoring any errors):
+                        FileUtils.deleteQuietly(getApplicationContext().getCacheDir());
+
+                        recreate();
+
+
+                    }
+
+                    @Override
+                    public void handleFault(BackendlessFault fault) {
+
+                        finalLocalUser.setProperty("logged_in", true);
+                        Backendless.UserService.update(finalLocalUser, new AsyncCallback<BackendlessUser>() {
+                            @Override
+                            public void handleResponse(BackendlessUser response) {
+
+                                Log.d("myLogsLogOutFail", "failed to log user out after status update: REVERT USER : " + response.toString());
+
+
+                            }
+
+                            @Override
+                            public void handleFault(BackendlessFault fault) {
+
+                                Log.d("myLogsLogOutFail", "failed to revert logged in to true after user log out failed: ERROR : " + fault.toString());
+
+
+                            }
+                        });
+
+                        Toast.makeText(MainActivity.this, "There has been an error. Please retry later", Toast.LENGTH_LONG).show();
+
+
+                    }
+                });
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsLogOutFail", "failed to update the logged in value: ERROR : " + fault.toString());
+
+
+            }
+        });
+
+
+    }
 
 
 }
@@ -375,4 +542,60 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-            }*/
+            }
+
+
+
+
+                     Backendless.Data.of("Users").findById(backendlessUser.getObjectId(), new AsyncCallback<Map>() {
+                        @Override
+                        public void handleResponse(Map response) {
+
+                            isLoggedIn = (Boolean) response.get("logged_in");
+                            if (isLoggedIn != null) {
+                                Log.d("myLogsUsrCcheRetSxLgdIn", isLoggedIn.toString());
+
+                                if (isLoggedIn) {
+                                    String profilePicture = (String) innerClassUser.getProperty("profile_picture");
+                                    if (profilePicture != null) {
+
+                                        RequestOptions options = new RequestOptions()
+                                                .centerCrop()
+                                                .placeholder(R.drawable.user_profile_icon_white_filled)
+                                                .error(R.drawable.user_profile_icon_white_filled)
+                                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                                .priority(Priority.HIGH)
+                                                .dontAnimate()
+                                                .dontTransform();
+
+                                        Glide.with(MainActivity.this).load(profilePicture).apply(options).into(profilePictureButton);
+                                        Log.d("myLogsUserCacheRetSx", profilePicture);
+                                    }
+
+
+                                }
+
+                            }
+
+
+                        }
+
+                        @Override
+                        public void handleFault(BackendlessFault fault) {
+
+                            Log.d("myLogsUserCacheRetSx", "user retrieval failed : error: " + fault.toString());
+
+
+                        }
+                    });
+
+
+
+
+
+
+
+
+
+
+            */

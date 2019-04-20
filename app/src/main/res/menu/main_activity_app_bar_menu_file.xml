@@ -19,6 +19,12 @@
         android:orderInCategory="100"
         />
 
+    <item
+        android:title="@string/log_out"
+        android:id="@+id/home_app_bar_log_out_button"
+        app:showAsAction="never"
+        android:orderInCategory="100"
+        />
 
 
 

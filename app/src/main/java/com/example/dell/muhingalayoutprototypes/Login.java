@@ -29,6 +29,8 @@ import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialogListener;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import org.apache.commons.io.FileUtils;
+
 import java.util.ArrayList;
 
 import br.vince.easysave.EasySave;
@@ -47,6 +49,7 @@ public class Login extends AppCompatActivity {
     String userSessionToken;
     Boolean isEmailGiven = false, isPasswordGiven = false, isTermsAgreed = false, isStaySignedIn = false, canSignIn = false;
     alertDialogHelper mAlertDialogHelper;
+    BackendlessUser classWideUser = new BackendlessUser();
 
     //broadcastReceiever
     BroadcastReceiver signUpActivityBR;
@@ -67,6 +70,7 @@ public class Login extends AppCompatActivity {
 
 
     }
+
     /*************************************************************************************************************************************************/
 
     @Override
@@ -100,7 +104,6 @@ public class Login extends AppCompatActivity {
                 createBroadcastReceiver();
                 Intent intent = new Intent(Login.this, SignUp.class);
                 startActivity(intent);
-
 
 
             }
@@ -157,10 +160,73 @@ public class Login extends AppCompatActivity {
 
     /*************************************************************************************************************************************************/
 
+    void updateLoggedInStatus(BackendlessUser user, Boolean isLoggedIn) {
+
+
+        if (isLoggedIn) {
+
+            user.setProperty("logged_in", true);
+            Backendless.UserService.update(user, new AsyncCallback<BackendlessUser>() {
+                @Override
+                public void handleResponse(BackendlessUser response) {
+
+                    Log.d("myLogsBackAuthStatus", "Status set to logged in");
+                    cacheUserInstance(response);
+
+                    alertDialogHelper mAlertDialog = new alertDialogHelper();
+                    mAlertDialog.createLogInSuccessDialog();
+
+                    detailsSubmitButton.setEnabled(true);
+
+
+                }
+
+                @Override
+                public void handleFault(BackendlessFault fault) {
+
+                    Log.d("myLogsBackAuthStatus", "There was an error : " + fault);
+
+
+                }
+            });
+        }else{
+
+            Backendless.UserService.logout(new AsyncCallback<Void>() {
+                @Override
+                public void handleResponse(Void response) {
+
+                    Toast.makeText(Login.this, "You have successfully logged out", Toast.LENGTH_LONG).show();
+
+
+                    // Delete local cache dir (ignoring any errors):
+                    FileUtils.deleteQuietly(getApplicationContext().getCacheDir());
+
+                }
+
+                @Override
+                public void handleFault(BackendlessFault fault) {
+
+                    Toast.makeText(Login.this, "There has been an error. Please retry later", Toast.LENGTH_LONG).show();
+
+
+                }
+            });
+
+
+
+
+        }
+
+
+    }
+
+
+    /*************************************************************************************************************************************************/
+
 
     void logUserInBackendless() {
 
-
+        detailsSubmitButton.setEnabled(false);
         Backendless.UserService.login(email, password, new AsyncCallback<BackendlessUser>() {
             @Override
             public void handleResponse(BackendlessUser response) {
@@ -169,23 +235,9 @@ public class Login extends AppCompatActivity {
                 String userToken = UserTokenStorageFactory.instance().getStorage().get();
                 Log.d("myLogsBackSxProps", userProperties);
                 Log.d("myLogsBackSxToken", userToken);
+                classWideUser = response;
 
-                Gson gson = new Gson();
-                String user = gson.toJson(response);
-
-                BackendlessUser mUser = gson.fromJson(user, BackendlessUser.class);
-                if (mUser != null) {
-                    Log.d("myLogsBackSxGson", mUser.toString());
-
-                }
-
-                cacheUserInstance(response);
-
-
-                //CACHE THE USER OBJECT
-
-                alertDialogHelper mAlertDialog = new alertDialogHelper();
-                mAlertDialog.createLogInSuccessDialog();
+                updateLoggedInStatus(response, true);
 
 
             }
@@ -210,28 +262,28 @@ public class Login extends AppCompatActivity {
 
     void cacheUserInstance(BackendlessUser user) {
 
+        if (isStaySignedIn) {
+            new EasySave(Login.this).saveModelAsync("current_saved_user", user, new SaveAsyncCallback<BackendlessUser>() {
+                @Override
+                public void onComplete(BackendlessUser backendlessUser) {
 
-        new EasySave(Login.this).saveModelAsync("current_saved_user", user, new SaveAsyncCallback<BackendlessUser>() {
-            @Override
-            public void onComplete(BackendlessUser backendlessUser) {
+                    if (backendlessUser != null) {
+                        //  Log.d("myLogsUserCacheSx", backendlessUser.getPassword());
+                        Log.d("myLogsUserCacheSxLI", backendlessUser.toString());
 
-                if (backendlessUser != null) {
-                    //  Log.d("myLogsUserCacheSx", backendlessUser.getPassword());
-                    Log.d("myLogsUserCacheSxLI", backendlessUser.toString());
+                    }
+                }
+
+                @Override
+                public void onError(String s) {
+
+                    Log.d("myLogsUserCacheFail", s);
+
 
                 }
-            }
+            });
 
-            @Override
-            public void onError(String s) {
-
-                Log.d("myLogsUserCacheFail", s);
-
-
-            }
-        });
-
-
+        }
     }
 
 
@@ -321,8 +373,7 @@ public class Login extends AppCompatActivity {
                     .OnNegativeClicked(new TTFancyGifDialogListener() {
                         @Override
                         public void OnClick() {
-
-                            logoutUserBackendless();
+                            logoutUserBackendless(classWideUser);
 
                         }
                     })
@@ -371,25 +422,9 @@ public class Login extends AppCompatActivity {
     /*************************************************************************************************************************************************/
 
 
-    void logoutUserBackendless() {
+    void logoutUserBackendless(BackendlessUser user) {
 
-        Backendless.UserService.logout(new AsyncCallback<Void>() {
-            @Override
-            public void handleResponse(Void response) {
-
-                Toast.makeText(Login.this, "You have successfully logged out", Toast.LENGTH_LONG).show();
-
-
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-
-                Toast.makeText(Login.this, "There has been an error. Please retry later", Toast.LENGTH_LONG).show();
-
-
-            }
-        });
+        updateLoggedInStatus(user, false);
 
 
     }
