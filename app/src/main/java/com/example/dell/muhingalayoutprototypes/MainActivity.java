@@ -13,9 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -30,8 +28,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-
-import net.cachapa.expandablelayout.ExpandableLayout;
+import com.google.gson.Gson;
 
 import org.apache.commons.io.FileUtils;
 
@@ -51,11 +48,16 @@ public class MainActivity extends AppCompatActivity {
     Toolbar homeMainToolBar;
 
     //Utilities
-    BroadcastReceiver broadcastReceiverLogin;
+    BroadcastReceiver broadcastReceiverFinishActivity;
 
     //others
     Boolean isLoggedIn = false; //value of the 'logged_in' user property. it's pulled from the server
+    Boolean pausedForProfileActivity = false; //used to determine if the user paused this activty to go to the profile activity
     BackendlessUser globalCurrentUser = new BackendlessUser(); //the currently logged in user
+
+    //extra keys
+    public static final String EXTRA_USER_ID_STRING = "com.example.muhinga.userIdString";
+    public static final String EXTRA_GLOBAL_USER = "com.example.muhinga.globalUser";
 
 
     @Override
@@ -87,30 +89,88 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        if (broadcastReceiverLogin != null) {
-            unregisterReceiver(broadcastReceiverLogin);
+        if (broadcastReceiverFinishActivity != null) {
+            unregisterReceiver(broadcastReceiverFinishActivity);
         }
 
     }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (pausedForProfileActivity) {
+
+            new EasySave(MainActivity.this).retrieveModelAsync("current_saved_user", BackendlessUser.class, new LoadAsyncCallback<BackendlessUser>() {
+                @Override
+                public void onComplete(BackendlessUser user) {
+
+                    if (user != null) {
+
+                        RequestOptions options = new RequestOptions()
+                                .centerCrop()
+                                .placeholder(R.drawable.user_profile_icon_white_filled)
+                                .error(R.drawable.user_profile_icon_white_filled)
+                                .skipMemoryCache(true)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .priority(Priority.HIGH)
+                                .dontAnimate()
+                                .dontTransform();
+
+                        Glide.with(MainActivity.this).load(user.getProperty("profile_picture")).apply(options).into(profilePictureButton);
+                    }
+
+                    pausedForProfileActivity =false;
+
+                }
+
+                @Override
+                public void onError(String s) {
+
+                    if (s != null) {
+                        Log.d("myLogsOnResume", "failed to reload new profile picture from cache. Error: " + s);
+                    }
+
+
+                }
+            });
+
+
+        }
+
+
+    }
+
+
+    /*************************************************************************************************************************************************/
+
 
     /*************************************************************************************************************************************************/
 
     void createBroadcastReceiver() {
 
 
-        broadcastReceiverLogin = new BroadcastReceiver() {
+        broadcastReceiverFinishActivity = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
 
                 String action = intent.getAction();
-                if (action != null && action.equals("finish_activity")) {
-                    finish();
+                if (action != null) {
+
+                    if (action.equals("finish_activity")) {
+                        finish();
+                    } else if (action.equals("recreate_activity")) {
+                        recreate();
+                    }
+
+
                 }
 
             }
         };
 
-        registerReceiver(broadcastReceiverLogin, new IntentFilter("finish_activity"));
+        registerReceiver(broadcastReceiverFinishActivity, new IntentFilter("finish_activity"));
 
 
     }
@@ -143,7 +203,9 @@ public class MainActivity extends AppCompatActivity {
 
             case (R.id.home_app_bar_log_out_button):
 
-                if(isLoggedIn){createLogoutConfirmationDialog();}
+                if (isLoggedIn) {
+                    createLogoutConfirmationDialog();
+                }
 
                 break;
             default:
@@ -155,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
     /*************************************************************************************************************************************************/
 
+    //todo reconfigure glide behaviour when an image is too large glide fails to load
 
     void initializeViews() {
 
@@ -200,10 +263,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                profilePictureButtonClicked();
             }
         });
     }
 
+
+    void profilePictureButtonClicked() {
+
+        if (isLoggedIn) {
+
+            pausedForProfileActivity = true;
+            Intent intent = new Intent(MainActivity.this, Profile.class);
+            Gson gson = new Gson();
+            intent.putExtra(EXTRA_GLOBAL_USER, gson.toJson(globalCurrentUser));
+            MainActivity.this.startActivity(intent);
+        } else {
+            createSignupOrLoginDialog();
+        }
+
+    }
 
     void housesButtonClicked() {
 
@@ -283,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.d("myLogsUserCacheRetSx", backendlessUser.toString());
 
-                    final BackendlessUser innerClassUser = backendlessUser;
+                    //this is an instance of the retrieved user. i use it when i need i user object to retrieve user information or update user information
                     globalCurrentUser = backendlessUser;
 
 
@@ -307,7 +386,8 @@ public class MainActivity extends AppCompatActivity {
                                                 .centerCrop()
                                                 .placeholder(R.drawable.user_profile_icon_white_filled)
                                                 .error(R.drawable.user_profile_icon_white_filled)
-                                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                                .skipMemoryCache(true)
+                                                .diskCacheStrategy(DiskCacheStrategy.NONE)
                                                 .priority(Priority.HIGH)
                                                 .dontAnimate()
                                                 .dontTransform();
@@ -322,10 +402,6 @@ public class MainActivity extends AppCompatActivity {
                             }
 
 
-
-
-
-
                         }
 
                         @Override
@@ -336,7 +412,6 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                     });
-
 
 
                 }

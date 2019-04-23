@@ -10,7 +10,6 @@
     <string name="you_must_agree_to_t_and_c">You must agree to the terms and conditions</string>
 
 
-
     <string name="my_app_name">Muhinga</string>
     <string name="history">History</string>
     <string name="saved">Saved</string>
@@ -80,7 +79,10 @@
     <string name="don_t_have_an_account">Don\'t have an account?</string>
     <string name="sign_in">SIGN IN</string>
     <string name="stay_signed_in">Stay signed in</string>
-    <string name="log_out">Log out</string>
+    <string name="log_out">LOG OUT</string>
+    <string name="username">User Name</string>
+    <string name="name">Full Name</string>
+    <string name="delete_account">Delete Account</string>
 
 
 </resources>

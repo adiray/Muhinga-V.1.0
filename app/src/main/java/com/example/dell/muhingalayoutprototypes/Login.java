@@ -47,11 +47,11 @@ public class Login extends AppCompatActivity {
     //miscellaneous objects
     String email, password;
     String userSessionToken;
-    Boolean isEmailGiven = false, isPasswordGiven = false, isTermsAgreed = false, isStaySignedIn = false, canSignIn = false;
+    Boolean isEmailGiven = false, isPasswordGiven = false, isTermsAgreed = false, isStaySignedIn = false, canSignIn = false ;
     alertDialogHelper mAlertDialogHelper;
     BackendlessUser classWideUser = new BackendlessUser();
 
-    //broadcastReceiever
+    //broadcastReceiver
     BroadcastReceiver signUpActivityBR;
 
     //view objects
@@ -138,7 +138,6 @@ public class Login extends AppCompatActivity {
                 canSignIn = true;
 
             } else {
-
                 //display an alert dialog to prompt the user to input the required details
                 mAlertDialogHelper = new alertDialogHelper(Login.this, true, false);
                 mAlertDialogHelper.createFormAlertDialog();

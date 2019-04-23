@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
@@ -20,6 +21,8 @@ import com.backendless.exceptions.BackendlessFault;
 import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialog;
 import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialogListener;
 import com.github.florent37.materialtextfield.MaterialTextField;
+
+import org.apache.commons.io.FileUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -227,7 +230,7 @@ public class SignUp extends AppCompatActivity {
                             Intent intentEndLogInActivity = new Intent("finish_activity");
                             sendBroadcast(intentEndLogInActivity);
 
-                            Intent startMainActivity = new Intent( SignUp.this, MainActivity.class);
+                            Intent startMainActivity = new Intent(SignUp.this, MainActivity.class);
                             startActivity(startMainActivity);
 
                             finish();
@@ -253,7 +256,7 @@ public class SignUp extends AppCompatActivity {
                         @Override
                         public void OnClick() {
 
-                           //end main activity
+                            //end main activity
                             Intent intentEndMainActivity = new Intent("finish_activity");
                             sendBroadcast(intentEndMainActivity);
                             //end log in activity
@@ -261,10 +264,10 @@ public class SignUp extends AppCompatActivity {
                             sendBroadcast(intentEndLogInActivity);
 
                             //restart main activity
-                            Intent startMainActivity = new Intent( SignUp.this, MainActivity.class);
+                            Intent startMainActivity = new Intent(SignUp.this, MainActivity.class);
                             startActivity(startMainActivity);
 
-                           //end this activity
+                            //end this activity
                             finish();
 
                         }
@@ -275,95 +278,52 @@ public class SignUp extends AppCompatActivity {
         }
     }
 
-        /*************************************************************************************************************************************************/
+    /*************************************************************************************************************************************************/
 
 
-        void logUserInBackendless() {
+    void logUserInBackendless() {
 
-            Backendless.UserService.login(email, password, new AsyncCallback<BackendlessUser>() {
+        Backendless.UserService.login(email, password, new AsyncCallback<BackendlessUser>() {
+            @Override
+            public void handleResponse(BackendlessUser response) {
+
+
+                updateLoggedInStatus(response);
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+            }
+        }, isStaySignedIn);
+
+
+    }
+
+
+    /*************************************************************************************************************************************************/
+
+
+    void cacheUserInstance(BackendlessUser user) {
+
+        if (isStaySignedIn) {
+
+            //todo cache an instance of the user object
+            new EasySave(SignUp.this).saveModelAsync("current_saved_user", user, new SaveAsyncCallback<BackendlessUser>() {
                 @Override
-                public void handleResponse(BackendlessUser response) {
+                public void onComplete(BackendlessUser backendlessUser) {
 
-                    cacheUserInstance(response);
-                    submitDetailsButton.setEnabled(true);
-                    mAlertDialogHelper.createLogInSuccessDialog();
-
-
-
+                    if (backendlessUser != null) {
+                        Log.d("myLogsUserCacheSxSU", backendlessUser.toString());
+                    }
                 }
 
                 @Override
-                public void handleFault(BackendlessFault fault) {
+                public void onError(String s) {
 
-                }
-            },isStaySignedIn);
-
-
-        }
-
-
-        /*************************************************************************************************************************************************/
-
-
-
-        void cacheUserInstance(BackendlessUser user){
-
-           if (isStaySignedIn){
-
-               //todo cache an instance of the user object
-               new EasySave(SignUp.this).saveModelAsync("current_saved_user", user, new SaveAsyncCallback<BackendlessUser>() {
-                   @Override
-                   public void onComplete(BackendlessUser backendlessUser) {
-
-                       if (backendlessUser != null) {
-                           Log.d("myLogsUserCacheSxSU", backendlessUser.toString());
-                       }
-                   }
-
-                   @Override
-                   public void onError(String s) {
-
-                       Log.d("myLogsUserCacheFailSU", s);
-
-
-                   }
-               });
-
-
-
-           }
-
-
-
-
-       }
-
-
-
-
-        /*************************************************************************************************************************************************/
-
-
-        void userSignUpBackendless() {
-
-            BackendlessUser newBackendlessUser = new BackendlessUser();
-            newBackendlessUser.putProperties(userDetailsMap);
-
-
-            Backendless.UserService.register(newBackendlessUser, new AsyncCallback<BackendlessUser>() {
-                @Override
-                public void handleResponse(BackendlessUser response) {
-
-                    Log.d("myLogsBkReg", response.getProperties().toString());
-                    mAlertDialogHelper.createSignUpSuccessDialog();
-
-
-                }
-
-                @Override
-                public void handleFault(BackendlessFault fault) {
-
-                    Log.d("myLogsBkReg", fault.toString());
+                    Log.d("myLogsUserCacheFailSU", s);
 
 
                 }
@@ -373,10 +333,80 @@ public class SignUp extends AppCompatActivity {
         }
 
 
-        /*************************************************************************************************************************************************/
+    }
+
+
+    /*************************************************************************************************************************************************/
+
+
+    void userSignUpBackendless() {
+
+        BackendlessUser newBackendlessUser = new BackendlessUser();
+        newBackendlessUser.putProperties(userDetailsMap);
+
+
+        Backendless.UserService.register(newBackendlessUser, new AsyncCallback<BackendlessUser>() {
+            @Override
+            public void handleResponse(BackendlessUser response) {
+
+                Log.d("myLogsBkReg", response.getProperties().toString());
+                mAlertDialogHelper.createSignUpSuccessDialog();
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsBkReg", fault.toString());
+
+
+            }
+        });
 
 
     }
+
+
+    /*************************************************************************************************************************************************/
+
+
+    /*************************************************************************************************************************************************/
+
+    void updateLoggedInStatus(BackendlessUser user) {
+
+
+        user.setProperty("logged_in", true);
+        Backendless.UserService.update(user, new AsyncCallback<BackendlessUser>() {
+            @Override
+            public void handleResponse(BackendlessUser response) {
+
+                Log.d("myLogsBackAuthStatus", "Status set to logged in");
+                cacheUserInstance(response);
+
+                mAlertDialogHelper.createLogInSuccessDialog();
+                submitDetailsButton.setEnabled(true);
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsBackAuthStatus", "There was an error : " + fault);
+
+
+            }
+        });
+
+
+    }
+
+
+    /*************************************************************************************************************************************************/
+
+
+}
 
 
 
