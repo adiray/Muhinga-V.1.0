@@ -15,10 +15,15 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.backendless.Backendless;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
+import com.backendless.persistence.DataQueryBuilder;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.FooterAdapter;
@@ -30,6 +35,7 @@ import net.cachapa.expandablelayout.ExpandableLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -68,7 +74,7 @@ public class Houses extends AppCompatActivity {
 
     //declare recycler view objects
     RecyclerView housesMainRecView;
-    ArrayList<HousesResponse> allHousesResponseArray, filteredHousesResponseArray;   //holds all the houses objects that have been returned since the user last refreshed
+    ArrayList<real_estate> allHousesResponseArray, filteredHousesResponseArray;   //holds all the houses objects that have been returned since the user last refreshed
 
     //declare the retrofit objects. All these are used with retrofit
     Retrofit.Builder builder;
@@ -81,12 +87,12 @@ public class Houses extends AppCompatActivity {
     Map<String, String> locationsMap = new HashMap<>(); //holds the query for the locations
 
 
-    Integer tableOffset = 0, filteredTableOffset = 0;   //this increases the offset from the top of the table when items are being retrieved from backendless
+    Integer tableOffset = 0, filteredTableOffset = 0, testFilteredTableOffset = 0;   //this increases the offset from the top of the table when items are being retrieved from backendless
     String tableOffsetString = tableOffset.toString(), filteredTableOffsetString = filteredTableOffset.toString();
 
 
     //create our FastAdapter which will manage everything
-    FastItemAdapter<HousesResponse> housesFastAdapter;
+    FastItemAdapter<real_estate> housesFastAdapter;
     FooterAdapter<ProgressItem> footerAdapter = new FooterAdapter<>();
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
@@ -121,10 +127,6 @@ public class Houses extends AppCompatActivity {
         setSupportActionBar(mainToolBar);
 
 
-
-
-
-
         //build out the main recycler view
         housesMainRecView = findViewById(R.id.houses_activity_rec_view);
         housesMainRecView.setHasFixedSize(true);
@@ -133,6 +135,8 @@ public class Houses extends AppCompatActivity {
 
         //initialize our FastAdapter which will manage everything
         housesFastAdapter = new FastItemAdapter<>();
+        allHousesResponseArray = new ArrayList<>();
+        filteredHousesResponseArray = new ArrayList<>();
 
 
         //initialize the endless scroll listener
@@ -146,7 +150,7 @@ public class Houses extends AppCompatActivity {
 
                 //a statement to check if the user is loading more items that have been filtered or just loading more of all items unfiltered
                 if (filteredState) {
-                    loadMoreFilteredHouses();
+                    loadMoreFilteredHousesBackendless();
                 } else {
                     loadMoreHouses();
                 }
@@ -162,7 +166,7 @@ public class Houses extends AppCompatActivity {
 
                 //a statement to check if the user is refreshing items that have been filtered or just refreshing all items unfiltered
                 if (filteredState) {
-                    refreshFilteredHouses();
+                    refreshFilteredHousesBackendless();
                 } else {
                     refreshHouses();
                 }
@@ -184,9 +188,9 @@ public class Houses extends AppCompatActivity {
 
         buildRetrofitClient();  //build the retrofit client
 
-        requestHouses();    //make the initial / first  houses request
+        requestHousesBackendless();    //make the initial / first  houses request
 
-        populateLocations(); //add the locations to the locations spinner
+        populateLocationsBackendless(); //add the locations to the locations spinner
 
 
         //add the onclick listener for the filter button
@@ -194,9 +198,14 @@ public class Houses extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                getFilters();
+              /*  getFilters();
                 requestFilteredHouses();
+                filteredState = true;*/
+
+                getFiltersBackendless();
+                requestFilteredHousesBackendless();
                 filteredState = true;
+
 
             }
         });
@@ -204,9 +213,9 @@ public class Houses extends AppCompatActivity {
 
         //add an on click to the fast adapter objects
         housesFastAdapter.withSelectable(true);
-        housesFastAdapter.withOnClickListener(new FastAdapter.OnClickListener<HousesResponse>() {
+        housesFastAdapter.withOnClickListener(new FastAdapter.OnClickListener<real_estate>() {
             @Override
-            public boolean onClick(View v, IAdapter<HousesResponse> adapter, HousesResponse item, int position) {
+            public boolean onClick(View v, IAdapter<real_estate> adapter, real_estate item, int position) {
 
 
                 // Handle click here
@@ -217,18 +226,18 @@ public class Houses extends AppCompatActivity {
 
 
                 //add the image references to the image reference array
-                housesItemImageReferences.add(item.getMianImageReference());
-                housesItemImageReferences.add(item.getImg2());
-                housesItemImageReferences.add(item.getImg3());
-                housesItemImageReferences.add(item.getImg4());
-                housesItemImageReferences.add(item.getImg5());
+                housesItemImageReferences.add(item.getMian_image_reference());
+                housesItemImageReferences.add(item.getImg_2());
+                housesItemImageReferences.add(item.getImg_3());
+                housesItemImageReferences.add(item.getImg_4());
+                housesItemImageReferences.add(item.getImg_5());
 
                 //add the other details to the respective variables
                 location = item.getLocation();
                 title = item.getTitle();
                 price = item.getPrice();
                 description = item.getDescription();
-                if (item.isRent()) {
+                if (item.getRent()) {
 
                     rentSale = "For Rent";
                 } else {
@@ -250,40 +259,27 @@ public class Houses extends AppCompatActivity {
         });
 
 
-
-      /*  toggleExpandableLayout.setOnClickListener(new View.OnClickListener() {
+        forRentCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                if(housesExpandableLayout.isExpanded()){
-
-                    housesExpandableLayout.collapse();
-
-                }else {
-
-                    housesExpandableLayout.expand();
-
+                if (isChecked) {
+                    forSaleCheck.setChecked(false);
                 }
-
             }
         });
 
+        forSaleCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
+                if (isChecked) {
 
-          <TextView
-        android:id="@+id/toggle_filters_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:gravity="center_horizontal"
-        android:text="TOGGLE FILTERS"
-        android:textSize="15sp"
-        app:fontFamily="@font/montserrat_bold" />
+                    forRentCheck.setChecked(false);
 
-
-
-*/
+                }
+            }
+        });
 
 
     }
@@ -344,72 +340,80 @@ public class Houses extends AppCompatActivity {
 
     /*************************************************************************************************************************************************/
 
+    void requestHousesBackendless() {
 
-    void requestHouses() {
+        /*todo
 
-        //make the call
-        allHousesCall.clone().enqueue(new Callback<ArrayList<HousesResponse>>() {
+
+
+         * */
+
+        DataQueryBuilder queryBuilder = DataQueryBuilder.create();
+        queryBuilder.setPageSize(10).setOffset(tableOffset);
+        queryBuilder.addSortBy("created DESC");
+        Backendless.Data.of(real_estate.class).find(queryBuilder, new AsyncCallback<List<real_estate>>() {
             @Override
-            public void onResponse(Call<ArrayList<HousesResponse>> call, Response<ArrayList<HousesResponse>> response) {
+            public void handleResponse(List<real_estate> response) {
 
-                if (!onRefreshing && !infiniteLoading) {
+                if (response != null) {
 
-                    //perform the normal sequence of actions for a first time load
-                    allHousesResponseArray = response.body();
-                    housesFastAdapter.add(allHousesResponseArray);
-                    housesMainRecView.setAdapter(footerAdapter.wrap(housesFastAdapter));
+                    if (!onRefreshing && !infiniteLoading) {
 
-
-                    Log.d("myLogsRequestUrl", response.raw().request().url().toString());
-
-                } else if (onRefreshing && !infiniteLoading) {
-
-                    //perform the sequence of actions for a refreshed load
-                    allHousesResponseArray.clear();
-                    allHousesResponseArray = response.body();
-                    housesFastAdapter.clear();
-                    housesMainRecView.clearOnScrollListeners();
-                    housesMainRecView.addOnScrollListener(endlessRecyclerOnScrollListener);
-                    housesFastAdapter.add(response.body());
-                    endlessRecyclerOnScrollListener.resetPageCount();
+                        //perform the normal sequence of actions for a first time load
+                        allHousesResponseArray.addAll(response);
+                        housesFastAdapter.add(allHousesResponseArray);
+                        housesMainRecView.setAdapter(footerAdapter.wrap(housesFastAdapter));
 
 
-                    Log.d("myLogsRequestUrlOR", response.raw().request().url().toString());
+                        Log.d("myLogsReqHouses", "request was successful");
+
+                    } else if (onRefreshing && !infiniteLoading) {
+
+                        //perform the sequence of actions for a refreshed load
+                        allHousesResponseArray.clear();
+                        allHousesResponseArray.addAll(response);
+                        housesFastAdapter.clear();
+                        housesMainRecView.clearOnScrollListeners();
+                        housesMainRecView.addOnScrollListener(endlessRecyclerOnScrollListener);
+                        housesFastAdapter.add(allHousesResponseArray);
+                        endlessRecyclerOnScrollListener.resetPageCount();
 
 
-                } else if (infiniteLoading && !onRefreshing) {
+                        Log.d("myLogsReqHousesOR", "houses were successfully refreshed");
 
-                    allHousesResponseArray.addAll(response.body());
-                    footerAdapter.clear();
-                    if (response.body().size() > 0) {
-                        housesFastAdapter.add(response.body());
-                    } else {
-                        Toast.makeText(Houses.this, "No more items", Toast.LENGTH_LONG).show();
+
+                    } else if (infiniteLoading && !onRefreshing) {
+
+                        allHousesResponseArray.addAll(response);
+                        footerAdapter.clear();
+                        if (response.size() > 0) {
+                            housesFastAdapter.add(response);
+                        } else {
+                            Toast.makeText(Houses.this, "No more items", Toast.LENGTH_LONG).show();
+                        }
+
+
+                        Log.d("myLogsReqHousesIL", "Infinite load was successful." + " table offset = " + tableOffset);
+                        infiniteLoading = false;
+
+
                     }
 
-
-                    Log.d("myLogsRequestUrlIL", response.raw().request().url().toString() + " table offset = " + tableOffset);
-                    infiniteLoading = false;
-
-
+                    Log.d("myLogsOnSuccess", "onResponse: response successful");
                 }
-
-                Log.d("myLogsOnSuccess", "onResponse: response successful");
-
 
             }
 
             @Override
-            public void onFailure(Call<ArrayList<HousesResponse>> call, Throwable t) {
+            public void handleFault(BackendlessFault fault) {
 
-                Log.d("myLogsOnFailure", "onResponse: response unsuccessful");
+                Log.d("myLogsReqHousesFail", "The request failed. Error: " + fault.toString());
 
             }
         });
 
-    }
 
-    /*************************************************************************************************************************************************/
+    }
 
 
     /*************************************************************************************************************************************************/
@@ -423,7 +427,7 @@ public class Houses extends AppCompatActivity {
         housesFilterMap.put("offset", tableOffsetString);  //update the value of the offset in the request url
         onRefreshing = true;
         infiniteLoading = false;
-        requestHouses();
+        requestHousesBackendless();
 
         //stop the refreshing animation
         housesSwipeRefresh.setRefreshing(false);
@@ -447,14 +451,313 @@ public class Houses extends AppCompatActivity {
         Log.d("myLogs", "loadMoreHouses: " + housesFilterMap.toString());
         infiniteLoading = true;
         onRefreshing = false;
-        requestHouses();
+        requestHousesBackendless();
     }
 
 
     /*************************************************************************************************************************************************/
 
+    void getFiltersBackendless() {
 
-    void getFilters() {
+        //clear the query filter and the string builder mb
+        queryString = null;
+        mb.delete(0, mb.length());
+        queryStringsHolder.clear();
+
+
+        //the if statement checks if the house location spinner's selected item is 'all' and skips adding the query if it is
+
+        if (houseLocationSpinner != null) {
+
+            if (houseLocationSpinner.getSelectedItem() != null) {
+
+                if (!houseLocationSpinner.getSelectedItem().equals("ALL")) {
+
+                    //this adds "AND" to the query if it is appended to another query and adds nothing if it is alone
+                    if (queryStringsHolder.isEmpty()) {
+                        queryStringsHolder.add("Location = " + "'" + houseLocationSpinner.getSelectedItem().toString() + "'");
+                    } else {
+                        queryStringsHolder.add("AND Location = " + "'" + houseLocationSpinner.getSelectedItem().toString() + "'");
+                    }
+                }
+            } else {
+
+                Log.d("myLogsGetFilters", "the HouseLocationSpinner.GetSelectedItem is null");
+
+
+            }
+
+        } else {
+
+            Log.d("myLogsGetFilters", "the House location spinner is null");
+
+        }
+
+        //this adds the data from the Price edit text
+        if (!housePriceEditText.getText().toString().isEmpty()) {
+
+            if (queryStringsHolder.isEmpty()) {
+                queryStringsHolder.add("price <= " + housePriceEditText.getText().toString());
+            } else {
+                queryStringsHolder.add(" AND price <= " + housePriceEditText.getText().toString());
+            }
+
+        }
+
+
+        if (forRentCheck.isChecked()) {
+
+            if (queryStringsHolder.isEmpty()) {
+                isForRent = true;
+                queryStringsHolder.add("Rent = " + isForRent.toString());
+            } else {
+                isForRent = true;
+                queryStringsHolder.add(" AND Rent = " + isForRent.toString());
+            }
+
+
+        }
+
+
+        if (forSaleCheck.isChecked()) {
+            if (queryStringsHolder.isEmpty()) {
+                isForSale = true;
+                queryStringsHolder.add("for_sale = " + isForSale.toString());
+            } else if (forRentCheck.isChecked()) {
+                isForSale = true;
+                queryStringsHolder.add(" OR for_sale = " + isForSale.toString());
+            } else if (!forRentCheck.isChecked()) {
+                isForSale = true;
+                queryStringsHolder.add(" AND for_sale = " + isForSale.toString());
+            }
+
+
+        }
+
+
+        for (int i = 0; i < queryStringsHolder.size(); i++) {
+
+            mb.append(queryStringsHolder.get(i));
+
+        }
+
+
+        queryString = mb.toString();
+        Log.d(queryString, "mquery");
+
+
+        //update the value of the offset in the request url before you make the call
+        filteredTableOffset = 0;
+        testFilteredTableOffset = 0;
+
+
+    }
+
+    /*************************************************************************************************************************************************/
+
+    void populateLocationsBackendless() {
+
+
+        //add an All locations option for the user to select all available locations
+        locationOptions.add(getString(R.string.ALL));
+
+        DataQueryBuilder queryBuilder = DataQueryBuilder.create();
+        queryBuilder.addProperty("Location");
+
+        //initialize the spinner and assign it an adapter
+        ArrayAdapter<String> locationSpinnerAdapter = new ArrayAdapter<>(Houses.this, android.R.layout.simple_spinner_item, locationOptions);
+        //set the layout resource for the spinner adapter
+        locationSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        houseLocationSpinner.setAdapter(locationSpinnerAdapter);
+
+        Backendless.Data.of(real_estate.class).find(queryBuilder, new AsyncCallback<List<real_estate>>() {
+            @Override
+            public void handleResponse(List<real_estate> response) {
+
+                String stringHolder;
+                int rSize = response.size();
+
+                //a for statement to cycle through the response and add every unique location to the locationOptions array
+                for (int counter = 0; counter < rSize; counter++) {
+                    stringHolder = response.get(counter).getLocation();
+                    if (!locationOptions.contains(stringHolder)) {
+                        locationOptions.add(stringHolder);
+                    }
+                }
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Toast.makeText(Houses.this, "No locations Available", Toast.LENGTH_LONG).show();
+                Log.d("myLogsReqLocations", "location retrieval failed.  Error: " + fault.toString());
+
+
+            }
+        });
+
+
+    }
+
+
+    /*************************************************************************************************************************************************/
+
+    void requestFilteredHousesBackendless() {
+
+        DataQueryBuilder queryBuilder = DataQueryBuilder.create();
+        queryBuilder.setPageSize(3).setOffset(testFilteredTableOffset);
+        queryBuilder.setWhereClause(queryString);
+        Backendless.Data.of(real_estate.class).find(queryBuilder, new AsyncCallback<List<real_estate>>() {
+            @Override
+            public void handleResponse(List<real_estate> response) {
+
+
+                //do not use the diffutil because it loads only ten items and there is no justification for it to filter only ten items.
+
+                //todo filtered table offset keeps giving me zero. Why????
+                if (response != null) {
+                    if (!filteredInfiniteLoading && !onFilteredRefreshing) {
+                        filteredHousesResponseArray.addAll(response);
+
+                        //update filtered table offset
+                        testFilteredTableOffset = testFilteredTableOffset + response.size();
+
+                        Log.d("myLogsRequestFL", " the filtered load is a success. table offset = " + testFilteredTableOffset);
+
+
+                        housesFastAdapter.clear();
+                        housesMainRecView.clearOnScrollListeners();
+                        housesMainRecView.addOnScrollListener(endlessRecyclerOnScrollListener);
+                        housesFastAdapter.add(response);
+                        endlessRecyclerOnScrollListener.resetPageCount();
+
+                    } else if (filteredInfiniteLoading && !onFilteredRefreshing) {
+
+
+                        filteredHousesResponseArray.addAll(response);
+                        testFilteredTableOffset = testFilteredTableOffset + response.size();
+                        footerAdapter.clear();
+                        if (response.size() > 0) {
+                            housesFastAdapter.add(response);
+                        } else {
+                            Toast.makeText(Houses.this, "No more items", Toast.LENGTH_LONG).show();
+                        }
+
+                        Log.d("myLogsRequestFIL", " the filtered infinite load success. table offset , test offset = " + tableOffset + " ," + testFilteredTableOffset);
+                        filteredInfiniteLoading = false;
+
+
+                    } else if (onFilteredRefreshing && !filteredInfiniteLoading) {
+
+                        testFilteredTableOffset = testFilteredTableOffset + response.size();
+                        filteredHousesResponseArray.clear();
+                        filteredHousesResponseArray.addAll(response);
+                        housesFastAdapter.clear();
+                        housesMainRecView.clearOnScrollListeners();
+                        housesMainRecView.addOnScrollListener(endlessRecyclerOnScrollListener);
+                        housesFastAdapter.add(response);
+                        endlessRecyclerOnScrollListener.resetPageCount();
+
+                        onFilteredRefreshing = false;
+                        Log.d("myLogsRequestFOR", "filtered on refresh was successfull" + testFilteredTableOffset);
+                    }
+                } else {
+                    Toast.makeText(Houses.this, "check the filters", Toast.LENGTH_LONG).show();
+                }
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                if (fault != null) {
+                    Log.d("myLogsFilteredFail", " Request has failed because " + fault.toString());
+                }
+
+            }
+        });
+
+
+    }
+
+    /*************************************************************************************************************************************************/
+
+    void loadMoreFilteredHousesBackendless() {
+
+        filteredInfiniteLoading = true;
+        onFilteredRefreshing = false;
+        filteredTableOffset = filteredHousesResponseArray.size();
+        requestFilteredHousesBackendless();
+
+    }
+
+    /*************************************************************************************************************************************************/
+
+    void refreshFilteredHousesBackendless() {
+
+
+        filteredTableOffset = 0;
+        testFilteredTableOffset = 0;
+        onFilteredRefreshing = true;
+        filteredInfiniteLoading = false;
+        requestFilteredHousesBackendless();
+
+        //stop the refreshing animation
+        housesSwipeRefresh.setRefreshing(false);
+
+    }
+
+
+}
+
+
+/*************************************************************************************************************************************************/
+/*
+    void loadMoreFilteredHouses() {
+
+        filteredInfiniteLoading = true;
+        onFilteredRefreshing = false;
+        filteredTableOffset = filteredHousesResponseArray.size();
+        filteredTableOffsetString = filteredTableOffset.toString();
+        housesUserFilterMap.put("offset", filteredTableOffsetString);
+        requestFilteredHouses();
+
+    }
+
+*/
+/*************************************************************************************************************************************************/
+
+
+/*************************************************************************************************************************************************/
+
+
+ /*   void refreshFilteredHouses() {
+
+
+        filteredTableOffset = 0;
+        filteredTableOffsetString = filteredTableOffset.toString();
+        housesUserFilterMap.put("offset", filteredTableOffsetString);  //update the value of the offset in the request url
+        onFilteredRefreshing = true;
+        filteredInfiniteLoading = false;
+        requestFilteredHousesB();
+
+        //stop the refreshing animation
+        housesSwipeRefresh.setRefreshing(false);
+
+    }
+
+*/
+
+
+/*************************************************************************************************************************************************/
+
+
+
+
+ /*   void getFilters() {
 
         //clear the query filter and the string builder mb
         queryString = null;
@@ -538,58 +841,13 @@ public class Houses extends AppCompatActivity {
 
 
     }
+*/
+
+/*************************************************************************************************************************************************/
 
 
-    /*************************************************************************************************************************************************/
 
-
-    void populateLocations() {
-
-        //add an All locations option for the user to select all available locations
-        locationOptions.add(getString(R.string.ALL));
-
-        locationsMap.put("props", "Location");
-
-        //initialize the spinner and assign it an adapter
-        ArrayAdapter<String> locationSpinnerAdapter = new ArrayAdapter<>(Houses.this, android.R.layout.simple_spinner_item, locationOptions);
-        //set the layout resource for the spinner adapter
-        locationSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        houseLocationSpinner.setAdapter(locationSpinnerAdapter);
-
-        locationsCall.clone().enqueue(new Callback<ArrayList<HousesResponse>>() {
-            @Override
-            public void onResponse(Call<ArrayList<HousesResponse>> call, Response<ArrayList<HousesResponse>> response) {
-
-                String stringHolder;
-                int rSize = response.body().size();
-
-                //a for statement to cycle through the response and add every unique location to the locationOptions array
-                for (int counter = 0; counter < rSize; counter++) {
-                    stringHolder = response.body().get(counter).getLocation();
-                    if (!locationOptions.contains(stringHolder)) {
-                        locationOptions.add(stringHolder);
-                    }
-                }
-
-
-            }
-
-            @Override
-            public void onFailure(Call<ArrayList<HousesResponse>> call, Throwable t) {
-
-                Toast.makeText(Houses.this, "No locations Available", Toast.LENGTH_LONG).show();
-
-            }
-        });
-
-
-    }
-
-
-    /*************************************************************************************************************************************************/
-
-
-    void requestFilteredHouses() {
+  /*  void requestFilteredHouses() {
 
         filteredHousesCall.clone().enqueue(new Callback<ArrayList<HousesResponse>>() {
             @Override
@@ -646,44 +904,163 @@ public class Houses extends AppCompatActivity {
             }
         });
 
+    }*/
+
+
+/*************************************************************************************************************************************************/
+
+
+/*************************************************************************************************************************************************/
+
+    /*void requestHouses() {
+
+        //make the call
+        allHousesCall.clone().enqueue(new Callback<ArrayList<HousesResponse>>() {
+            @Override
+            public void onResponse(Call<ArrayList<HousesResponse>> call, Response<ArrayList<HousesResponse>> response) {
+
+                if (!onRefreshing && !infiniteLoading) {
+
+                    //perform the normal sequence of actions for a first time load
+                    allHousesResponseArray = response.body();
+                    housesFastAdapter.add(allHousesResponseArray);
+                    housesMainRecView.setAdapter(footerAdapter.wrap(housesFastAdapter));
+
+
+                    Log.d("myLogsRequestUrl", response.raw().request().url().toString());
+
+                } else if (onRefreshing && !infiniteLoading) {
+
+                    //perform the sequence of actions for a refreshed load
+                    allHousesResponseArray.clear();
+                    allHousesResponseArray = response.body();
+                    housesFastAdapter.clear();
+                    housesMainRecView.clearOnScrollListeners();
+                    housesMainRecView.addOnScrollListener(endlessRecyclerOnScrollListener);
+                    housesFastAdapter.add(response.body());
+                    endlessRecyclerOnScrollListener.resetPageCount();
+
+
+                    Log.d("myLogsRequestUrlOR", response.raw().request().url().toString());
+
+
+                } else if (infiniteLoading && !onRefreshing) {
+
+                    allHousesResponseArray.addAll(response.body());
+                    footerAdapter.clear();
+                    if (response.body().size() > 0) {
+                        housesFastAdapter.add(response.body());
+                    } else {
+                        Toast.makeText(Houses.this, "No more items", Toast.LENGTH_LONG).show();
+                    }
+
+
+                    Log.d("myLogsRequestUrlIL", response.raw().request().url().toString() + " table offset = " + tableOffset);
+                    infiniteLoading = false;
+
+
+                }
+
+                Log.d("myLogsOnSuccess", "onResponse: response successful");
+
+
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<HousesResponse>> call, Throwable t) {
+
+                Log.d("myLogsOnFailure", "onResponse: response unsuccessful");
+
+            }
+        });
+
+    }*/
+
+/*************************************************************************************************************************************************/
+
+
+/*
+
+    void populateLocations() {
+
+        //add an All locations option for the user to select all available locations
+        locationOptions.add(getString(R.string.ALL));
+
+        locationsMap.put("props", "Location");
+
+        //initialize the spinner and assign it an adapter
+        ArrayAdapter<String> locationSpinnerAdapter = new ArrayAdapter<>(Houses.this, android.R.layout.simple_spinner_item, locationOptions);
+        //set the layout resource for the spinner adapter
+        locationSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        houseLocationSpinner.setAdapter(locationSpinnerAdapter);
+
+        locationsCall.clone().enqueue(new Callback<ArrayList<HousesResponse>>() {
+            @Override
+            public void onResponse(Call<ArrayList<HousesResponse>> call, Response<ArrayList<HousesResponse>> response) {
+
+                String stringHolder;
+                int rSize = response.body().size();
+
+                //a for statement to cycle through the response and add every unique location to the locationOptions array
+                for (int counter = 0; counter < rSize; counter++) {
+                    stringHolder = response.body().get(counter).getLocation();
+                    if (!locationOptions.contains(stringHolder)) {
+                        locationOptions.add(stringHolder);
+                    }
+                }
+
+
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<HousesResponse>> call, Throwable t) {
+
+                Toast.makeText(Houses.this, "No locations Available", Toast.LENGTH_LONG).show();
+
+            }
+        });
+
+
     }
 
-
-    /*************************************************************************************************************************************************/
-
-
-    void loadMoreFilteredHouses() {
-
-        filteredInfiniteLoading = true;
-        onFilteredRefreshing = false;
-        filteredTableOffset = filteredHousesResponseArray.size();
-        filteredTableOffsetString = filteredTableOffset.toString();
-        housesUserFilterMap.put("offset", filteredTableOffsetString);
-        requestFilteredHouses();
-
-    }
+*/
+/*************************************************************************************************************************************************/
 
 
-    /*************************************************************************************************************************************************/
+
+      /*  toggleExpandableLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(housesExpandableLayout.isExpanded()){
+
+                    housesExpandableLayout.collapse();
+
+                }else {
+
+                    housesExpandableLayout.expand();
+
+                }
+
+            }
+        });
 
 
-    void refreshFilteredHouses() {
+
+          <TextView
+        android:id="@+id/toggle_filters_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_horizontal"
+        android:text="TOGGLE FILTERS"
+        android:textSize="15sp"
+        app:fontFamily="@font/montserrat_bold" />
 
 
-        filteredTableOffset = 0;
-        filteredTableOffsetString = filteredTableOffset.toString();
-        housesUserFilterMap.put("offset", filteredTableOffsetString);  //update the value of the offset in the request url
-        onFilteredRefreshing = true;
-        filteredInfiniteLoading = false;
-        requestFilteredHouses();
 
-        //stop the refreshing animation
-        housesSwipeRefresh.setRefreshing(false);
-
-    }
-
-
-}
+*/
 
 
 //todo there is no way for the user to refresh locations
