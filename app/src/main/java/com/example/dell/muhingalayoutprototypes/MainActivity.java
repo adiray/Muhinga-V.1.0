@@ -29,6 +29,10 @@ import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.Gson;
+import com.novoda.merlin.Connectable;
+import com.novoda.merlin.Merlin;
+
+import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.apache.commons.io.FileUtils;
 
@@ -40,6 +44,10 @@ import br.vince.easysave.EasySave;
 import br.vince.easysave.LoadAsyncCallback;
 
 public class MainActivity extends AppCompatActivity {
+
+  //Merlin
+    Merlin merlin;
+    Boolean isNetworkAvailable = false;
 
     //Declare views
     ImageView housesButton, landButton, venuesButton, musicButton, profilePictureButton;
@@ -65,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //check for internet connection
+        createMerlin();
+
         //initialize the views
         initializeViews();
 
@@ -72,15 +83,22 @@ public class MainActivity extends AppCompatActivity {
         //initialize backendless
         initializeBackendless();
 
+        //initialize jodat time calendar
+        JodaTimeAndroid.init(getApplicationContext());
+
 
         //automatically log the user in
         automaticallyLogUserIn();
+
+
 
 
         //todo you stopped here
 
 
     }
+
+
 
 
     /*************************************************************************************************************************************************/
@@ -99,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        merlin.bind();
 
         if (pausedForProfileActivity) {
 
@@ -142,9 +162,28 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        merlin.unbind();
+    }
 
     /*************************************************************************************************************************************************/
 
+    void createMerlin(){
+
+        merlin =  new Merlin.Builder().withConnectableCallbacks().build(this);
+        merlin.registerConnectable(new Connectable() {
+            @Override
+            public void onConnect() {
+
+                isNetworkAvailable = true;
+
+            }
+        });
+
+
+    }
 
     /*************************************************************************************************************************************************/
 
@@ -313,6 +352,8 @@ public class MainActivity extends AppCompatActivity {
 
         //open the venues activity
         Intent intent = new Intent(MainActivity.this, Venues.class);
+        Gson gson = new Gson();
+        intent.putExtra(EXTRA_GLOBAL_USER, gson.toJson(globalCurrentUser));
         MainActivity.this.startActivity(intent);
 
 

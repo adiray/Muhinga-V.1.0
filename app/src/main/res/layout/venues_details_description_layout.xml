@@ -177,7 +177,8 @@
             >
 
             <ImageView
-                android:id="@+id/save_venue_venues_details_layout"
+
+                android:id="@+id/book_venue_venues_details_layout"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/cash_hand_colored_filled" />
@@ -221,7 +222,7 @@
             >
 
             <ImageView
-                android:id="@+id/book_venue_venues_details_layout"
+                android:id="@+id/share_venue_venues_details_layout"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/share_colored_blue_filled" />
@@ -266,7 +267,7 @@
             >
 
             <ImageView
-                android:id="@+id/share_venue_venues_details_layout"
+                android:id="@+id/save_venue_venues_details_layout"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/contacts_colored_red_filled" />

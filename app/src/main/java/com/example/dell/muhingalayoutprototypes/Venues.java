@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.FooterAdapter;
@@ -36,6 +37,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+
+import static com.example.dell.muhingalayoutprototypes.MainActivity.EXTRA_GLOBAL_USER;
 
 public class Venues extends AppCompatActivity {
 
@@ -93,13 +96,22 @@ public class Venues extends AppCompatActivity {
     public static final String EXTRA_LOCATION = "com.example.muhinga.venuesItemLocation";
     public static final String EXTRA_SIZE = "com.example.muhinga.venuesItemSize";
     public static final String EXTRA_PHONE = "com.example.muhinga.venuesOwnerPhone";
+    public static final String EXTRA_ID = "com.example.muhinga.venuesId";
 
+
+    //user
+    String globalCurrentUserJson;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_venues);
+
+        //receive intents
+        Intent intent = getIntent();
+        globalCurrentUserJson = intent.getStringExtra(MainActivity.EXTRA_GLOBAL_USER);
+
 
 
         //initialize the views
@@ -126,6 +138,8 @@ public class Venues extends AppCompatActivity {
 
         //initialize the fast adapter which will manage everything
         venuesRecViewFastAdapter = new FastItemAdapter<>();
+
+
 
         //initialize the endless scroll listener
         endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(footerAdapter) {
@@ -199,7 +213,9 @@ public class Venues extends AppCompatActivity {
 
                 Intent intent = new Intent(Venues.this, VenuesDetails.class);
                 ArrayList<Object> venuesItemImageReferences = new ArrayList<>();
-                String location, title, price, size, description, ownerPhone;
+                String location, title, price, size, description, ownerPhone, venueId;
+
+
 
                 //add the image references to the image reference array
                 venuesItemImageReferences.add(item.getMainImageReference());
@@ -215,8 +231,11 @@ public class Venues extends AppCompatActivity {
                 size = item.getCapacity();
                 description = item.getDescription();
                 ownerPhone = item.getPhone();
+                venueId = item.getObjectId();
 
+                intent.putExtra(EXTRA_GLOBAL_USER, globalCurrentUserJson);
                 intent.putExtra(EXTRA_ARRAY, venuesItemImageReferences);
+                intent.putExtra(EXTRA_ID,venueId);
                 intent.putExtra(EXTRA_LOCATION, location);
                 intent.putExtra(EXTRA_TITLE, title);
                 intent.putExtra(EXTRA_PRICE, price);
@@ -273,7 +292,7 @@ public class Venues extends AppCompatActivity {
 
         //initialize the retrofit client builder using the backendless.com api
         builder = new Retrofit.Builder();
-        builder.baseUrl("https://api.backendless.com/54158ACA-8614-7763-FF72-3BFBF61B4600/167C910C-C110-5D40-FF09-C8621E23B700/data/")
+        builder.baseUrl("http://api.backendless.com/125AF8BD-1879-764A-FF22-13FB1C162400/6F40C4D4-6CFB-E66A-FFC7-D71E4A8BF100/data/")
                 .addConverterFactory(GsonConverterFactory.create());
 
         //use your builder to build a retrofit object

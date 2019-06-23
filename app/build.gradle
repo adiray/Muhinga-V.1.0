@@ -57,6 +57,9 @@ dependencies {
     //floating edit text for the sign up page
     implementation 'com.github.florent37:materialtextfield:1.0.7'
 
+    //loading dialog / progress view
+    implementation 'com.samigehi:loadingview:1.1'
+
     //Backendless apis
     dependencies {
         implementation group: 'com.backendless', name: 'backendless', version: '5.2.4'
@@ -74,7 +77,16 @@ dependencies {
     //file picker library
     implementation 'com.droidninja:filepicker:2.1.5'
 
+    //caender and date picker library
+    implementation 'com.github.psinetron:slycalendarview:0.0.9'
+    implementation 'com.github.vatsaldesai92:MyDynamicCalendarLibrary:1.0.1'
 
+
+    //merlin connection status checker library
+    implementation 'com.novoda:merlin:1.2.0'
+
+    //joda time port for android for managing time and date
+    implementation 'net.danlew:android.joda:2.10.1.2'
 
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'

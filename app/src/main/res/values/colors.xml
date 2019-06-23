@@ -12,6 +12,7 @@
     <color name="my_color_bg">#ECEDEA</color>
     <color name="my_color_white">#FFFFFF</color>
     <color name="my_color_like_button_active">#FF3D00</color>
+    <color name="test">#245675</color>
 
 
 </resources>

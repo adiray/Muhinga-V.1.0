@@ -19,7 +19,8 @@ import java.util.ArrayList;
 public class VenuesDetails extends AppCompatActivity {
 
     ArrayList<String> itemImageReferences = new ArrayList<>();
-    String venuesDetailsTitle, venuesDetailsSize, venuesDetailsPrice, venuesDetailsDescription, venuesDetailsLocation, venuesOwnerPhone;
+    String venuesDetailsId, venuesDetailsTitle, venuesDetailsSize, venuesDetailsPrice, venuesDetailsDescription, venuesDetailsLocation, venuesOwnerPhone;
+    String globalCurrentUserJson;
 
     //miscellaneous objects
     ArrayList<VenuesDetailsViewSingleImage> mainImageDataSource = new ArrayList<>();
@@ -34,13 +35,17 @@ public class VenuesDetails extends AppCompatActivity {
     //fast adapter objects
     FastItemAdapter<VenuesDetailsViewSingleImage> venuesDetailsViewSingleImageFastAdapter = new FastItemAdapter<>(); //create our FastAdapter which will manage everything
 
+    //intent ids
+    public static final String EXTRA_VENUE_ID = "com.example.muhinga.venuesID";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_venues_details);
 
         // Get the Intent that started this activity and extract the image references array
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         itemImageReferences = intent.getStringArrayListExtra(Venues.EXTRA_ARRAY);
         venuesDetailsDescription = intent.getStringExtra(Venues.EXTRA_DESCRIPTION);
         venuesDetailsLocation = intent.getStringExtra(Venues.EXTRA_LOCATION);
@@ -48,6 +53,8 @@ public class VenuesDetails extends AppCompatActivity {
         venuesDetailsSize = intent.getStringExtra(Venues.EXTRA_SIZE);
         venuesDetailsTitle = intent.getStringExtra(Venues.EXTRA_TITLE);
         venuesOwnerPhone = intent.getStringExtra(Venues.EXTRA_PHONE);
+        venuesDetailsId = intent.getStringExtra(Venues.EXTRA_ID);
+        globalCurrentUserJson = intent.getStringExtra(MainActivity.EXTRA_GLOBAL_USER);
 
 
         //get references to the view objects
@@ -89,6 +96,17 @@ public class VenuesDetails extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 callOwnerPressed();
+
+            }
+        });
+        bookVenue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(VenuesDetails.this, BookVenue.class);
+                intent.putExtra(EXTRA_VENUE_ID, venuesDetailsId);
+                intent.putExtra(MainActivity.EXTRA_GLOBAL_USER,globalCurrentUserJson);
+                startActivity(intent);
+
 
             }
         });
