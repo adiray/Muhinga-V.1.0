@@ -24,6 +24,9 @@ import com.desai.vatsal.mydynamiccalendar.OnDateClickListener;
 import com.github.loadingview.LoadingDialog;
 import com.github.loadingview.LoadingView;
 import com.google.gson.Gson;
+import com.henry.calendarview.DatePickerController;
+import com.henry.calendarview.DayPickerView;
+import com.henry.calendarview.SimpleMonthAdapter;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -45,8 +48,7 @@ import br.vince.easysave.SaveAsyncCallback;
 public class BookVenue extends AppCompatActivity {
 
     //views
-   // MyDynamicCalendar myCalendar;
-    DateRangeCalendarView dateRangeCalendar;
+    DayPickerView dayPickerView;
     Button saveBookingButton;
     LoadingView loadingView;
 
@@ -121,7 +123,7 @@ public class BookVenue extends AppCompatActivity {
 
     void initializeViews() {
 
-        loadingView = findViewById(R.id.loadingView);
+
 
         saveBookingButton = findViewById(R.id.book_venue_activity_save_booking_button);
         //saveBookingButton.setEnabled(false);
@@ -335,40 +337,74 @@ public class BookVenue extends AppCompatActivity {
 
     void initializeCalendarTest(){
 
-        dateRangeCalendar = findViewById(R.id.book_venue_activity_calender);
+        dayPickerView = (DayPickerView) findViewById(R.id.book_venue_activity_calender_view);
 
-        Calendar startSelectionDate = Calendar.getInstance();
-        startSelectionDate.add(Calendar.MONTH, -1);
-        Calendar endSelectionDate = (Calendar) startSelectionDate.clone();
-        endSelectionDate.add(Calendar.DATE, 40);
 
-        dateRangeCalendar.setSelectedDateRange(startSelectionDate, endSelectionDate);
+        //data model
+        DayPickerView.DataModel dataModel = new DayPickerView.DataModel();
 
-        dateRangeCalendar.setCalendarListener(new DateRangeCalendarView.CalendarListener() {
+        dataModel.yearStart = 2016;
+        dataModel.monthStart = 6;
+        dataModel.monthCount = 4;
+        dataModel.defTag = "￥100";
+        dataModel.leastDaysNum = 2;
+        dataModel.mostDaysNum = 100;
+
+        //invalid days
+        List<SimpleMonthAdapter.CalendarDay> invalidDays = new ArrayList<>();
+        SimpleMonthAdapter.CalendarDay invalidDay1 = new SimpleMonthAdapter.CalendarDay(2016, 8, 10);
+        SimpleMonthAdapter.CalendarDay invalidDay2 = new SimpleMonthAdapter.CalendarDay(2016, 8, 11);
+        SimpleMonthAdapter.CalendarDay invalidDay3 = new SimpleMonthAdapter.CalendarDay(2016, 8, 12);
+        invalidDays.add(invalidDay1);
+        invalidDays.add(invalidDay2);
+        invalidDays.add(invalidDay3);
+        dataModel.invalidDays = invalidDays;
+
+
+        //busy days
+        List<SimpleMonthAdapter.CalendarDay> busyDays = new ArrayList<>();
+        SimpleMonthAdapter.CalendarDay busyDay1 = new SimpleMonthAdapter.CalendarDay(2016, 8, 20);
+        SimpleMonthAdapter.CalendarDay busyDay2 = new SimpleMonthAdapter.CalendarDay(2016, 8, 21);
+        SimpleMonthAdapter.CalendarDay busyDay3 = new SimpleMonthAdapter.CalendarDay(2016, 8, 22);
+        busyDays.add(busyDay1);
+        busyDays.add(busyDay2);
+        busyDays.add(busyDay3);
+        dataModel.busyDays = busyDays;
+
+
+        //tags
+        SimpleMonthAdapter.CalendarDay tag = new SimpleMonthAdapter.CalendarDay(2016, 7, 15);
+        tag.setTag("booked");
+
+        SimpleMonthAdapter.CalendarDay tag2 = new SimpleMonthAdapter.CalendarDay(2016, 8, 15);
+        tag2.setTag("booked");
+        List<SimpleMonthAdapter.CalendarDay> tags = new ArrayList<>();
+        tags.add(tag);
+        tags.add(tag2);
+        dataModel.tags = tags;
+
+
+        dayPickerView.setParameter(dataModel, new DatePickerController() {
             @Override
-            public void onFirstDateSelected(Calendar startDate) {
-                Toast.makeText(BookVenue.this, "Start Date: " + startDate.getTime().toString(), Toast.LENGTH_SHORT).show();
-
-
-
-                Log.d("myLogsBookVenue", "test calendar Date : " + startDate);
-
+            public void onDayOfMonthSelected(SimpleMonthAdapter.CalendarDay calendarDay) {
+                Toast.makeText(BookVenue.this, "onDayOfMonthSelected", Toast.LENGTH_SHORT).show();
+                Log.d("myLogsBookVenue", "date format  : " + calendarDay.toString());
 
             }
 
             @Override
-            public void onDateRangeSelected(Calendar startDate, Calendar endDate) {
-                Toast.makeText(BookVenue.this, "Start Date: " + startDate.getTime().toString() + " End date: " + endDate.getTime().toString(), Toast.LENGTH_SHORT).show();
-
-                Log.d("myLogsBookVenue", "Parsed Date : " + startDate + " " + endDate);
-
-
+            public void onDateRangeSelected(List<SimpleMonthAdapter.CalendarDay> selectedDays) {
+                Toast.makeText(BookVenue.this, "onDateRangeSelected", Toast.LENGTH_SHORT).show();
+                Log.d("myLogsBookVenue", "date format  : " + selectedDays.toString());
 
             }
 
+            @Override
+            public void alertSelectedFail(DatePickerController.FailEven even) {
+                Toast.makeText(BookVenue.this, "alertSelectedFail", Toast.LENGTH_SHORT).show();
+                Log.d("myLogsBookVenue", "date format  : " + even.toString());
+            }
         });
-
-
 
 
     }

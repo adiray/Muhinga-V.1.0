@@ -26,55 +26,44 @@
             app:layout_constraintTop_toTopOf="parent"
             app:titleTextColor="@color/my_color_bg" />
 
-        <com.github.loadingview.LoadingView
-            android:id="@+id/loadingView"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="center"
-            android:layout_marginTop="24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:lv_duration="30"
-            app:lv_end_color="@color/color_end"
-            app:lv_external_radius="24dp"
-            app:lv_internal_radius="4dp"
-            app:lv_start_color="@color/color_start" />
 
 
-        <android.support.v7.widget.CardView
-            android:id="@+id/book_venue_activity_calender_card_view"
+
+
+
+        <com.henry.calendarview.DayPickerView
+            android:id="@+id/book_venue_activity_calender_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="12dp"
+            app:colorCurrentDay="@color/colorAccent"
+            app:colorSelectedDayBackground="@color/colorAccent"
+            app:colorSelectedDayText="@color/my_color_secondary"
+            app:colorPreviousDayText="#727272"
+            app:colorNormalDayText="#727272"
+            app:colorYearMonthText="#727272"
+            app:colorWeekText="#727272"
+            app:colorBusyDaysBg="#727272"
+            app:colorInValidDaysBg="#727272"
+            app:colorBusyDaysText="@color/md_yellow_200"
+            app:colorInValidDaysText="@color/md_blue_400"
+
+            app:textSizeDay="14sp"
+            app:textSizeTag="12sp"
+            app:textSizeYearMonth="16sp"
+            app:textSizeWeek="14sp"
+            app:headerMonthHeight="50dp"
+            app:selectedDayRadius="20dp"
+            app:calendarHeight="320dp"
+            app:enablePreviousDay="true"
+
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/book_venue_activity_action_bar"
-            custom:cardCornerRadius="8dp">
+
+            />
 
 
-            <com.archit.calendardaterangepicker.customviews.DateRangeCalendarView
-                android:id="@+id/book_venue_activity_calender"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                custom:disable_date_color="#ABABAB"
 
-                custom:header_bg="@drawable/calendar_header"
-                custom:range_color="@color/range_bg_color"
-                custom:selected_date_circle_color="@color/selected_date_circle_color"
-                custom:title_color="@color/calendar_header_title"
-                custom:enable_past_date="true"
-                custom:editable="true"
-                custom:week_offset="0"
-
-                />
-
-        </android.support.v7.widget.CardView>
 
         <Button
             android:id="@+id/book_venue_activity_save_booking_button"
@@ -88,7 +77,7 @@
             android:textSize="15sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/book_venue_activity_calender_card_view" />
+            app:layout_constraintTop_toBottomOf="@id/book_venue_activity_calender_view" />
 
 
     </android.support.constraint.ConstraintLayout>
