@@ -10,9 +10,18 @@
     <color name="my_color_secondary">#18183A</color>
     <color name="my_color_alternative_shade">#98133F</color>
     <color name="my_color_bg">#ECEDEA</color>
+    <color name="my_color_bg_2">#FAFAFA</color>
     <color name="my_color_white">#FFFFFF</color>
     <color name="my_color_like_button_active">#FF3D00</color>
     <color name="test">#245675</color>
+
+    <color name="calendarColorPrimary">#EF5350</color>
+    <color name="calendar_header">@color/calendarColorPrimary</color>
+    <color name="calendar_header_title">#FFF</color>
+    <color name="selected_date_circle_color_app">#FF5252</color>
+    <color name="range_bg_color_app">#FFCDD2</color>
+
+
 
 
 </resources>

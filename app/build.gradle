@@ -23,7 +23,11 @@ dependencies {
     implementation('com.mikepenz:fastadapter:2.6.3@aar') {
         transitive = true
     }
-    //used for the rotating reply song view
+
+    //new calendar library used in booking interface
+    implementation 'com.archit.calendar:awesome-calendar:1.1.4'
+
+    //used for the rotating replay song view
     implementation 'theanilpaudel:rotatinganimation:1.0.0'
     //used for the circular image view in the play song activity
     implementation 'de.hdodenhof:circleimageview:3.0.0'

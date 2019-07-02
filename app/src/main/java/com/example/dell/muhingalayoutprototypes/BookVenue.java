@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.archit.calendardaterangepicker.customviews.DateRangeCalendarView;
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
@@ -43,9 +45,11 @@ import br.vince.easysave.SaveAsyncCallback;
 public class BookVenue extends AppCompatActivity {
 
     //views
-    MyDynamicCalendar myCalendar;
+   // MyDynamicCalendar myCalendar;
+    DateRangeCalendarView dateRangeCalendar;
     Button saveBookingButton;
     LoadingView loadingView;
+
 
     //others
     Date startDate, endDate;
@@ -82,11 +86,13 @@ public class BookVenue extends AppCompatActivity {
 
         initializeViews();
 
-        retrieveUserId();
+        initializeCalendarTest();
 
-        initializeCalender();
+       // retrieveUserId();
 
-        retrieveBookings();
+
+
+      //  retrieveBookings();
 
 
     }
@@ -149,7 +155,7 @@ public class BookVenue extends AppCompatActivity {
             Integer endDateInt = endDateTime.getDayOfMonth(), monthInt = startDateTime.getMonthOfYear(), yearInt = startDateTime.getYear();
             Log.d("myLogsBookVenue", "startDate n endDate not null: " + startDateInt + " ," + endDateInt + " ," + yearInt + " ," + monthInt);
 
-            uploadBooking(startDateInt, endDateInt, monthInt, yearInt, approved);
+            //uploadBooking(startDateInt, endDateInt, monthInt, yearInt, approved);
 
 
         }
@@ -163,7 +169,7 @@ public class BookVenue extends AppCompatActivity {
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      */
 
-
+/*
     void retrieveBookings() {
 
 
@@ -230,6 +236,46 @@ public class BookVenue extends AppCompatActivity {
         });
 
     }
+*/
+
+
+
+    void retrieveBookings() {
+
+
+        loadingView.start();
+
+        DataQueryBuilder queryBuilder = DataQueryBuilder.create();
+        String whereClause = "venues[bookings]" +
+                ".objectId='" + venueId + "'";
+        queryBuilder.setWhereClause(whereClause);
+        Backendless.Data.of("bookings").find(queryBuilder, new AsyncCallback<List<Map>>() {
+            @Override
+            public void handleResponse(List<Map> response) {
+
+                if (response != null) {
+
+
+
+
+
+
+                }
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                loadingView.stop();
+
+            }
+        });
+
+    }
+
+
 
 
     /**
@@ -237,24 +283,12 @@ public class BookVenue extends AppCompatActivity {
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      */
 
-
+/*
     void initializeCalender() {
 
-        myCalendar = findViewById(R.id.book_venue_activity_calender);
 
-        // show month view
-        myCalendar.showMonthView();
+        dateRangeCalendar = findViewById(R.id.book_venue_activity_calender);
 
-        //set holidays (these are the booked days)
-        myCalendar.setHolidayCellBackgroundColor(R.color.md_green_200);
-        myCalendar.setHolidayCellTextColor("#d590bb");
-        // set holiday date clickable true/false
-        myCalendar.setHolidayCellClickable(false);
-        // Add holiday  -  addHoliday(holiday_date)
-        myCalendar.addHoliday("2-11-2019");
-        myCalendar.addHoliday("13-11-2019");
-        myCalendar.addHoliday("18-10-2019");
-        myCalendar.addHoliday("10-10-2019");
 
         // date click listener
         myCalendar.setOnDateClickListener(new OnDateClickListener() {
@@ -266,10 +300,20 @@ public class BookVenue extends AppCompatActivity {
 
                 if (selectedDate != null) {
 
+
+
+
+
+
                   /*  myCalendar.addHoliday(selectedDate);
                     Log.d("myLogsBookVenue", "Parsed Date : " + selectedDate);
                     myCalendar.refreshCalendar();
-*/
+* /
+
+
+
+
+
 
                     dateClicked(date);
 
@@ -287,11 +331,56 @@ public class BookVenue extends AppCompatActivity {
 
     }
 
+*/
+
+    void initializeCalendarTest(){
+
+        dateRangeCalendar = findViewById(R.id.book_venue_activity_calender);
+
+        Calendar startSelectionDate = Calendar.getInstance();
+        startSelectionDate.add(Calendar.MONTH, -1);
+        Calendar endSelectionDate = (Calendar) startSelectionDate.clone();
+        endSelectionDate.add(Calendar.DATE, 40);
+
+        dateRangeCalendar.setSelectedDateRange(startSelectionDate, endSelectionDate);
+
+        dateRangeCalendar.setCalendarListener(new DateRangeCalendarView.CalendarListener() {
+            @Override
+            public void onFirstDateSelected(Calendar startDate) {
+                Toast.makeText(BookVenue.this, "Start Date: " + startDate.getTime().toString(), Toast.LENGTH_SHORT).show();
+
+
+
+                Log.d("myLogsBookVenue", "test calendar Date : " + startDate);
+
+
+            }
+
+            @Override
+            public void onDateRangeSelected(Calendar startDate, Calendar endDate) {
+                Toast.makeText(BookVenue.this, "Start Date: " + startDate.getTime().toString() + " End date: " + endDate.getTime().toString(), Toast.LENGTH_SHORT).show();
+
+                Log.d("myLogsBookVenue", "Parsed Date : " + startDate + " " + endDate);
+
+
+
+            }
+
+        });
+
+
+
+
+    }
+
 
     /**
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      */
+
+
+    /*
 
 
     void dateClicked(Date date) {
@@ -402,6 +491,9 @@ public class BookVenue extends AppCompatActivity {
      */
 
 
+    /*
+
+
     void cacheTheClickedDate(String date, String key) {
 
 
@@ -427,6 +519,9 @@ public class BookVenue extends AppCompatActivity {
      */
 
 
+
+    /*
+
     String parseDate(Date date) {
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
@@ -440,6 +535,8 @@ public class BookVenue extends AppCompatActivity {
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      */
 
+
+    /*
 
     void retrieveUserId() {
 
@@ -456,6 +553,9 @@ public class BookVenue extends AppCompatActivity {
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      */
 
+
+
+    /*
 
     void uploadBooking(Integer startDate, Integer endDate, Integer month, Integer year, Boolean approved) {
 
@@ -615,7 +715,7 @@ Backendless.Data.of( "Person" ).addRelation( parentObject, "address:Address:n", 
     }
 
 
-}
+
 
 
 

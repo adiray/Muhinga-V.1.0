@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,8 +10,9 @@
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
+        android:layout_height="wrap_content"
+        android:background="@color/my_color_bg_2"
+        >
 
 
         <android.support.v7.widget.Toolbar
@@ -31,44 +33,62 @@
             android:layout_centerHorizontal="true"
             android:layout_gravity="center"
             android:layout_marginTop="24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:lv_duration="30"
             app:lv_end_color="@color/color_end"
             app:lv_external_radius="24dp"
             app:lv_internal_radius="4dp"
-            app:lv_start_color="@color/color_start"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:lv_start_color="@color/color_start" />
 
 
-        <com.desai.vatsal.mydynamiccalendar.MyDynamicCalendar
-            android:id="@+id/book_venue_activity_calender"
+        <android.support.v7.widget.CardView
+            android:id="@+id/book_venue_activity_calender_card_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/book_venue_activity_action_bar"
+            custom:cardCornerRadius="8dp">
 
-            />
 
+            <com.archit.calendardaterangepicker.customviews.DateRangeCalendarView
+                android:id="@+id/book_venue_activity_calender"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                custom:disable_date_color="#ABABAB"
 
+                custom:header_bg="@drawable/calendar_header"
+                custom:range_color="@color/range_bg_color"
+                custom:selected_date_circle_color="@color/selected_date_circle_color"
+                custom:title_color="@color/calendar_header_title"
+                custom:enable_past_date="true"
+                custom:editable="true"
+                custom:week_offset="0"
+
+                />
+
+        </android.support.v7.widget.CardView>
 
         <Button
             android:id="@+id/book_venue_activity_save_booking_button"
-            android:fontFamily="@font/montserrat_medium"
-            android:textSize="15sp"
-            android:textColor="@color/white"
-            android:background="@color/my_color_secondary"
-            android:text="@string/book"
             android:layout_width="100dp"
             android:layout_height="50dp"
-            app:layout_constraintTop_toBottomOf="@id/book_venue_activity_calender"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="32dp"
+            android:background="@color/my_color_secondary"
+            android:fontFamily="@font/montserrat_medium"
+            android:text="@string/book"
+            android:textColor="@color/white"
+            android:textSize="15sp"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="20dp"
-            />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/book_venue_activity_calender_card_view" />
 
 
     </android.support.constraint.ConstraintLayout>
