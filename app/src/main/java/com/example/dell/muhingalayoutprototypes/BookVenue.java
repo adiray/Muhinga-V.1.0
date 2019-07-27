@@ -1,51 +1,48 @@
 package com.example.dell.muhingalayoutprototypes;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.DataQueryBuilder;
-import com.backendless.persistence.LoadRelationsQueryBuilder;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.Priority;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
-import com.desai.vatsal.mydynamiccalendar.MyDynamicCalendar;
-import com.desai.vatsal.mydynamiccalendar.OnDateClickListener;
-import com.github.loadingview.LoadingDialog;
-import com.github.loadingview.LoadingView;
 import com.google.gson.Gson;
 
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import br.vince.easysave.EasySave;
-import br.vince.easysave.LoadAsyncCallback;
 import br.vince.easysave.SaveAsyncCallback;
+import cn.aigestudio.datepicker.bizs.calendars.DPCManager;
+import cn.aigestudio.datepicker.bizs.decors.DPDecor;
+import cn.aigestudio.datepicker.views.DatePicker;
 
 public class BookVenue extends AppCompatActivity {
 
     //views
-    MyDynamicCalendar myCalendar;
+    DatePicker picker;
     Button saveBookingButton;
-    LoadingView loadingView;
+
 
     //others
     Date startDate, endDate;
@@ -72,6 +69,9 @@ public class BookVenue extends AppCompatActivity {
     //miscellaneous
     Map classWideBookingObject = new HashMap();
 
+    //date picker arrays and others
+    List<String> bookedDays = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,9 +84,9 @@ public class BookVenue extends AppCompatActivity {
 
         retrieveUserId();
 
-        initializeCalender();
-
         retrieveBookings();
+
+        //initializeCalender();
 
 
     }
@@ -115,7 +115,13 @@ public class BookVenue extends AppCompatActivity {
 
     void initializeViews() {
 
-        loadingView = findViewById(R.id.loadingView);
+
+        picker = findViewById(R.id.datePicker);
+        // show current month view
+        Calendar c = Calendar.getInstance();
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH);
+        picker.setDate(year, month + 1);  // the month index starts from zero
 
         saveBookingButton = findViewById(R.id.book_venue_activity_save_booking_button);
         //saveBookingButton.setEnabled(false);
@@ -144,12 +150,12 @@ public class BookVenue extends AppCompatActivity {
 
         if (startDate != null && endDate != null) {
 
-            loadingView.start();
+            //loadingView.start();
             Integer startDateInt = startDateTime.getDayOfMonth();
             Integer endDateInt = endDateTime.getDayOfMonth(), monthInt = startDateTime.getMonthOfYear(), yearInt = startDateTime.getYear();
             Log.d("myLogsBookVenue", "startDate n endDate not null: " + startDateInt + " ," + endDateInt + " ," + yearInt + " ," + monthInt);
 
-            uploadBooking(startDateInt, endDateInt, monthInt, yearInt, approved);
+            //uploadBooking(startDateInt, endDateInt, monthInt, yearInt, approved);
 
 
         }
@@ -167,7 +173,7 @@ public class BookVenue extends AppCompatActivity {
     void retrieveBookings() {
 
 
-        loadingView.start();
+        // loadingView.start();
 
         DataQueryBuilder queryBuilder = DataQueryBuilder.create();
         String whereClause = "venues[bookings]" +
@@ -177,7 +183,7 @@ public class BookVenue extends AppCompatActivity {
             @Override
             public void handleResponse(List<Map> response) {
 
-                if (response != null) {
+                if (!response.isEmpty()) {
 
                     int counter = response.size();
                     Integer startDate, endDate, year, month;
@@ -195,26 +201,41 @@ public class BookVenue extends AppCompatActivity {
                         if (startDate != null && endDate != null && year != null && month != null) {
                             for (int c = startDate; c <= endDate; c++) {
 
-                                stringBuilder.append(c);
+
+                                stringBuilder.append(year);
                                 stringBuilder.append("-");
                                 stringBuilder.append(month);
                                 stringBuilder.append("-");
-                                stringBuilder.append(year);
+                                stringBuilder.append(c);
                                 fullDate = stringBuilder.toString();
                                 Log.d("myLogsBookVenue", "full retrieved Date : " + fullDate);
 
+                                bookedDays.add(fullDate);
 
-                                myCalendar.addHoliday(fullDate);
+
                                 stringBuilder.delete(0, stringBuilder.length());
                             }
 
-                            myCalendar.refreshCalendar();
-                            loadingView.stop();
+
+
+
+
+
+
+
+
+                            //loadingView.stop();
 
                         }
 
 
                     }
+
+
+                    Log.d("myLogsBookVenue", "Booked days array list : " + bookedDays.toString());
+                    initializeCalender();
+
+
 
                 }
 
@@ -224,7 +245,10 @@ public class BookVenue extends AppCompatActivity {
             @Override
             public void handleFault(BackendlessFault fault) {
 
-                loadingView.stop();
+                //loadingView.stop();
+
+                Log.d("myLogsBookVenue", "failed to retrieve bookings. ERROR : " + fault.toString());
+
 
             }
         });
@@ -240,158 +264,44 @@ public class BookVenue extends AppCompatActivity {
 
     void initializeCalender() {
 
-        myCalendar = findViewById(R.id.book_venue_activity_calender);
-
-        // show month view
-        myCalendar.showMonthView();
-
-        //set holidays (these are the booked days)
-        myCalendar.setHolidayCellBackgroundColor(R.color.md_green_200);
-        myCalendar.setHolidayCellTextColor("#d590bb");
-        // set holiday date clickable true/false
-        myCalendar.setHolidayCellClickable(false);
-        // Add holiday  -  addHoliday(holiday_date)
-        myCalendar.addHoliday("2-11-2019");
-        myCalendar.addHoliday("13-11-2019");
-        myCalendar.addHoliday("18-10-2019");
-        myCalendar.addHoliday("10-10-2019");
-
-        // date click listener
-        myCalendar.setOnDateClickListener(new OnDateClickListener() {
-            @Override
-            public void onClick(Date date) {
-
-                Log.d("myLogsBookVenue", "Date : " + date.toString());
-                String selectedDate = parseDate(date);
-
-                if (selectedDate != null) {
-
-                  /*  myCalendar.addHoliday(selectedDate);
-                    Log.d("myLogsBookVenue", "Parsed Date : " + selectedDate);
-                    myCalendar.refreshCalendar();
-*/
-
-                    dateClicked(date);
 
 
+
+
+        //set pre selected days (these are the booked days)
+
+        List<String> tmp = new ArrayList<>();
+        tmp.add("2019-7-1");
+        tmp.add("2019-7-8");
+        tmp.add("2019-7-16");
+
+            DPCManager.getInstance().setDecorBG(bookedDays);
+
+            picker.setDPDecor(new DPDecor() {
+                @Override
+                public void drawDecorBG(Canvas canvas, Rect rect, Paint paint) {
+                    paint.setColor(Color.RED);
+                    canvas.drawCircle(rect.centerX(), rect.centerY(), rect.width() / 2F, paint);
                 }
+            });
 
 
-            }
 
+        picker.setOnDateSelectedListener(new DatePicker.OnDateSelectedListener() {
             @Override
-            public void onLongClick(Date date) {
-
+            public void onDateSelected(List<String> date) {
+                StringBuilder result = new StringBuilder();
+                Iterator iterator = date.iterator();
+                while (iterator.hasNext()) {
+                    result.append(iterator.next());
+                    if (iterator.hasNext()) {
+                        result.append("\n");
+                    }
+                }
+                Toast.makeText(BookVenue.this, result.toString(), Toast.LENGTH_LONG).show();
             }
         });
 
-    }
-
-
-    /**
-     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-     */
-
-
-    void dateClicked(Date date) {
-
-        String dateString = parseDate(date);
-        currentDateTime = new DateTime(date);
-
-        if (!secondDateClicked) {
-
-            Log.d("myLogsBookVenue", "secondDateClicked: " + secondDateClicked.toString());
-
-
-            if (!firstDateClicked) {
-                cacheTheClickedDate(parseDate(date), clickedStartDate);
-                startDate = date;
-                startDateTime = new DateTime(startDate);
-                firstDateClicked = true;
-                startDateClicked = true;
-                myCalendar.addEvent(parseDate(date), "8:00", "0:00", "start");
-                myCalendar.refreshCalendar();
-                Log.d("myLogsBookVenue", "firstDateClicked: " + firstDateClicked.toString());
-
-            } else {
-
-                if (currentDateTime.isAfter(startDateTime)) {
-
-                    cacheTheClickedDate(parseDate(date), clickedEndDate);
-                    endDate = date;
-                    endDateTime = new DateTime(date);
-                    endDateClicked = true;
-                    secondDateClicked = true;
-                    Duration duration = new Duration(startDateTime, endDateTime);
-                    Integer days = duration.toStandardDays().getDays();
-                    String parsedDate;
-                    Integer dayOfMonth;
-                    DateTime durationStart = startDateTime;
-
-                    for (int i = 0; i < days; i++) {
-
-                        durationStart = durationStart.plusDays(1);
-                        dayOfMonth = durationStart.getDayOfMonth();
-                        parsedDate = dayOfMonth.toString() + "-" + durationStart.getMonthOfYear() + "-" + durationStart.getYear();
-                        Log.d("myLogsBookVenue", "Parsed Date : " + parsedDate + " " + i);
-                        myCalendar.addEvent(parsedDate, "8:00", "0:00", "Book");
-                    }
-                    myCalendar.refreshCalendar();
-                    Log.d("myLogsBookVenue", "current date is after start date. secondDateClicked: " + secondDateClicked.toString() + days);
-
-
-                } else if (currentDateTime.isEqual(startDateTime)) {
-
-                    myCalendar.deleteAllEvent();
-                    firstDateClicked = false;
-                    startDateClicked = false;
-                    endDateClicked = false;
-                    secondDateClicked = false;
-                    Log.d("myLogsBookVenue", "Current date is equal to start date. secondDateClicked: " + secondDateClicked.toString());
-
-
-                } else if (currentDateTime.isBefore(startDateTime)) {
-
-                    myCalendar.deleteAllEvent();
-                    startDate = date;
-                    startDateTime = new DateTime(startDate);
-                    cacheTheClickedDate(parseDate(date), clickedStartDate);
-                    secondDateClicked = false;
-                    myCalendar.addEvent(parseDate(startDate), "8:00", "0:00", "Book");
-                    myCalendar.refreshCalendar();
-                    Log.d("myLogsBookVenue", "Current date is before start date. secondDateClicked: " + secondDateClicked.toString());
-
-
-                }
-            }
-
-        } else {
-
-            if (currentDateTime.isEqual(startDateTime)) {
-
-                Log.d("myLogsBookVenue", "beyond second click. current = start date. secondDateClicked: " + secondDateClicked.toString());
-
-                secondDateClicked = false;
-                startDate = endDate;
-                startDateTime = new DateTime(startDate);
-                myCalendar.deleteAllEvent();
-                myCalendar.addEvent(parseDate(endDate), "8:00", "0:00", "Book");
-                myCalendar.refreshCalendar();
-                cacheTheClickedDate(parseDate(endDate), clickedStartDate);
-
-            } else if (currentDateTime.isEqual(endDateTime)) {
-
-                Log.d("myLogsBookVenue", "beyond second click. current = end date. secondDateClicked: " + secondDateClicked.toString());
-
-                myCalendar.deleteAllEvent();
-                secondDateClicked = false;
-                myCalendar.addEvent(parseDate(startDate), "8:00", "0:00", "Book");
-                myCalendar.refreshCalendar();
-
-            }
-
-        }
 
     }
 
@@ -457,130 +367,6 @@ public class BookVenue extends AppCompatActivity {
      */
 
 
-    void uploadBooking(Integer startDate, Integer endDate, Integer month, Integer year, Boolean approved) {
-
-
-        Map<String, Object> booking = new HashMap<>();
-        booking.put("end_date", endDate);
-        booking.put("start_date", startDate);
-        booking.put("year", year);
-        booking.put("approved", approved);
-        booking.put("month", month);
-
-
-        Backendless.Data.of("bookings").save(booking, new AsyncCallback<Map>() {
-            @Override
-            public void handleResponse(Map response) {
-
-                Map bookingObject = new HashMap<>();
-                bookingObject = response;
-                classWideBookingObject = response;
-                //bookingObject.put("objectId", response.get("objectId"));
-
-                Map<String, Object> userObject = new HashMap<String, Object>();
-                userObject.put("objectId", currentUserId);
-
-                ArrayList<Map> children = new ArrayList<Map>();
-                children.add(userObject);
-
-                Log.d("myLogsBookVenue", "new bboking uploaded: " + response.toString());
-
-
-                Backendless.Data.of("bookings").addRelation(bookingObject, "user", children, new AsyncCallback<Integer>() {
-                    @Override
-                    public void handleResponse(Integer response) {
-
-                        Log.d("myLogsBookVenue", "new booking 'user' relation uploaded: " + response.toString());
-
-
-                        Map<String, Object> venueObject = new HashMap<String, Object>();
-                        venueObject.put("objectId", venueId);
-
-                        ArrayList<Map> venues = new ArrayList<Map>();
-                        venues.add(venueObject);
-
-                        Backendless.Data.of("bookings").addRelation(classWideBookingObject, "venue", venues, new AsyncCallback<Integer>() {
-                            @Override
-                            public void handleResponse(Integer response) {
-
-                                Log.d("myLogsBookVenue", "new booking 'venue' relation uploaded: " + response.toString());
-
-                                Map<String, Object> currentVenue = new HashMap<String, Object>();
-                                currentVenue.put("objectId", venueId);
-
-                                Map<String, Object> bookingChild = new HashMap<String, Object>();
-                                bookingChild.put("objectId", classWideBookingObject.get("objectId"));
-
-
-                                ArrayList<Map> bookingChildren = new ArrayList<Map>();
-                                bookingChildren.add(bookingChild);
-
-
-                                Backendless.Data.of("venues").addRelation(currentVenue, "bookings", bookingChildren, new AsyncCallback<Integer>() {
-                                    @Override
-                                    public void handleResponse(Integer response) {
-
-                                        Log.d("myLogsBookVenue", "this venue 'bookings' relation uploaded: " + response.toString());
-
-
-
-                                        myCalendar.refreshCalendar();
-
-                                        loadingView.stop();
-
-                                    }
-
-                                    @Override
-                                    public void handleFault(BackendlessFault fault) {
-
-                                        Log.d("myLogsBookVenue", "this venue 'bookings' relation upload failed: " + fault.toString());
-                                        loadingView.stop();
-
-                                    }
-                                });
-
-
-                            }
-
-                            @Override
-                            public void handleFault(BackendlessFault fault) {
-
-                                Log.d("myLogsBookVenue", "new booking 'venue' relation upload failed: " + fault.toString());
-                                loadingView.stop();
-
-
-                            }
-                        });
-
-
-                        //todo this is wea u stopped  upload booking to venue table relation
-                        //todo send the 1:N relation from the venues table to booking table
-
-
-                    }
-
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        Log.d("myLogsBookVenue", "new boking 'user' upload failed: " + fault.toString());
-                        loadingView.stop();
-
-
-                    }
-                });
-
-
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-
-                Log.d("myLogsBookVenue", "new booking upload failed: " + fault.toString());
-                loadingView.stop();
-
-
-
-            }
-        });
 
 
 
@@ -612,10 +398,10 @@ Backendless.Data.of( "Person" ).addRelation( parentObject, "address:Address:n", 
 */
 
 
-    }
-
-
 }
+
+
+
 
 
 

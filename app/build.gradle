@@ -23,6 +23,10 @@ dependencies {
     implementation('com.mikepenz:fastadapter:2.6.3@aar') {
         transitive = true
     }
+    //date range picker lib 2
+    //calendar aige datepicker
+    implementation 'cn.aigestudio.datepicker:DatePicker:2.2.0'
+
     //used for the rotating reply song view
     implementation 'theanilpaudel:rotatinganimation:1.0.0'
     //used for the circular image view in the play song activity
@@ -77,9 +81,7 @@ dependencies {
     //file picker library
     implementation 'com.droidninja:filepicker:2.1.5'
 
-    //caender and date picker library
-    implementation 'com.github.psinetron:slycalendarview:0.0.9'
-    implementation 'com.github.vatsaldesai92:MyDynamicCalendarLibrary:1.0.1'
+
 
 
     //merlin connection status checker library
