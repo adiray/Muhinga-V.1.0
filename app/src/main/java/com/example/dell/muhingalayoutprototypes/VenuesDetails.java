@@ -8,13 +8,20 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.backendless.Backendless;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
+import com.backendless.persistence.DataQueryBuilder;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class VenuesDetails extends AppCompatActivity {
 
@@ -24,6 +31,7 @@ public class VenuesDetails extends AppCompatActivity {
 
     //miscellaneous objects
     ArrayList<VenuesDetailsViewSingleImage> mainImageDataSource = new ArrayList<>();
+    ArrayList<String> bookedDays = new ArrayList<>();
 
     //view objects
     TextView titleTv, sizeTv, priceTv, descriptionTv, locationTv;
@@ -37,6 +45,8 @@ public class VenuesDetails extends AppCompatActivity {
 
     //intent ids
     public static final String EXTRA_VENUE_ID = "com.example.muhinga.venuesID";
+    public static final String  EXTRA_VENUE_BOOKINGS = "com.example.muhinga.venuesBookings";
+
 
 
     @Override
@@ -104,12 +114,16 @@ public class VenuesDetails extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(VenuesDetails.this, BookVenue.class);
                 intent.putExtra(EXTRA_VENUE_ID, venuesDetailsId);
-                intent.putExtra(MainActivity.EXTRA_GLOBAL_USER,globalCurrentUserJson);
+                intent.putExtra(EXTRA_VENUE_BOOKINGS, bookedDays);
+                intent.putExtra(MainActivity.EXTRA_GLOBAL_USER, globalCurrentUserJson);
                 startActivity(intent);
 
 
             }
         });
+
+
+        retrieveBookings();
 
 
     }
@@ -153,6 +167,87 @@ public class VenuesDetails extends AppCompatActivity {
         String phoneNumber = "tel:" + venuesOwnerPhone;
         Intent i = new Intent(Intent.ACTION_DIAL, Uri.parse(phoneNumber));
         startActivity(i);
+
+    }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+    void retrieveBookings() {
+
+
+        // loadingView.start();
+
+        DataQueryBuilder queryBuilder = DataQueryBuilder.create();
+        String whereClause = "venues[bookings]" +
+                ".objectId='" + venuesDetailsId + "'";
+        queryBuilder.setWhereClause(whereClause);
+        Backendless.Data.of("bookings").find(queryBuilder, new AsyncCallback<List<Map>>() {
+            @Override
+            public void handleResponse(List<Map> response) {
+
+                if (!response.isEmpty()) {
+
+                    int counter = response.size();
+                    Integer startDate, endDate, year, month;
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String fullDate;
+
+                    for (int i = 0; i < counter; i++) {
+
+                        startDate = (Integer) response.get(i).get("start_date");
+                        endDate = (Integer) response.get(i).get("end_date");
+                        year = (Integer) response.get(i).get("year");
+                        month = (Integer) response.get(i).get("month");
+
+
+                        if (startDate != null && endDate != null && year != null && month != null) {
+                            for (int c = startDate; c <= endDate; c++) {
+
+
+                                stringBuilder.append(year);
+                                stringBuilder.append("-");
+                                stringBuilder.append(month);
+                                stringBuilder.append("-");
+                                stringBuilder.append(c);
+                                fullDate = stringBuilder.toString();
+                                Log.d("myLogsBookVenue", "full retrieved Date : " + fullDate);
+
+                                bookedDays.add(fullDate);
+
+
+                                stringBuilder.delete(0, stringBuilder.length());
+                            }
+
+
+                        }
+
+
+                    }
+
+
+                    Log.d("myLogsVenueDetails", "Booked days array list : " + bookedDays.toString());
+
+
+                }
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                //loadingView.stop();
+
+                Log.d("myLogsVenueDetails", "failed to retrieve bookings. ERROR : " + fault.toString());
+
+
+            }
+        });
 
     }
 

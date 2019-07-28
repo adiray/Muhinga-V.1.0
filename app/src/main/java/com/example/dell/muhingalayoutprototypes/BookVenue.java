@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.backendless.Backendless;
@@ -17,10 +18,13 @@ import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.DataQueryBuilder;
+import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialog;
+import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialogListener;
 import com.google.gson.Gson;
 
 import org.joda.time.DateTime;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,13 +46,20 @@ public class BookVenue extends AppCompatActivity {
     //views
     DatePicker picker;
     Button saveBookingButton;
+    ProgressBar progressBar;
+
+
+    //strings and dates and ints for the upload
+    Date startDate, endDate;
+    String firstDateString, lastDateString;
+    Integer firstDateInt, lastDateInt, selectedYear, selectedMonth;
+    DateTime startDateTime, endDateTime;
 
 
     //others
-    Date startDate, endDate;
-    DateTime startDateTime, endDateTime;
-    Boolean startDateClicked = false, endDateClicked = false, firstDateClicked = false, secondDateClicked = false, approved = false;
-    Integer clickedMonth, clickedYear;
+    // Date startDate, endDate;
+    //Boolean startDateClicked = false, endDateClicked = false, firstDateClicked = false, secondDateClicked = false, approved = false;
+    //Integer clickedMonth, clickedYear;
 
 
     //Venue info
@@ -57,8 +68,8 @@ public class BookVenue extends AppCompatActivity {
     //clicked date cache key
     String clickedStartDate = "clickedStartDate", clickedEndDate = "clickedEndDate";
 
-    Date initialDate, currentDate;  //previously clicked date and the date the user has just clicked respectively
-    DateTime initialDateTime, currentDateTime;
+    //Date initialDate, currentDate;  //previously clicked date and the date the user has just clicked respectively
+    // DateTime initialDateTime, currentDateTime;
 
 
     //user details
@@ -70,7 +81,8 @@ public class BookVenue extends AppCompatActivity {
     Map classWideBookingObject = new HashMap();
 
     //date picker arrays and others
-    List<String> bookedDays = new ArrayList<>();
+    ArrayList<String> bookedDays = new ArrayList<>();
+    String userSelectedDays = "";
 
 
     @Override
@@ -84,9 +96,7 @@ public class BookVenue extends AppCompatActivity {
 
         retrieveUserId();
 
-        retrieveBookings();
-
-        //initializeCalender();
+        initializeCalender();
 
 
     }
@@ -103,6 +113,7 @@ public class BookVenue extends AppCompatActivity {
         Intent intent = getIntent();
         venueId = intent.getStringExtra(VenuesDetails.EXTRA_VENUE_ID);
         currentUserJsonString = intent.getStringExtra(MainActivity.EXTRA_GLOBAL_USER);
+        bookedDays = intent.getStringArrayListExtra(VenuesDetails.EXTRA_VENUE_BOOKINGS);
 
     }
 
@@ -116,13 +127,9 @@ public class BookVenue extends AppCompatActivity {
     void initializeViews() {
 
 
-        picker = findViewById(R.id.datePicker);
-        // show current month view
-        Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH);
-        picker.setDate(year, month + 1);  // the month index starts from zero
-
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.GONE);
         saveBookingButton = findViewById(R.id.book_venue_activity_save_booking_button);
         //saveBookingButton.setEnabled(false);
         saveBookingButton.setOnClickListener(new View.OnClickListener() {
@@ -169,136 +176,93 @@ public class BookVenue extends AppCompatActivity {
      * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
      */
 
-
-    void retrieveBookings() {
-
-
-        // loadingView.start();
-
-        DataQueryBuilder queryBuilder = DataQueryBuilder.create();
-        String whereClause = "venues[bookings]" +
-                ".objectId='" + venueId + "'";
-        queryBuilder.setWhereClause(whereClause);
-        Backendless.Data.of("bookings").find(queryBuilder, new AsyncCallback<List<Map>>() {
-            @Override
-            public void handleResponse(List<Map> response) {
-
-                if (!response.isEmpty()) {
-
-                    int counter = response.size();
-                    Integer startDate, endDate, year, month;
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String fullDate;
-
-                    for (int i = 0; i < counter; i++) {
-
-                        startDate = (Integer) response.get(i).get("start_date");
-                        endDate = (Integer) response.get(i).get("end_date");
-                        year = (Integer) response.get(i).get("year");
-                        month = (Integer) response.get(i).get("month");
-
-
-                        if (startDate != null && endDate != null && year != null && month != null) {
-                            for (int c = startDate; c <= endDate; c++) {
-
-
-                                stringBuilder.append(year);
-                                stringBuilder.append("-");
-                                stringBuilder.append(month);
-                                stringBuilder.append("-");
-                                stringBuilder.append(c);
-                                fullDate = stringBuilder.toString();
-                                Log.d("myLogsBookVenue", "full retrieved Date : " + fullDate);
-
-                                bookedDays.add(fullDate);
-
-
-                                stringBuilder.delete(0, stringBuilder.length());
-                            }
-
-
-
-
-
-
-
-
-
-                            //loadingView.stop();
-
-                        }
-
-
-                    }
-
-
-                    Log.d("myLogsBookVenue", "Booked days array list : " + bookedDays.toString());
-                    initializeCalender();
-
-
-
-                }
-
-
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-
-                //loadingView.stop();
-
-                Log.d("myLogsBookVenue", "failed to retrieve bookings. ERROR : " + fault.toString());
-
-
-            }
-        });
-
-    }
-
-
-    /**
-     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-     */
-
-
     void initializeCalender() {
 
-
-
+        picker = findViewById(R.id.datePicker);
+        // show current month view
+        Calendar c = Calendar.getInstance();
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH);
+        picker.setDate(year, month + 1);  // the month index starts from zero
 
 
         //set pre selected days (these are the booked days)
 
-        List<String> tmp = new ArrayList<>();
+        List<String> tmp = new ArrayList<>(); //this arraylist seems redundant but is important to make sure the booked dates display
+        tmp = bookedDays;
         tmp.add("2019-7-1");
-        tmp.add("2019-7-8");
-        tmp.add("2019-7-16");
 
-            DPCManager.getInstance().setDecorBG(bookedDays);
 
-            picker.setDPDecor(new DPDecor() {
-                @Override
-                public void drawDecorBG(Canvas canvas, Rect rect, Paint paint) {
-                    paint.setColor(Color.RED);
-                    canvas.drawCircle(rect.centerX(), rect.centerY(), rect.width() / 2F, paint);
-                }
-            });
+        DPCManager.getInstance().setDecorBG(tmp);
 
+        picker.setDPDecor(new DPDecor() {
+            @Override
+            public void drawDecorBG(Canvas canvas, Rect rect, Paint paint) {
+                paint.setColor(Color.RED);
+                canvas.drawCircle(rect.centerX(), rect.centerY(), rect.width() / 2F, paint);
+            }
+        });
 
 
         picker.setOnDateSelectedListener(new DatePicker.OnDateSelectedListener() {
             @Override
             public void onDateSelected(List<String> date) {
-                StringBuilder result = new StringBuilder();
-                Iterator iterator = date.iterator();
-                while (iterator.hasNext()) {
-                    result.append(iterator.next());
-                    if (iterator.hasNext()) {
-                        result.append("\n");
+
+                if (!date.isEmpty()) {
+                    StringBuilder result = new StringBuilder();
+                    Iterator iterator = date.iterator();
+                    while (iterator.hasNext()) {
+                        result.append(iterator.next());
+                        if (iterator.hasNext()) {
+                            result.append("\n");
+                        }
+                    }
+
+                    userSelectedDays = result.toString();
+
+
+                    //preparing the booking data for upload
+                    firstDateString = date.get(0);
+                    lastDateString = date.get(date.size() - 1);
+
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+                    try {
+                        startDate = formatter.parse(firstDateString);
+                    } catch (ParseException e) {
+
+                        Log.d("myLogsBookVenue", "failed to parse  start date: " + e.getMessage());
+
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        endDate = formatter.parse(lastDateString);
+                    } catch (ParseException e) {
+
+                        Log.d("myLogsBookVenue", "failed to parse end date: " + e.getMessage());
+
+                        e.printStackTrace();
+                    }
+
+
+                    if (startDate != null && endDate != null) {
+
+                        startDateTime = new DateTime(startDate);
+                        endDateTime = new DateTime(endDate);
+
+                        firstDateInt = startDateTime.getDayOfMonth();
+                        lastDateInt = endDateTime.getDayOfMonth();
+                        selectedMonth = startDateTime.getMonthOfYear();
+                        selectedYear = startDateTime.getYear();
+
+
                     }
                 }
-                Toast.makeText(BookVenue.this, result.toString(), Toast.LENGTH_LONG).show();
+
+
+                displayConfirmationDialog();
+                // Toast.makeText(BookVenue.this, result.toString(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -367,6 +331,138 @@ public class BookVenue extends AppCompatActivity {
      */
 
 
+    void displayConfirmationDialog() {
+
+
+        new TTFancyGifDialog.Builder(BookVenue.this)
+                .setTitle("Confirm Dates")
+                .setMessage("Confirm the booking dates?")
+                .setPositiveBtnText("CONFIRM")
+                .setPositiveBtnBackground("#22b573")
+                .setNegativeBtnText("CANCEL")
+                .setNegativeBtnBackground("#FF3D00")
+                .setGifResource(R.drawable.sign_in_opt_one)      //pass your gif, png or jpg
+                .isCancellable(false)
+                .OnPositiveClicked(new TTFancyGifDialogListener() {
+                    @Override
+                    public void OnClick() {
+
+                        progressBar.setVisibility(View.VISIBLE);
+                        uploadBooking(firstDateInt,lastDateInt,selectedMonth,selectedYear,false);
+
+                    }
+                })
+                .OnNegativeClicked(new TTFancyGifDialogListener() {
+                    @Override
+                    public void OnClick() {
+
+                    }
+                })
+                .build();
+
+
+    }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+    void uploadBooking(Integer startDate, Integer endDate, Integer month, Integer year, Boolean approved) {
+
+
+        Map<String, Object> booking = new HashMap<>();
+        booking.put("end_date", endDate);
+        booking.put("start_date", startDate);
+        booking.put("year", year);
+        booking.put("approved", approved);
+        booking.put("month", month);
+
+        Backendless.Data.of("bookings").save(booking, new AsyncCallback<Map>() {
+            @Override
+            public void handleResponse(Map response) {
+
+                Map bookingObject = new HashMap<>();
+                bookingObject = response;
+                classWideBookingObject = response;
+                //bookingObject.put("objectId", response.get("objectId"));
+                Map<String, Object> userObject = new HashMap<String, Object>();
+                userObject.put("objectId", currentUserId);
+                ArrayList<Map> children = new ArrayList<Map>();
+                children.add(userObject);
+                Log.d("myLogsBookVenue", "new booking uploaded: " + response.toString());
+                Backendless.Data.of("bookings").addRelation(bookingObject, "user", children, new AsyncCallback<Integer>() {
+                    @Override
+                    public void handleResponse(Integer response) {
+                        Log.d("myLogsBookVenue", "new booking 'user' relation uploaded: " + response.toString());
+                        Map<String, Object> venueObject = new HashMap<String, Object>();
+                        venueObject.put("objectId", venueId);
+                        ArrayList<Map> venues = new ArrayList<Map>();
+                        venues.add(venueObject);
+                        Backendless.Data.of("bookings").addRelation(classWideBookingObject, "venue", venues, new AsyncCallback<Integer>() {
+                            @Override
+                            public void handleResponse(Integer response) {
+                                Log.d("myLogsBookVenue", "new booking 'venue' relation uploaded: " + response.toString());
+                                Map<String, Object> currentVenue = new HashMap<String, Object>();
+                                currentVenue.put("objectId", venueId);
+                                Map<String, Object> bookingChild = new HashMap<String, Object>();
+                                bookingChild.put("objectId", classWideBookingObject.get("objectId"));
+                                ArrayList<Map> bookingChildren = new ArrayList<Map>();
+                                bookingChildren.add(bookingChild);
+                                Backendless.Data.of("venues").addRelation(currentVenue, "bookings", bookingChildren, new AsyncCallback<Integer>() {
+                                    @Override
+                                    public void handleResponse(Integer response) {
+                                        Log.d("myLogsBookVenue", "this venue 'bookings' relation uploaded: " + response.toString());
+                                        //myCalendar.refreshCalendar();
+                                         progressBar.setVisibility(View.GONE);
+                                        Toast.makeText(BookVenue.this, "Booking successful!", Toast.LENGTH_LONG).show();
+                                         
+                                    }
+
+                                    @Override
+                                    public void handleFault(BackendlessFault fault) {
+                                        Log.d("myLogsBookVenue", "this venue 'bookings' relation upload failed: " + fault.toString());
+                                        progressBar.setVisibility(View.GONE);
+
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void handleFault(BackendlessFault fault) {
+                                Log.d("myLogsBookVenue", "new booking 'venue' relation upload failed: " + fault.toString());
+                                progressBar.setVisibility(View.GONE);
+
+                            }
+                        });
+                        //todo this is wea u stopped  upload booking to venue table relation
+                        //todo send the 1:N relation from the venues table to booking table
+                    }
+
+                    @Override
+                    public void handleFault(BackendlessFault fault) {
+                        Log.d("myLogsBookVenue", "new boking 'user' upload failed: " + fault.toString());
+                        progressBar.setVisibility(View.GONE);
+
+                    }
+                });
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+                Log.d("myLogsBookVenue", "new booking upload failed: " + fault.toString() + fault.getMessage());
+                progressBar.setVisibility(View.GONE);
+
+            }
+        });
+
+    }
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
 
 
 
