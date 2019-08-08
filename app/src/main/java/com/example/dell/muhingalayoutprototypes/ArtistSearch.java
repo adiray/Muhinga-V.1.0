@@ -1,22 +1,13 @@
 package com.example.dell.muhingalayoutprototypes;
 
-import android.graphics.PorterDuff;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.content.Intent;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mancj.materialsearchbar.MaterialSearchBar;
@@ -26,14 +17,11 @@ import com.mikepenz.fastadapter.adapters.FooterAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter_extensions.items.ProgressItem;
 import com.mikepenz.fastadapter_extensions.scroll.EndlessRecyclerOnScrollListener;
-import com.yalantis.jellytoolbar.listener.JellyListener;
-import com.yalantis.jellytoolbar.widget.JellyToolbar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -41,26 +29,42 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class Music extends AppCompatActivity {
-
+public class ArtistSearch extends AppCompatActivity {
 
 
 
     //miscellaneous objects
-    Boolean onRefreshing = false, infiniteLoading = false;
+    Boolean onRefreshing = false, infiniteLoading = false, isAfterFirstSearch = false;
     ArrayList<ArtistResponse> allArtistResponseArray = new ArrayList<>();
-
 
     //declare the view objects
     SwipeRefreshLayout artistSwipeRefresh; //swipe to refresh view for the land recycler view
 
-
-    //TOOLBAR VIEWS
-    Toolbar musicMainToolBar;
-
-
     //recycler view objects
     RecyclerView artistRecyclerView;
+
+
+    //fast adapter objects
+    FastItemAdapter<ArtistResponse> artistFastAdapter = new FastItemAdapter<>();    //create our FastAdapter which will manage everything
+    FooterAdapter<ProgressItem> footerAdapter = new FooterAdapter<>();
+    EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
+
+
+    //Intent objects
+    public static final String EXTRA_SEARCH_ARTIST_NAME = "com.example.muhinga.artistName";
+    public static final String EXTRA_SEARCH_ARTIST_PROFILE_IMAGE_REFERENCE = "com.example.muhinga.artistProfileImageReference";
+    public static final String EXTRA_SEARCH_ARTIST_COVER_IMAGE_REFERENCE = "com.example.muhinga.artistCoverImageReference";
+    public static final String EXTRA_SEARCH_ARTIST_REFERRER_ACTIVITY = "com.example.muhinga.artistSearchUniqueReferringId";
+
+
+
+    //Floating Search bar objects
+    MaterialSearchBar artistSearchBar;
+    List artistSearchSuggestions;
+    String searchText , searchTextQuery;
+
+
+
 
     //declare the retrofit objects. All these are used with retrofit
     Retrofit.Builder builder;
@@ -72,79 +76,62 @@ public class Music extends AppCompatActivity {
     String tableOffsetString = tableOffset.toString();
 
 
-    //fast adapter objects
-    FastItemAdapter<ArtistResponse> artistFastAdapter = new FastItemAdapter<>();    //create our FastAdapter which will manage everything
-    FooterAdapter<ProgressItem> footerAdapter = new FooterAdapter<>();
-    EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
-    //Intent objects
-    public static final String EXTRA_ARTIST_NAME = "com.example.muhinga.artistName";
-    public static final String EXTRA_ARTIST_PROFILE_IMAGE_REFERENCE = "com.example.muhinga.artistProfileImageReference";
-    public static final String EXTRA_ARTIST_COVER_IMAGE_REFERENCE = "com.example.muhinga.artistCoverImageReference";
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_music);
+        setContentView(R.layout.activity_artist_search);
 
 
         //initialize the views
-        artistSwipeRefresh = findViewById(R.id.activity_music_home_artist_swipe_refresh);
+        artistSwipeRefresh = findViewById(R.id.artist_search_view_swipe_refresh);
 
 
 
 
-        //toolBar
-        musicMainToolBar = findViewById(R.id.music_action_bar);
-        musicMainToolBar.setTitle("Artists");
-        Objects.requireNonNull(musicMainToolBar.getOverflowIcon()).setColorFilter(getResources().getColor(R.color.my_color_white), PorterDuff.Mode.SRC_ATOP);
-        setSupportActionBar(musicMainToolBar);
+        //initialize the search bar
+        //Floating Search Bar
+        artistSearchBar = findViewById(R.id.music_search_view_search_bar);
+        artistSearchSuggestions =  artistSearchBar.getLastSuggestions();
+        artistSearchBar.setLastSuggestions(artistSearchSuggestions);
 
-
-
-
-
-
-
-     /*   //toolbar
-        musicMainToolbar = findViewById(R.id.music_main_toolbar);
-
-        searchArtistEditText = (EditText) LayoutInflater.from(this).inflate(R.layout.music_activity_search_view, null);
-        searchArtistEditText.setBackgroundResource(R.color.colorTransparent);
-
-        musicMainToolbar.setContentView(searchArtistEditText);
-
-        musicMainToolbar.setJellyListener(new JellyListener() {
+        artistSearchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
             @Override
-            public void onCancelIconClicked() {
+            public void onSearchStateChanged(boolean enabled) {
 
-                if (TextUtils.isEmpty(searchArtistEditText.getText())) {
-                    musicMainToolbar.collapse();
-                } else {
-
-                    searchArtistEditText.getText().clear();
-                }
             }
-        });*/
 
-        /*
-        toolbar.getToolbar().setNavigationIcon(R.drawable.ic_menu);
-        toolbar.setJellyListener(jellyListener);
+            @Override
+            public void onSearchConfirmed(CharSequence text) {
 
-        editText = (AppCompatEditText) LayoutInflater.from(this).inflate(R.layout.edit_text, null);
-        editText.setBackgroundResource(R.color.colorTransparent);
-        toolbar.setContentView(editText);
-*/
+                searchText = text.toString();
+                searchTextQuery = "name%20LIKE%20'%25"+searchText.trim()+"%25'";
+                artistFilterMap.put("where", searchTextQuery);
+                requestArtists(); //make the initial / first  artist request
+
+            }
+
+            @Override
+            public void onButtonClicked(int buttonCode) {
+
+            }
+        });
+
+
 
         //Build out the recycler view
-        artistRecyclerView = findViewById(R.id.music_main_recycler_view);
+        artistRecyclerView = findViewById(R.id.artist_search_view_main_recycler_view);
         artistRecyclerView.setHasFixedSize(true);
-        artistRecyclerView.setLayoutManager(new GridLayoutManager(Music.this, 2, 1, false));
+        artistRecyclerView.setLayoutManager(new GridLayoutManager(ArtistSearch.this, 2, 1, false));
 
 
         //initialize our FastAdapter which will manage everything
         artistFastAdapter = new FastItemAdapter<>();
+
 
 
         //initialize the endless scroll listener
@@ -170,6 +157,8 @@ public class Music extends AppCompatActivity {
         };
 
 
+
+
         //set the on refresh listener to the swipe to refresh view
         artistSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -183,6 +172,7 @@ public class Music extends AppCompatActivity {
         });
 
 
+
         //set the infinite/endless load on scroll listener to the recycler view
         artistRecyclerView.addOnScrollListener(endlessRecyclerOnScrollListener);
 
@@ -190,12 +180,10 @@ public class Music extends AppCompatActivity {
         //fill the query map object for the retrofit query
         artistFilterMap.put("pageSize", "4");
         artistFilterMap.put("offset", tableOffsetString);
+        artistFilterMap.put("where", searchTextQuery);
         artistFilterMap.put("sortBy", "created%20desc");
 
 
-        buildRetrofitClient();  //build the retrofit client
-
-        requestArtists(); //make the initial / first  artist request
 
 
         artistFastAdapter.withSelectable(true);
@@ -203,13 +191,13 @@ public class Music extends AppCompatActivity {
             @Override
             public boolean onClick(View v, IAdapter<ArtistResponse> adapter, ArtistResponse item, int position) {
 
-                Intent intent = new Intent(Music.this, Artist.class);
+                Intent intent = new Intent(ArtistSearch.this, Artist.class);
 
                 //Todo this is where you stopped. add the extras for the intents
-                intent.putExtra(EXTRA_ARTIST_NAME, item.getName());
-                intent.putExtra(EXTRA_ARTIST_COVER_IMAGE_REFERENCE, item.getCoverImage());
-                intent.putExtra(EXTRA_ARTIST_PROFILE_IMAGE_REFERENCE, item.getProfilePicture());
-                intent.putExtra("uniqueId", "musicHomeActivity");
+                intent.putExtra(EXTRA_SEARCH_ARTIST_NAME, item.getName());
+                intent.putExtra(EXTRA_SEARCH_ARTIST_COVER_IMAGE_REFERENCE, item.getCoverImage());
+                intent.putExtra(EXTRA_SEARCH_ARTIST_PROFILE_IMAGE_REFERENCE, item.getProfilePicture());
+                intent.putExtra("uniqueId","ArtistSearch");
                 startActivity(intent);
 
 
@@ -218,38 +206,22 @@ public class Music extends AppCompatActivity {
         });
 
 
+
+
+
+
+
+
+        buildRetrofitClient();  //build the retrofit client
+
+
+
+
+
+
     }
 
 
-    /*************************************************************************************************************************************************/
-
-
-    //inflate the menu layout file for the toolbar
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.music_home_app_bar_menu, menu);
-        return true;
-    }
-
-
-    //specify the actions that happen when each menu item is clicked
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case (R.id.search_artists_button):
-                Intent intent = new Intent(Music.this, ArtistSearch.class);
-                startActivity(intent);
-
-                break;
-            default:
-                break;
-        }
-        return true;
-    }
-
-
-    /*************************************************************************************************************************************************/
 
 
     /*************************************************************************************************************************************************/
@@ -276,6 +248,7 @@ public class Music extends AppCompatActivity {
     /*************************************************************************************************************************************************/
 
 
+
     void requestArtists() {
 
         //make the call
@@ -284,15 +257,31 @@ public class Music extends AppCompatActivity {
             public void onResponse(Call<ArrayList<ArtistResponse>> call, Response<ArrayList<ArtistResponse>> response) {
 
 
-                if (!onRefreshing && !infiniteLoading) {
+
+                if (!onRefreshing && !infiniteLoading && !isAfterFirstSearch) {
 
                     //perform the normal sequence of actions for a first time load
                     allArtistResponseArray = response.body();
                     artistFastAdapter.add(allArtistResponseArray);
                     artistRecyclerView.setAdapter(footerAdapter.wrap(artistFastAdapter));
+                    isAfterFirstSearch = true;
 
 
-                    Log.d("myLogsRequestUrl", response.raw().request().url().toString());
+                    Log.d("myLogsRequestUrlForSrch", response.raw().request().url().toString());
+
+                }  else if(!onRefreshing && !infiniteLoading && isAfterFirstSearch){
+
+                    //perform the sequence of actions for another search
+                    allArtistResponseArray.clear();
+                    allArtistResponseArray = response.body();
+                    artistFastAdapter.clear();
+                    artistRecyclerView.clearOnScrollListeners();
+                    artistRecyclerView.addOnScrollListener(endlessRecyclerOnScrollListener);
+                    artistFastAdapter.add(response.body());
+                    endlessRecyclerOnScrollListener.resetPageCount();
+
+
+                    Log.d("myLogsRequestUrl2ndsrch", response.raw().request().url().toString());
 
                 } else if (onRefreshing && !infiniteLoading) {
 
@@ -306,7 +295,7 @@ public class Music extends AppCompatActivity {
                     endlessRecyclerOnScrollListener.resetPageCount();
 
 
-                    Log.d("myLogsRequestUrlOR", response.raw().request().url().toString());
+                    Log.d("myLogsRequestUrlORsrch", response.raw().request().url().toString());
 
 
                 } else if (infiniteLoading && !onRefreshing) {
@@ -316,7 +305,7 @@ public class Music extends AppCompatActivity {
                     if (response.body().size() > 0) {
                         artistFastAdapter.add(response.body());
                     } else {
-                        Toast.makeText(Music.this, "No more items", Toast.LENGTH_LONG).show();
+                        Toast.makeText(ArtistSearch.this, "No more items", Toast.LENGTH_LONG).show();
                     }
 
 
@@ -380,28 +369,11 @@ public class Music extends AppCompatActivity {
     /*************************************************************************************************************************************************/
 
 
+
+
+
+
+
+
+
 }
-
-
-
-
-
-
-
-/*  <com.yalantis.jellytoolbar.widget.JellyToolbar
-        android:id="@+id/music_main_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/my_color_primary"
-        android:paddingStart="8dp"
-        app:cancelIcon="@drawable/cancel_black_simple"
-        app:endColor="@color/my_color_primary"
-        app:icon="@drawable/search_black_simple"
-        app:startColor="@color/my_color_primary_darker_shade"
-        app:title="Search Artists"
-        app:titleTextColor="@android:color/white" />
-
-*/
-
-
-

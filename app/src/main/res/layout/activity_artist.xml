@@ -17,23 +17,7 @@
 
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:titleTextColor="@color/my_color_bg">
-
-        <com.mancj.materialsearchbar.MaterialSearchBar
-            android:id="@+id/music_search_bar"
-            style="@style/MaterialSearchBarLight"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            app:mt_hint="Album name"
-            app:mt_maxSuggestionsCount="10"
-            app:mt_placeholder="Search Songs"
-            app:mt_searchIconDrawable="@drawable/search_black_simple"
-            app:mt_speechMode="false" />
-    </android.support.v7.widget.Toolbar>
+        app:titleTextColor="@color/my_color_bg"/>
 
 
 

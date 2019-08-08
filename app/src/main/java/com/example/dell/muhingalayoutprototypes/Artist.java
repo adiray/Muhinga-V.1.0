@@ -1,11 +1,14 @@
 package com.example.dell.muhingalayoutprototypes;
 
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -23,6 +26,7 @@ import com.mikepenz.fastadapter_extensions.scroll.EndlessRecyclerOnScrollListene
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -35,15 +39,19 @@ public class Artist extends AppCompatActivity {
 
     //miscellaneous objects
     Boolean onRefreshing = false, infiniteLoading = false;
-    String selectedArtistName, selectedArtistNameQueryString, selectedArtistCoverImageReference, selectedArtistProfileImageReference;
+    String selectedArtistName = " Artist ", selectedArtistNameQueryString, selectedArtistCoverImageReference, selectedArtistProfileImageReference;
     public static final String EXTRA_SELECTED_ALBUM_NAME = "com.example.muhinga.selectedAlbumName";
     public static final String EXTRA_SELECTED_ARTIST_NAME = "com.example.muhinga.selectedArtistNameTest";
+    String referringActivity;
 
 
     //declare the view objects
     SwipeRefreshLayout artistViewAlbumRecViewSwipeRefresh;
     ImageView artistProfileImage, artistCoverImage;
     TextView selectedArtistNameTextView;
+
+    //TOOLBAR VIEWS
+    Toolbar artistDetailsMainToolBar;
 
 
     //declare the recycler view objects
@@ -72,13 +80,27 @@ public class Artist extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist);
 
-
         //get the intent that started this activity
         Intent intent = getIntent();
-        selectedArtistName = intent.getStringExtra(Music.EXTRA_ARTIST_NAME);
-        selectedArtistNameQueryString = "name%3D%20" + "'" + selectedArtistName + "'";
-        selectedArtistCoverImageReference = intent.getStringExtra(Music.EXTRA_ARTIST_COVER_IMAGE_REFERENCE);
-        selectedArtistProfileImageReference = intent.getStringExtra(Music.EXTRA_ARTIST_PROFILE_IMAGE_REFERENCE);
+        referringActivity = intent.getStringExtra("uniqueId");
+
+        if (referringActivity.equals("ArtistSearch")) {
+
+            selectedArtistName = intent.getStringExtra(ArtistSearch.EXTRA_SEARCH_ARTIST_NAME);
+            selectedArtistNameQueryString = "name%3D%20" + "'" + selectedArtistName + "'";
+            selectedArtistCoverImageReference = intent.getStringExtra(ArtistSearch.EXTRA_SEARCH_ARTIST_COVER_IMAGE_REFERENCE);
+            selectedArtistProfileImageReference = intent.getStringExtra(ArtistSearch.EXTRA_SEARCH_ARTIST_PROFILE_IMAGE_REFERENCE);
+
+
+        } else if (referringActivity.equals("musicHomeActivity")) {
+
+            selectedArtistName = intent.getStringExtra(Music.EXTRA_ARTIST_NAME);
+            selectedArtistNameQueryString = "name%3D%20" + "'" + selectedArtistName + "'";
+            selectedArtistCoverImageReference = intent.getStringExtra(Music.EXTRA_ARTIST_COVER_IMAGE_REFERENCE);
+            selectedArtistProfileImageReference = intent.getStringExtra(Music.EXTRA_ARTIST_PROFILE_IMAGE_REFERENCE);
+        }
+
+
         //name%3D%20'Kygo'
 
 
@@ -87,6 +109,17 @@ public class Artist extends AppCompatActivity {
         artistCoverImage = findViewById(R.id.artist_view_artist_cover_image);
         artistProfileImage = findViewById(R.id.artist_view_artist_profile_image);
         selectedArtistNameTextView = findViewById(R.id.artist_view_name);
+
+
+
+        //toolbar
+        artistDetailsMainToolBar = findViewById(R.id.artist_activity_app_bar);
+        artistDetailsMainToolBar.setTitle(selectedArtistName);
+        Objects.requireNonNull(artistDetailsMainToolBar.getOverflowIcon()).setColorFilter(getResources().getColor(R.color.my_color_white), PorterDuff.Mode.SRC_ATOP);
+        setSupportActionBar(artistDetailsMainToolBar);
+
+
+
 
         //load the profile and cover images into the respective views
         Glide.with(this).load(selectedArtistCoverImageReference).into(artistCoverImage);

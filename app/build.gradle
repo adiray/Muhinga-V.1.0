@@ -27,12 +27,8 @@ dependencies {
     //calendar aige datepicker
     implementation 'cn.aigestudio.datepicker:DatePicker:2.2.0'
 
-
     //ios style dialog library
     implementation 'com.gdacciaro:iosdialog:1.0.3'
-
-
-
 
     //used for the rotating reply song view
     implementation 'theanilpaudel:rotatinganimation:1.0.0'
@@ -87,9 +83,6 @@ dependencies {
 
     //file picker library
     implementation 'com.droidninja:filepicker:2.1.5'
-
-
-
 
     //merlin connection status checker library
     implementation 'com.novoda:merlin:1.2.0'

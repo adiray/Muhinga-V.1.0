@@ -78,7 +78,7 @@ public class VenuesDetails extends AppCompatActivity {
         callOwner = findViewById(R.id.venues_details_call_owner);
         shareVenue = findViewById(R.id.share_venue_venues_details_layout);
         bookVenue = findViewById(R.id.book_venue_venues_details_layout);
-        saveVenue = findViewById(R.id.save_venue_venues_details_layout);
+
 
 
         //toolbar
