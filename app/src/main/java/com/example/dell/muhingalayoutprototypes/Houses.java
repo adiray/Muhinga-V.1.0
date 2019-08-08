@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -98,12 +99,19 @@ public class Houses extends AppCompatActivity {
     public static final String EXTRA_PRICE_H = "com.example.muhinga.housesItemPrice";
     public static final String EXTRA_LOCATION_H = "com.example.muhinga.housesItemLocation";
     public static final String EXTRA_RENT_SALE_H = "com.example.muhinga.housesItemRentOrSale";
+    public static final String EXTRA_VIEWING_DATES = "com.example.muhinga.housesViewingDates";
+    public static final String EXTRA_OWNER_PHONE = "com.example.muhinga.housesOwnerPhoneNumber";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_houses);
+
+
+
+        //delay the display of soft keyboard until the user ties to input details into the filters
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         //Initialize the views
         housesSwipeRefresh = findViewById(R.id.houses_swipe_refresh);
@@ -213,7 +221,7 @@ public class Houses extends AppCompatActivity {
                 // Handle click here
                 Intent intent = new Intent(Houses.this, HousesDetails.class);
                 ArrayList<String> housesItemImageReferences = new ArrayList<>();
-                String location, title, price, rentSale, description;
+                String location, title, price, rentSale, description , ownerPhone, viewingDates;
                 Boolean isForRent;
 
 
@@ -229,6 +237,9 @@ public class Houses extends AppCompatActivity {
                 title = item.getTitle();
                 price = item.getPrice();
                 description = item.getDescription();
+                viewingDates = item.getViewingDates();
+                ownerPhone = item.getPhone();
+
                 if (item.isRent()) {
 
                     rentSale = "For Rent";
@@ -243,6 +254,8 @@ public class Houses extends AppCompatActivity {
                 intent.putExtra(EXTRA_PRICE_H, price);
                 intent.putExtra(EXTRA_RENT_SALE_H, rentSale);
                 intent.putExtra(EXTRA_DESCRIPTION_H, description);
+                intent.putExtra(EXTRA_OWNER_PHONE,ownerPhone);
+                intent.putExtra(EXTRA_VIEWING_DATES,viewingDates);
                 startActivity(intent);
 
 

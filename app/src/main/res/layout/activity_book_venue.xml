@@ -51,19 +51,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/book_venue_activity_save_booking_button"
-            android:layout_width="100dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="32dp"
-            android:background="@color/my_color_secondary"
-            android:fontFamily="@font/montserrat_medium"
-            android:text="@string/book"
-            android:textColor="@color/my_color_white"
-            android:textSize="15sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/datePicker" />
+
 
 
     </android.support.constraint.ConstraintLayout>

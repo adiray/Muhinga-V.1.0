@@ -244,7 +244,7 @@ public class Album extends AppCompatActivity {
 
         //initialize the retrofit client builder using the backendless.com api
         builder = new Retrofit.Builder();
-        builder.baseUrl("http://api.backendless.com/125AF8BD-1879-764A-FF22-13FB1C162400/6F40C4D4-6CFB-E66A-FFC7-D71E4A8BF100/data/")
+        builder.baseUrl("https://api.backendless.com/1C02E90A-53CA-7B8A-FFC0-214A81B0B500/9BC2AFA1-C83A-E705-FF86-5AEE68432A00/data/")
                 .addConverterFactory(GsonConverterFactory.create());
 
         //use your builder to build a retrofit object

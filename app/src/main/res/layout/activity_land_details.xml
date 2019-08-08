@@ -8,11 +8,14 @@
     tools:context=".LandDetails">
 
 
-    <include
-        android:id="@+id/land_details_view_app_bar"
-        layout="@layout/app_bar"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/land_details_activity_action_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@color/my_color_primary"
+        android:minHeight="64dp"
+        app:titleTextColor="@color/my_color_bg" />
+
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/land_details_view_recycler_view"

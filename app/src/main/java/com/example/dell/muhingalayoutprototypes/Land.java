@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,6 +54,9 @@ public class Land extends AppCompatActivity {
     public static final String EXTRA_PRICE = "com.example.muhinga.landItemPrice";
     public static final String EXTRA_LOCATION = "com.example.muhinga.landItemLocation";
     public static final String EXTRA_SIZE = "com.example.muhinga.landItemSize";
+    public static final String EXTRA_OWNER_PHONE = "com.example.muhinga.landOwnerPhone";
+    public static final String EXTRA_VIEWING_DATES = "com.example.muhinga.landViewingDates";
+
     StringBuilder mb = new StringBuilder();
 
 
@@ -97,6 +101,10 @@ public class Land extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_land);
+
+
+        //delay the display of soft keyboard until the user ties to input details into the filters
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
 
         //Initialize the views
@@ -205,7 +213,7 @@ public class Land extends AppCompatActivity {
 
                 Intent intent = new Intent(Land.this, LandDetails.class);
                 ArrayList<Object> landItemImageReferences = new ArrayList<>();
-                String location, title, price, size, description;
+                String location, title, price, size, description , ownerPhone, viewingDates;
 
                 //add the image references to the image reference array
                 landItemImageReferences.add(item.getMianImageReference());
@@ -220,6 +228,8 @@ public class Land extends AppCompatActivity {
                 price = item.getPrice();
                 size = item.getSize();
                 description = item.getDescription();
+                ownerPhone = item.getPhone();
+                viewingDates = item.getViewingDates();
 
                 intent.putExtra(EXTRA_ARRAY, landItemImageReferences);
                 intent.putExtra(EXTRA_LOCATION, location);
@@ -227,6 +237,9 @@ public class Land extends AppCompatActivity {
                 intent.putExtra(EXTRA_PRICE, price);
                 intent.putExtra(EXTRA_SIZE, size);
                 intent.putExtra(EXTRA_DESCRIPTION, description);
+                intent.putExtra(EXTRA_VIEWING_DATES, viewingDates);
+                intent.putExtra(EXTRA_OWNER_PHONE, ownerPhone);
+
                 startActivity(intent);
 
 

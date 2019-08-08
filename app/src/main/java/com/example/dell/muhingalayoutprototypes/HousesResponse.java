@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
@@ -38,6 +39,11 @@ public class HousesResponse extends AbstractItem<HousesResponse, HousesResponse.
     @SerializedName("img_2")
     private String img2;
 
+    @SerializedName("phone")
+    @Expose
+    private String phone;
+
+
     @SerializedName("title")
     private String title;
 
@@ -67,6 +73,38 @@ public class HousesResponse extends AbstractItem<HousesResponse, HousesResponse.
 
     @SerializedName("Rent")
     private boolean rent;
+
+
+    @SerializedName("viewing_dates")
+    @Expose
+    private String viewingDates;
+
+
+
+
+
+
+
+    public void setViewingDates(String viewingDates) {
+        this.viewingDates = viewingDates;
+    }
+
+
+    public String getViewingDates() {
+        return viewingDates;
+    }
+
+
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+
+
+    public String getPhone() {
+        return phone;
+    }
 
     public void setOwner(String owner) {
         this.owner = owner;

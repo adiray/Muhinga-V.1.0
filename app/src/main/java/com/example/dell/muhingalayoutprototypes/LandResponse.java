@@ -18,6 +18,12 @@ public class LandResponse extends AbstractItem<LandResponse, LandResponse.LandVi
     @SerializedName("owner")
     @Expose
     private Object owner;
+    @SerializedName("phone")
+    @Expose
+    private String phone;
+    @SerializedName("viewing_dates")
+    @Expose
+    private String viewingDates;
     @SerializedName("title")
     @Expose
     private String title;
@@ -113,6 +119,30 @@ public class LandResponse extends AbstractItem<LandResponse, LandResponse.LandVi
         this.mianImageReference = mianImageReference;
         this._class = _class;
     }
+
+
+    public void setViewingDates(String viewingDates) {
+        this.viewingDates = viewingDates;
+    }
+
+
+    public String getViewingDates() {
+        return viewingDates;
+    }
+
+
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+
+
+    public String getPhone() {
+        return phone;
+    }
+
+
 
     public Object getOwner() {
         return owner;

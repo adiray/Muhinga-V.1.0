@@ -83,6 +83,15 @@
     <string name="username">User Name</string>
     <string name="name">Full Name</string>
     <string name="delete_account">Delete Account</string>
+    <string name="House_details">House details</string>
+    <string name="land_details">Land details</string>
+    <string name="share_using">Share using</string>
+    <string name="tour">Tour</string>
+    <string name="view_house">View house</string>
+    <string name="available_viewing_dates">Available viewing dates</string>
+    <string name="okay">okay</string>
+    <string name="contact_owner_for_more_details">Contact owner for more details</string>
+    <string name="cancel">Cancel</string>
 
 
 </resources>

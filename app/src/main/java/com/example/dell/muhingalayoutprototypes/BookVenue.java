@@ -4,9 +4,11 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -34,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import br.vince.easysave.EasySave;
 import br.vince.easysave.SaveAsyncCallback;
@@ -45,8 +48,8 @@ public class BookVenue extends AppCompatActivity {
 
     //views
     DatePicker picker;
-    Button saveBookingButton;
     ProgressBar progressBar;
+    Toolbar bookVenueToolbar;
 
 
     //strings and dates and ints for the upload
@@ -130,42 +133,15 @@ public class BookVenue extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         progressBar.setIndeterminate(true);
         progressBar.setVisibility(View.GONE);
-        saveBookingButton = findViewById(R.id.book_venue_activity_save_booking_button);
-        //saveBookingButton.setEnabled(false);
-        saveBookingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                saveBookingButtonClicked();
-
-            }
-        });
 
 
-    }
+        //TOOLBAR
+        bookVenueToolbar = findViewById(R.id.book_venue_activity_action_bar);
+        //tool bar
 
-
-    /**
-     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-     */
-
-
-    void saveBookingButtonClicked() {
-
-        //   DateTime thisStartDateTime = new DateTime(startDate), thisEndDateTime = new DateTime(endDate);
-
-        if (startDate != null && endDate != null) {
-
-            //loadingView.start();
-            Integer startDateInt = startDateTime.getDayOfMonth();
-            Integer endDateInt = endDateTime.getDayOfMonth(), monthInt = startDateTime.getMonthOfYear(), yearInt = startDateTime.getYear();
-            Log.d("myLogsBookVenue", "startDate n endDate not null: " + startDateInt + " ," + endDateInt + " ," + yearInt + " ," + monthInt);
-
-            //uploadBooking(startDateInt, endDateInt, monthInt, yearInt, approved);
-
-
-        }
+        bookVenueToolbar.setTitle("Book Venue");
+        Objects.requireNonNull(bookVenueToolbar.getOverflowIcon()).setColorFilter(getResources().getColor(R.color.my_color_white), PorterDuff.Mode.SRC_ATOP);
+        setSupportActionBar(bookVenueToolbar);
 
 
     }
@@ -348,7 +324,7 @@ public class BookVenue extends AppCompatActivity {
                     public void OnClick() {
 
                         progressBar.setVisibility(View.VISIBLE);
-                        uploadBooking(firstDateInt,lastDateInt,selectedMonth,selectedYear,false);
+                        uploadBooking(firstDateInt, lastDateInt, selectedMonth, selectedYear, false);
 
                     }
                 })
@@ -416,9 +392,9 @@ public class BookVenue extends AppCompatActivity {
                                     public void handleResponse(Integer response) {
                                         Log.d("myLogsBookVenue", "this venue 'bookings' relation uploaded: " + response.toString());
                                         //myCalendar.refreshCalendar();
-                                         progressBar.setVisibility(View.GONE);
+                                        progressBar.setVisibility(View.GONE);
                                         Toast.makeText(BookVenue.this, "Booking successful!", Toast.LENGTH_LONG).show();
-                                         
+
                                     }
 
                                     @Override

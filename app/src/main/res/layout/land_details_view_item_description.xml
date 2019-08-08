@@ -119,7 +119,7 @@
             >
 
             <ImageView
-                android:id="@+id/venues_details_call_owner"
+                android:id="@+id/land_details_call_owner"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/phone_colored_green_filled" />
@@ -163,10 +163,10 @@
             >
 
             <ImageView
-                android:id="@+id/save_venue_venues_details_layout"
+                android:id="@+id/view_land_land_details_layout"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:src="@drawable/cash_hand_colored_filled" />
+                android:src="@drawable/eye_color" />
 
         </android.support.v7.widget.CardView>
 
@@ -174,7 +174,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/buy"
+            android:text="@string/tour"
             android:textSize="12sp"
             app:fontFamily="@font/montserrat_regular" />
 
@@ -189,10 +189,10 @@
         android:layout_marginStart="8dp"
 
         android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        app:layout_constraintEnd_toStartOf="@+id/linearLayout4"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/linearLayout2"
         app:layout_constraintTop_toBottomOf="@+id/divider">
 
@@ -207,7 +207,7 @@
             >
 
             <ImageView
-                android:id="@+id/book_venue_venues_details_layout"
+                android:id="@+id/share_land_land_details_layout"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/share_colored_blue_filled" />
@@ -226,48 +226,6 @@
     </LinearLayout>
 
 
-    <LinearLayout
-        android:id="@+id/linearLayout4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
 
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/linearLayout3"
-        app:layout_constraintTop_toBottomOf="@+id/divider">
-
-
-        <android.support.v7.widget.CardView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="4dp"
-            app:cardElevation="2dp"
-            app:contentPadding="10dp"
-
-            >
-
-            <ImageView
-                android:id="@+id/share_venue_venues_details_layout"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/contacts_colored_red_filled" />
-
-        </android.support.v7.widget.CardView>
-
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/save"
-            android:textSize="12sp"
-            app:fontFamily="@font/montserrat_regular" />
-
-
-    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

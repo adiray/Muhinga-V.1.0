@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -36,6 +37,7 @@ public class VenuesDetails extends AppCompatActivity {
     //view objects
     TextView titleTv, sizeTv, priceTv, descriptionTv, locationTv;
     ImageView callOwner, shareVenue, bookVenue, saveVenue;
+    Toolbar venueDetailsToolbar;
 
     //recyclerView objects
     RecyclerView venuesDetailsImageRecView;
@@ -78,6 +80,11 @@ public class VenuesDetails extends AppCompatActivity {
         bookVenue = findViewById(R.id.book_venue_venues_details_layout);
         saveVenue = findViewById(R.id.save_venue_venues_details_layout);
 
+
+        //toolbar
+        venueDetailsToolbar = findViewById(R.id.venue_details_activity_action_bar);
+        venueDetailsToolbar.setTitle(R.string.add_filters);
+        setSupportActionBar(venueDetailsToolbar);
 
         //get reference to recycler view and build it out
         venuesDetailsImageRecView = findViewById(R.id.venues_details_view_recycler_view);
