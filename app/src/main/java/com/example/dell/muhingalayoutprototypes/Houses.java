@@ -53,6 +53,9 @@ public class Houses extends AppCompatActivity {
     Boolean isForRent = false;
     Boolean isForSale = false, filteredState = false; //filtered state helps determine whether the user has applied filters to the items to be returned
 
+    //user object
+    String globalCurrentUserJson ;
+
 
     //declare view objects
     EditText housePriceEditText;
@@ -108,6 +111,11 @@ public class Houses extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_houses);
 
+
+
+        //receive intents
+        Intent intent = getIntent();
+        globalCurrentUserJson = intent.getStringExtra(MainActivity.EXTRA_GLOBAL_USER);
 
 
         //delay the display of soft keyboard until the user ties to input details into the filters
@@ -221,7 +229,7 @@ public class Houses extends AppCompatActivity {
                 // Handle click here
                 Intent intent = new Intent(Houses.this, HousesDetails.class);
                 ArrayList<String> housesItemImageReferences = new ArrayList<>();
-                String location, title, price, rentSale, description , ownerPhone, viewingDates;
+                String location, title, price, rentSale, description , ownerPhone, viewingDates , objectId;
                 Boolean isForRent;
 
 
@@ -239,6 +247,7 @@ public class Houses extends AppCompatActivity {
                 description = item.getDescription();
                 viewingDates = item.getViewingDates();
                 ownerPhone = item.getPhone();
+                objectId = item.getObjectId();
 
                 if (item.isRent()) {
 
@@ -256,6 +265,9 @@ public class Houses extends AppCompatActivity {
                 intent.putExtra(EXTRA_DESCRIPTION_H, description);
                 intent.putExtra(EXTRA_OWNER_PHONE,ownerPhone);
                 intent.putExtra(EXTRA_VIEWING_DATES,viewingDates);
+                intent.putExtra("globalCurrentUser",globalCurrentUserJson);
+                intent.putExtra("currentHouseId",objectId);
+
                 startActivity(intent);
 
 

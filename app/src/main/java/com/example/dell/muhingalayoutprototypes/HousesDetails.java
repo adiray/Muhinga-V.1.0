@@ -9,20 +9,30 @@ import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
 import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialog;
 import com.bestsoft32.tt_fancy_gif_dialog_lib.TTFancyGifDialogListener;
 import com.gdacciaro.iOSDialog.iOSDialog;
 import com.gdacciaro.iOSDialog.iOSDialogBuilder;
 import com.gdacciaro.iOSDialog.iOSDialogClickListener;
+import com.google.gson.Gson;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HousesDetails extends AppCompatActivity {
 
@@ -30,16 +40,22 @@ public class HousesDetails extends AppCompatActivity {
     ArrayList<HousesDetailsViewSingleImage> mainImageDataSource = new ArrayList<>();
 
 
+    //miscellaneous
     String housesDetailsTitle, housesDetailsRentOrSale, housesDetailsPrice, housesDetailsDescription, housesDetailsLocation;
-    String houseDetailsViewingDates, houseDetailsOwnerPhone;
+    String houseDetailsViewingDates, houseDetailsOwnerPhone, houseId;
 
     String shareMessage;
+
+
+    //user
+    String globalCurrentUserJson, currentUserId;
+    BackendlessUser currentUser;
 
 
     //view objects
     TextView titleTv, rentSaleTv, priceTv, descriptionTv, locationTv;
     Toolbar houseDetailsToolbar;
-    ImageView shareHouseButton, viewHouseButton, callOwnerButton;
+    ImageView shareHouseButton, viewHouseButton, callOwnerButton, saveHouseButton;
 
 
     //recyclerView objects
@@ -65,6 +81,14 @@ public class HousesDetails extends AppCompatActivity {
         housesDetailsTitle = intent.getStringExtra(Houses.EXTRA_TITLE_H);
         houseDetailsViewingDates = intent.getStringExtra(Houses.EXTRA_VIEWING_DATES);
         houseDetailsOwnerPhone = intent.getStringExtra(Houses.EXTRA_OWNER_PHONE);
+        houseId = intent.getStringExtra("currentHouseId");
+
+        //get user
+        globalCurrentUserJson = intent.getStringExtra("globalCurrentUser");
+        Gson gson = new Gson();
+        currentUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+        currentUserId = currentUser.getObjectId();
+
 
         //get references to the view objects
         locationTv = findViewById(R.id.house_details_item_location);
@@ -78,7 +102,7 @@ public class HousesDetails extends AppCompatActivity {
         shareHouseButton = findViewById(R.id.share_house_house_details_layout);
         viewHouseButton = findViewById(R.id.view_house_houses_details_layout);
         callOwnerButton = findViewById(R.id.houses_details_call_owner);
-
+        saveHouseButton = findViewById(R.id.save_house_house_details_layout);
 
         //toolbar
         houseDetailsToolbar = findViewById(R.id.house_details_activity_action_bar);
@@ -115,6 +139,9 @@ public class HousesDetails extends AppCompatActivity {
     }
 
 
+    /*****************************************************************************************************************************/
+
+
     void initializeViews() {
 
 
@@ -146,7 +173,19 @@ public class HousesDetails extends AppCompatActivity {
         });
 
 
+        saveHouseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                saveHouse();
+
+            }
+        });
+
     }
+
+
+    /*****************************************************************************************************************************/
 
 
     void viewHouseButtonClicked() {
@@ -182,6 +221,9 @@ public class HousesDetails extends AppCompatActivity {
     }
 
 
+    /*****************************************************************************************************************************/
+
+
     void callOwnerButtonClicked() {
 
         //called when the call button is pressed
@@ -204,6 +246,9 @@ public class HousesDetails extends AppCompatActivity {
 
 
     }
+
+
+    /*****************************************************************************************************************************/
 
 
     void createSharingConfirmationDialog() {
@@ -255,10 +300,10 @@ public class HousesDetails extends AppCompatActivity {
         }).build().show();
 
 
-
-
-
     }
+
+
+    /*****************************************************************************************************************************/
 
 
     void shareHouseDetails() {
@@ -272,6 +317,9 @@ public class HousesDetails extends AppCompatActivity {
         startActivity(Intent.createChooser(sharingIntent, getResources().getString(R.string.share_using)));
 
     }
+
+
+    /*****************************************************************************************************************************/
 
 
     void createHousesDetailsSingleImageObjects() {
@@ -294,7 +342,69 @@ public class HousesDetails extends AppCompatActivity {
     }
 
 
-    //get reference to sharing button and add feature
+    /*****************************************************************************************************************************/
+
+
+    void saveHouse() {
+
+       //disable the button and show that its disabled so user doesn't press twice
+        saveHouseButton.setEnabled(false);
+        saveHouseButton.setImageResource(R.drawable.contacts_saving_progress);
+
+        BackendlessUser currentUserCopy = currentUser; //you can use the original user variable, just used the copy as a precaution incase i updated the value
+        Log.d("myLogSaveHouse", "current user id: " + currentUserId);
+
+
+        //house object to be saved in the relations column
+        Map<String, Object> houseObject = new HashMap<String, Object>();
+        houseObject.put("objectId", houseId);
+        Log.d("myLogSaveHouse", "Hoouse id: " + houseId);
+
+
+        ArrayList<Map> housesToSave = new ArrayList<>();
+        housesToSave.add(houseObject);
+
+        Backendless.Data.of(BackendlessUser.class).addRelation(currentUserCopy, "saved_houses", housesToSave, new AsyncCallback<Integer>() {
+            @Override
+            public void handleResponse(Integer response) {
+
+
+                if (response==0){
+
+                    Toast.makeText(HousesDetails.this, "The property has already been saved before", Toast.LENGTH_LONG).show();
+
+                }else if(response>=1){
+
+
+                    Toast.makeText(HousesDetails.this, "The property has been saved successfully", Toast.LENGTH_LONG).show();
+
+
+                }
+
+
+
+                Log.d("myLogSaveHouse", "User object updated with saved house: " + response.toString());
+                saveHouseButton.setEnabled(true);
+                saveHouseButton.setImageResource(R.drawable.contacts_colored_red_filled);
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsSaveHouse", "saved house relation upload failed: " + fault.toString());
+                saveHouseButton.setEnabled(true);
+                saveHouseButton.setImageResource(R.drawable.contacts_colored_red_filled);
+
+
+            }
+        });
+
+
+    }
+
+
 
 
 }

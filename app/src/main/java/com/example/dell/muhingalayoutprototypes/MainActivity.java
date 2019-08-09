@@ -327,6 +327,8 @@ public class MainActivity extends AppCompatActivity {
 
         //open houses activity
         Intent intent = new Intent(MainActivity.this, Houses.class);
+        Gson gson = new Gson();
+        intent.putExtra(EXTRA_GLOBAL_USER, gson.toJson(globalCurrentUser));
         MainActivity.this.startActivity(intent);
 
     }
@@ -343,6 +345,8 @@ public class MainActivity extends AppCompatActivity {
 
         //open land activity
         Intent intent = new Intent(MainActivity.this, Land.class);
+        Gson gson = new Gson();
+        intent.putExtra(EXTRA_GLOBAL_USER, gson.toJson(globalCurrentUser));
         MainActivity.this.startActivity(intent);
 
 

@@ -13,14 +13,21 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.DataQueryBuilder;
+import com.gdacciaro.iOSDialog.iOSDialog;
+import com.gdacciaro.iOSDialog.iOSDialogBuilder;
+import com.gdacciaro.iOSDialog.iOSDialogClickListener;
+import com.google.gson.Gson;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,15 +35,19 @@ public class VenuesDetails extends AppCompatActivity {
 
     ArrayList<String> itemImageReferences = new ArrayList<>();
     String venuesDetailsId, venuesDetailsTitle, venuesDetailsSize, venuesDetailsPrice, venuesDetailsDescription, venuesDetailsLocation, venuesOwnerPhone;
-    String globalCurrentUserJson;
+
+    //current user
+    String globalCurrentUserJson, currentUserId;
+    BackendlessUser backendlessUser;
 
     //miscellaneous objects
     ArrayList<VenuesDetailsViewSingleImage> mainImageDataSource = new ArrayList<>();
     ArrayList<String> bookedDays = new ArrayList<>();
+    String shareMessage;
 
     //view objects
     TextView titleTv, sizeTv, priceTv, descriptionTv, locationTv;
-    ImageView callOwner, shareVenue, bookVenue, saveVenue;
+    ImageView callOwner, shareVenue, bookVenue, saveVenueButton;
     Toolbar venueDetailsToolbar;
 
     //recyclerView objects
@@ -47,8 +58,7 @@ public class VenuesDetails extends AppCompatActivity {
 
     //intent ids
     public static final String EXTRA_VENUE_ID = "com.example.muhinga.venuesID";
-    public static final String  EXTRA_VENUE_BOOKINGS = "com.example.muhinga.venuesBookings";
-
+    public static final String EXTRA_VENUE_BOOKINGS = "com.example.muhinga.venuesBookings";
 
 
     @Override
@@ -66,7 +76,12 @@ public class VenuesDetails extends AppCompatActivity {
         venuesDetailsTitle = intent.getStringExtra(Venues.EXTRA_TITLE);
         venuesOwnerPhone = intent.getStringExtra(Venues.EXTRA_PHONE);
         venuesDetailsId = intent.getStringExtra(Venues.EXTRA_ID);
+
+        //get user
         globalCurrentUserJson = intent.getStringExtra(MainActivity.EXTRA_GLOBAL_USER);
+        Gson gson = new Gson();
+        backendlessUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+        currentUserId = backendlessUser.getObjectId();
 
 
         //get references to the view objects
@@ -78,7 +93,7 @@ public class VenuesDetails extends AppCompatActivity {
         callOwner = findViewById(R.id.venues_details_call_owner);
         shareVenue = findViewById(R.id.share_venue_venues_details_layout);
         bookVenue = findViewById(R.id.book_venue_venues_details_layout);
-
+        saveVenueButton = findViewById(R.id.save_venue_venue_details_layout);
 
 
         //toolbar
@@ -109,6 +124,15 @@ public class VenuesDetails extends AppCompatActivity {
         descriptionTv.setText(venuesDetailsDescription);
 
 
+        shareVenue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                shareVenueClicked();
+            }
+        });
+
+
         callOwner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -129,8 +153,143 @@ public class VenuesDetails extends AppCompatActivity {
             }
         });
 
+        saveVenueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                saveVenue();
+
+            }
+        });
+
 
         retrieveBookings();
+
+
+    }
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+
+    void shareVenueClicked(){
+
+
+        shareMessage = "Check out this great property on the MUHINGA app." + " " + venuesDetailsTitle + ". " + " Price: " +
+                venuesDetailsPrice + ". Location:" + venuesDetailsLocation + ". Find other great properties on the MUHINGA APP!";
+
+
+        new iOSDialogBuilder(VenuesDetails.this)
+                .setTitle("This is the message you will share.")
+                .setSubtitle(shareMessage + " Proceed?")
+                .setBoldPositiveLabel(true)
+                .setCancelable(true)
+                .setPositiveListener(getString(R.string.okay), new iOSDialogClickListener() {
+                    @Override
+                    public void onClick(iOSDialog dialog) {
+
+                        shareVenueDetails();
+                    }
+                }).setNegativeListener(getString(R.string.cancel), new iOSDialogClickListener() {
+            @Override
+            public void onClick(iOSDialog dialog) {
+                dialog.dismiss();
+            }
+        }).build().show();
+
+
+
+
+
+
+    }
+
+
+
+    void shareVenueDetails() {
+
+
+        String shareBody = shareMessage;
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "MUHINGA ");
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+        startActivity(Intent.createChooser(sharingIntent, getResources().getString(R.string.share_using)));
+
+    }
+
+
+
+
+
+
+
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+     */
+
+
+    void saveVenue() {
+
+
+        //disable the button and show that its disabled so user doesn't press twice
+        saveVenueButton.setEnabled(false);
+        saveVenueButton.setImageResource(R.drawable.contacts_saving_progress);
+
+        BackendlessUser currentUserCopy = backendlessUser; //you can use the original user variable, just used the copy as a precaution incase i updated the value
+        Log.d("myLogSaveVenue", "current user id: " + currentUserId);
+
+
+        //house object to be saved in the relations column
+        Map<String, Object> venueObject = new HashMap<String, Object>();
+        venueObject.put("objectId", venuesDetailsId);
+        Log.d("myLogSaveVenue", "venue id: " + venuesDetailsId);
+
+
+        ArrayList<Map> venuesToSave = new ArrayList<>();
+        venuesToSave.add(venueObject);
+
+        Backendless.Data.of(BackendlessUser.class).addRelation(currentUserCopy, "saved_venues", venuesToSave, new AsyncCallback<Integer>() {
+            @Override
+            public void handleResponse(Integer response) {
+
+
+                if (response == 0) {
+
+                    Toast.makeText(VenuesDetails.this, "The property has already been saved before", Toast.LENGTH_LONG).show();
+
+                } else if (response >= 1) {
+
+
+                    Toast.makeText(VenuesDetails.this, "The property has been saved successfully", Toast.LENGTH_LONG).show();
+
+
+                }
+
+
+                Log.d("myLogSaveVenue", "User object updated with saved venue: " + response.toString());
+                saveVenueButton.setEnabled(true);
+                saveVenueButton.setImageResource(R.drawable.contacts_colored_red_filled);
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsSaveHouse", "saved house relation upload failed: " + fault.toString());
+                saveVenueButton.setEnabled(true);
+                saveVenueButton.setImageResource(R.drawable.contacts_colored_red_filled);
+
+
+            }
+        });
 
 
     }

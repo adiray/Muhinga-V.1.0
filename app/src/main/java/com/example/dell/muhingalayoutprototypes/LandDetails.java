@@ -9,31 +9,46 @@ import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
 import com.gdacciaro.iOSDialog.iOSDialog;
 import com.gdacciaro.iOSDialog.iOSDialogBuilder;
 import com.gdacciaro.iOSDialog.iOSDialogClickListener;
+import com.google.gson.Gson;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LandDetails extends AppCompatActivity {
 
     ArrayList<String> itemImageReferences = new ArrayList<>();
     String landDetailsTitle, landDetailsSize, landDetailsPrice, landDetailsDescription, landDetailsLocation;
-    String ownerPhone, viewingDates;
+    String ownerPhone, viewingDates, landId;
 
     //miscellaneous objects
     ArrayList<LandDetailsViewSingleImage> mainImageDataSource = new ArrayList<>();
     String shareMessage;
 
+    //user object
+    String globalCurrentUserJson, currentUserId;
+    BackendlessUser currentUser;
+
+
+
     //view objects
     TextView titleTv, sizeTv, priceTv, descriptionTv, locationTv;
     Toolbar landDetailsToolbar;
-    ImageView callButton, viewLandButton, shareLandButton;
+    ImageView callButton, viewLandButton, shareLandButton, saveLandButton;
 
     //recyclerView objects
     RecyclerView landDetailsImageRecView;
@@ -57,6 +72,18 @@ public class LandDetails extends AppCompatActivity {
         ownerPhone = intent.getStringExtra(Land.EXTRA_OWNER_PHONE);
         viewingDates = intent.getStringExtra(Land.EXTRA_VIEWING_DATES);
 
+        landId = intent.getStringExtra("currentLandId");
+
+        //get user
+        globalCurrentUserJson = intent.getStringExtra("globalCurrentUser");
+        Gson gson = new Gson();
+        currentUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+        currentUserId = currentUser.getObjectId();
+
+
+
+
+
 
         //get references to the view objects
         locationTv = findViewById(R.id.land_details_item_location);
@@ -69,6 +96,7 @@ public class LandDetails extends AppCompatActivity {
         callButton = findViewById(R.id.land_details_call_owner);
         shareLandButton = findViewById(R.id.share_land_land_details_layout);
         viewLandButton = findViewById(R.id.view_land_land_details_layout);
+        saveLandButton = findViewById(R.id.save_land_land_details_layout);
 
         initializeViews();
 
@@ -135,7 +163,89 @@ public class LandDetails extends AppCompatActivity {
         });
 
 
+        saveLandButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                saveLandButtonClicked();
+
+            }
+        });
+
+
     }
+
+
+
+
+    void saveLandButtonClicked(){
+
+
+        //disable the button and show that its disabled so user doesn't press twice
+        saveLandButton.setEnabled(false);
+        saveLandButton.setImageResource(R.drawable.contacts_saving_progress);
+
+        BackendlessUser currentUserCopy = currentUser; //you can use the original user variable, just used the copy as a precaution incase i updated the value
+        Log.d("myLogSaveLand", "current user id: " + currentUserId);
+
+
+        //house object to be saved in the relations column
+        Map<String, Object> landObject = new HashMap<String, Object>();
+        landObject.put("objectId",landId);
+        Log.d("myLogSaveland", "Land id: " + landId);
+
+
+        ArrayList<Map> landToSave = new ArrayList<>();
+        landToSave.add(landObject);
+
+        Backendless.Data.of(BackendlessUser.class).addRelation(currentUserCopy, "saved_land", landToSave, new AsyncCallback<Integer>() {
+            @Override
+            public void handleResponse(Integer response) {
+
+
+                if (response==0){
+
+                    Toast.makeText(LandDetails.this, "The property has already been saved before", Toast.LENGTH_LONG).show();
+
+                }else if(response>=1){
+
+
+                    Toast.makeText(LandDetails.this, "The property has been saved successfully", Toast.LENGTH_LONG).show();
+
+
+                }
+
+
+
+                Log.d("myLogSaveLand", "User object updated with saved land: " + response.toString());
+                saveLandButton.setEnabled(true);
+                saveLandButton.setImageResource(R.drawable.contacts_colored_red_filled);
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsSaveHouse", "saved house relation upload failed: " + fault.toString());
+                saveLandButton.setEnabled(true);
+                saveLandButton.setImageResource(R.drawable.contacts_colored_red_filled);
+
+
+
+            }
+        });
+
+
+
+
+
+
+    }
+
+
+
+
 
 
     void viewLandButtonClicked() {

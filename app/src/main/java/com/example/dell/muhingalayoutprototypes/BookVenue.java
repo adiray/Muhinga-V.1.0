@@ -369,6 +369,7 @@ public class BookVenue extends AppCompatActivity {
                 ArrayList<Map> children = new ArrayList<Map>();
                 children.add(userObject);
                 Log.d("myLogsBookVenue", "new booking uploaded: " + response.toString());
+                //adding a user relation to the bookings table
                 Backendless.Data.of("bookings").addRelation(bookingObject, "user", children, new AsyncCallback<Integer>() {
                     @Override
                     public void handleResponse(Integer response) {
