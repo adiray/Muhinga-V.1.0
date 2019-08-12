@@ -18,7 +18,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ArtistSearch"></activity>
+        <activity android:name=".SavedItems"></activity>
+        <activity android:name=".SavedCategories" />
+        <activity android:name=".ArtistSearch" />
         <activity android:name=".BookVenue" />
         <activity android:name=".Profile" />
         <activity android:name=".Login" />

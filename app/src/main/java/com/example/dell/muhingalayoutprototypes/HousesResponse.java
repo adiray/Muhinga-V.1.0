@@ -25,6 +25,7 @@ public class HousesResponse extends AbstractItem<HousesResponse, HousesResponse.
     private String img5;
 
     @SerializedName("mian_image_reference")
+    @Expose
     private String mianImageReference;
 
     @SerializedName("created")
@@ -305,6 +306,7 @@ public class HousesResponse extends AbstractItem<HousesResponse, HousesResponse.
         }
 
         viewHolder.title_vh.setText(title);
+
 
         Glide.with(viewHolder.itemView).load(mianImageReference).into(viewHolder.house_main_image_vh);
 

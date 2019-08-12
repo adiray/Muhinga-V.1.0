@@ -117,6 +117,7 @@
 
 
         <ImageView
+            android:id="@+id/saved_items_image_button"
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:src="@drawable/user_likes_icon_white_filled"

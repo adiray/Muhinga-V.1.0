@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     Boolean isNetworkAvailable = false;
 
     //Declare views
-    ImageView housesButton, landButton, venuesButton, musicButton, profilePictureButton;
+    ImageView housesButton, landButton, venuesButton, musicButton, profilePictureButton , savedItemsButton;
 
     //TOOLBAR VIEWS
     Toolbar homeMainToolBar;
@@ -266,6 +266,7 @@ public class MainActivity extends AppCompatActivity {
         venuesButton = findViewById(R.id.venues_services_user_area);
         musicButton = findViewById(R.id.music_services_user_area);
         profilePictureButton = findViewById(R.id.home_profile_picture);
+        savedItemsButton = findViewById(R.id.saved_items_image_button);
 
         //toolbar
         homeMainToolBar = findViewById(R.id.main_activity_app_bar);
@@ -274,6 +275,12 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(homeMainToolBar);
 
         //set the on click listeners
+        savedItemsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                savedItemsButtonClicked();
+            }
+        });
         housesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -306,6 +313,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+
+    void savedItemsButtonClicked(){
+
+        Intent intent = new Intent(MainActivity.this, SavedCategories.class);
+        Gson gson = new Gson();
+        intent.putExtra(EXTRA_GLOBAL_USER, gson.toJson(globalCurrentUser));
+        MainActivity.this.startActivity(intent);
+    }
+
+
 
 
     void profilePictureButtonClicked() {
