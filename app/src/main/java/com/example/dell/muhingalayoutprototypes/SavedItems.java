@@ -22,7 +22,9 @@ import com.mikepenz.fastadapter_extensions.items.ProgressItem;
 import com.mikepenz.fastadapter_extensions.scroll.EndlessRecyclerOnScrollListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SavedItems extends AppCompatActivity {
 
@@ -32,12 +34,12 @@ public class SavedItems extends AppCompatActivity {
 
 
     //backendless
-    LoadRelationsQueryBuilder<HousesResponse> savedHousesQueryBuilder;
-
-
+    //LoadRelationsQueryBuilder<HousesResponse> savedHousesQueryBuilder;
+    LoadRelationsQueryBuilder<Map<String, Object>> savedHousesQueryBuilder;
+    Map<String, Object> savedHousesResponseMap = new HashMap<>();
     String globalCurrentUserJson, selectedCategory, currentUserId;
     BackendlessUser currentUser;
-    ArrayList<HousesResponse> savedHouses = new ArrayList<>();
+
 
     //toolBar
     Toolbar mainToolBar;
@@ -48,10 +50,10 @@ public class SavedItems extends AppCompatActivity {
     SwipeRefreshLayout mainSwipeRefresh;
 
     //response objects
-    ArrayList<HousesResponse> savedHousesResponse = new ArrayList<>();
+    ArrayList<SavedHousesResponse> savedHousesResponse = new ArrayList<>();
 
     //create our FastAdapter which will manage everything
-    FastItemAdapter<HousesResponse> mainFastAdapter;
+    FastItemAdapter<SavedHousesResponse> mainFastAdapter;
     FooterAdapter<ProgressItem> footerAdapter = new FooterAdapter<>();
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
@@ -215,39 +217,35 @@ public class SavedItems extends AppCompatActivity {
 
     void requestSavedHouses() {
 
-
-        //LoadRelationsQueryBuilder<HousesResponse> savedHousesQueryBuilder;
-        savedHousesQueryBuilder = LoadRelationsQueryBuilder.of(HousesResponse.class);
+        savedHousesQueryBuilder = LoadRelationsQueryBuilder.ofMap();
         savedHousesQueryBuilder.setRelationName("saved_houses");
         savedHousesQueryBuilder.setPageSize(4).setOffset(0);
 
 
-        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedHousesQueryBuilder, new AsyncCallback<List<HousesResponse>>() {
-
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedHousesQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
             @Override
-            public void handleResponse(List<HousesResponse> response) {
+            public void handleResponse(List<Map<String, Object>> response) {
 
-                /*java.lang.NullPointerException: Attempt to invoke virtual method 'boolean java.util.ArrayList.addAll(java.util.Collection)' on a null object reference
-        at com.example.dell.muhingalayoutprototypes.SavedItems$3.handleResponse(SavedItems.java:230)
-        at com.example.dell.muhingalayoutprototypes.SavedItems$3.handleResponse(SavedItems.java:225)*/
+                savedHousesResponse = createSavedHouseObjectArraylist(response);
+                if (!savedHousesResponse.isEmpty()) {
 
-
-                //todo try using a java map , print it out and then show results
-
-
-                if (!response.isEmpty() && !(savedHousesResponse ==null)) {
-                    savedHousesResponse.addAll(response);
                     mainFastAdapter.add(savedHousesResponse);
                     mainRecyclerView.setAdapter(footerAdapter.wrap(mainFastAdapter));
 
-                    Log.d("myLogsSvdHseReq", response.toString());
+
+
+                }else {
+
+
+
+                    Log.d("myLogsSvdHseReq", "saved house array is empty");
+
+
                 }
-                else {
 
-                    Log.d("myLogsSvdHseReq", "response is empty");
 
-                }
 
+                Log.d("myLogsSvdHseReq", response.toString());
 
             }
 
@@ -263,6 +261,69 @@ public class SavedItems extends AppCompatActivity {
 
     }
 
+
+    ArrayList<SavedHousesResponse> createSavedHouseObjectArraylist(List<Map<String, Object>> response) {
+
+        ArrayList<SavedHousesResponse> savedHouses = new ArrayList<>();
+
+
+        int count = response.size()-1;
+
+
+        String mianImageReference, img2, img3, img4, img5, title, description, phone, price, viewingDates, objectId, location;
+        Boolean forSale = false, rent = false;
+        Map<String, Object> currentItem = new HashMap<>();
+
+        SavedHousesResponse savedHousesResponse;
+
+
+        for (int i = 0; i <= count; i++) {
+
+            currentItem = response.get(i);
+
+            mianImageReference = (String) currentItem.get("mian_image_reference");
+            img2 = (String) currentItem.get("img2");
+            img3 = (String) currentItem.get("img3");
+            img4 = (String) currentItem.get("img4");
+            img5 = (String) currentItem.get("img5");
+            title = (String) currentItem.get("title");
+            description = (String) currentItem.get("description");
+            phone = (String) currentItem.get("phone");
+            price = (String) currentItem.get("price");
+            viewingDates = (String) currentItem.get("viewing_dates");
+            objectId = (String) currentItem.get("objectId");
+            location = (String) currentItem.get("location");
+            forSale = (Boolean) currentItem.get("for_sale");
+            rent = (Boolean) currentItem.get("Rent");
+
+            if(rent == null){
+                rent = false;
+            }else if (null == forSale){
+                forSale = false;
+            }
+
+
+            savedHousesResponse = new SavedHousesResponse(mianImageReference, img2, img3, img4, img5, title, description, phone, price, viewingDates, objectId, location, forSale, rent);
+
+            savedHouses.add(savedHousesResponse);
+
+
+        }
+
+      if(!savedHouses.isEmpty()){
+
+          Log.d("myLogsSvdHse", savedHouses.get(0).toString());
+
+
+      }
+
+        return savedHouses;
+
+
+
+
+    }
+
     void requestSavedVenues() {
     }
 
@@ -273,16 +334,17 @@ public class SavedItems extends AppCompatActivity {
     void loadMoreSavedHouses() {
 
         savedHousesQueryBuilder.prepareNextPage();
-        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedHousesQueryBuilder, new AsyncCallback<List<HousesResponse>>() {
 
+
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedHousesQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
             @Override
-            public void handleResponse(List<HousesResponse> response) {
+            public void handleResponse(List<Map<String, Object>> response) {
 
 
-                savedHousesResponse.addAll(response);
+                savedHousesResponse.addAll(createSavedHouseObjectArraylist(response));
                 footerAdapter.clear();
                 if (response.size() > 0) {
-                    mainFastAdapter.add(response);
+                    mainFastAdapter.add(savedHousesResponse);
                 } else {
                     Toast.makeText(SavedItems.this, "No more items", Toast.LENGTH_LONG).show();
                 }
@@ -292,6 +354,7 @@ public class SavedItems extends AppCompatActivity {
 
             @Override
             public void handleFault(BackendlessFault fault) {
+
 
                 Log.d("myLogsSvdHseLdMrReqFail", fault.toString());
 
@@ -309,18 +372,17 @@ public class SavedItems extends AppCompatActivity {
         savedHousesQueryBuilder.setPageSize(4).setOffset(0);
 
 
-        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedHousesQueryBuilder, new AsyncCallback<List<HousesResponse>>() {
-
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedHousesQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
             @Override
-            public void handleResponse(List<HousesResponse> response) {
+            public void handleResponse(List<Map<String, Object>> response) {
 
                 //perform the sequence of actions for a refreshed load
                 savedHousesResponse.clear();
-                savedHousesResponse.addAll(response);
+                savedHousesResponse.addAll(createSavedHouseObjectArraylist(response));
                 mainFastAdapter.clear();
                 mainRecyclerView.clearOnScrollListeners();
                 mainRecyclerView.addOnScrollListener(endlessRecyclerOnScrollListener);
-                mainFastAdapter.add(response);
+                mainFastAdapter.add(savedHousesResponse);
                 endlessRecyclerOnScrollListener.resetPageCount();
 
 
@@ -337,6 +399,7 @@ public class SavedItems extends AppCompatActivity {
             public void handleFault(BackendlessFault fault) {
 
                 Log.d("myLogsSvdHseReqORFail", fault.toString());
+
 
             }
         });

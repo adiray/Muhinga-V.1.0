@@ -252,6 +252,31 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
 
 
 
+
+
+
+
+
+    //constructors
+
+    public SavedHousesResponse( String mianImageReference,Object img2, Object img3, Object img4,Object img5, String title, String description,  String phone, String price, String viewingDates, String objectId, String location, Boolean forSale, Boolean rent) {
+        this.img5 = img5;
+        this.mianImageReference = mianImageReference;
+        this.title = title;
+        this.img3 = img3;
+        this.img4 = img4;
+        this.description = description;
+        this.img2 = img2;
+        this.phone = phone;
+        this.price = price;
+        this.forSale = forSale;
+        this.viewingDates = viewingDates;
+        this.objectId = objectId;
+        this.location = location;
+        this.rent = rent;
+    }
+
+
     //Fast Adapter methods and code starts here
 
 
@@ -283,23 +308,23 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
 
 
     @Override
-    public void bindView(savedHousesViewHolder holder, List<Object> payloads) {
-        super.bindView(holder, payloads);
+    public void bindView(savedHousesViewHolder viewHolder, List<Object> payloads) {
+        super.bindView(viewHolder, payloads);
 
 
 
-        if (getRent()) {
-            holder.rent_vh.setText(R.string.ForRent);
+        if (rent) {
+            viewHolder.rent_vh.setText(R.string.ForRent);
         } else {
-            holder.rent_vh.setText(R.string.ForSale);
+            viewHolder.rent_vh.setText(R.string.ForSale);
         }
 
-        holder.title_vh.setText(title);
+        viewHolder.title_vh.setText(title);
 
         String mainImageRef = mianImageReference;
 
 
-        Glide.with(holder.itemView).load(mianImageReference).into(holder.house_main_image_vh);
+        Glide.with(viewHolder.itemView).load(mianImageReference).into(viewHolder.house_main_image_vh);
 
 
 
@@ -315,7 +340,7 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
         ImageView house_main_image_vh;
 
 
-        public savedHousesViewHolder(@NonNull View itemView) {
+        public savedHousesViewHolder( View itemView) {
             super(itemView);
 
             //assigning the previously declared views
