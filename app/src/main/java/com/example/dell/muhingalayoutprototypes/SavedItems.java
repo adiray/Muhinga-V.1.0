@@ -38,14 +38,17 @@ public class SavedItems extends AppCompatActivity {
 
     //other items
     Boolean onRefreshing = false, isHouses = false, isLand = false, isVenues = false;
-    String deletableHouseId = "not found";
+
+    //deleting houses items
     List<Map<String, String>> deletableHousesList = new ArrayList<>();
-
-
+    List<Map<String, String>> deletableVenuesList = new ArrayList<>();
+    List<Map<String, String>> deletableLandList = new ArrayList<>();
     Integer deletedItemPosition;
+    String deletableHouseId = "not found", deletableVenueId = "not found";
 
     //backendless
     //LoadRelationsQueryBuilder<HousesResponse> savedHousesQueryBuilder;
+    LoadRelationsQueryBuilder<Map<String, Object>> savedVenuesQueryBuilder;
     LoadRelationsQueryBuilder<Map<String, Object>> savedHousesQueryBuilder;
     Map<String, Object> savedHousesResponseMap = new HashMap<>();
     String globalCurrentUserJson, selectedCategory, currentUserId;
@@ -53,7 +56,6 @@ public class SavedItems extends AppCompatActivity {
 
     //FAB
     FloatingActionButton loadMoreFAB;
-
 
     //toolBar
     Toolbar mainToolBar;
@@ -65,9 +67,11 @@ public class SavedItems extends AppCompatActivity {
 
     //response objects
     ArrayList<SavedHousesResponse> savedHousesResponse = new ArrayList<>();
+    ArrayList<SavedVenuesResponse> savedVenuesResponse = new ArrayList<>();
 
     //create our FastAdapter which will manage everything
-    FastItemAdapter<SavedHousesResponse> mainFastAdapter;
+    FastItemAdapter<SavedHousesResponse> mainSavedHousesFastAdapter;
+    FastItemAdapter<SavedVenuesResponse> mainSavedVenuesFastAdapter;
     // FooterAdapter<ProgressItem> footerAdapter = new FooterAdapter<>();
     //  EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
@@ -110,7 +114,8 @@ public class SavedItems extends AppCompatActivity {
 
 
         //initialize our FastAdapter which will manage everything
-        mainFastAdapter = new FastItemAdapter<>();
+        mainSavedHousesFastAdapter = new FastItemAdapter<>();
+        mainSavedVenuesFastAdapter = new FastItemAdapter<>();
 
 
         //initialize the endless scroll listener
@@ -144,7 +149,18 @@ public class SavedItems extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                loadMoreSavedHouses();
+                //check which item is being loaded
+                if (isHouses) {
+
+                    loadMoreSavedHouses();
+
+                } else if (isVenues) {
+
+                    loadMoreSavedVenues();
+
+
+                } else if (isLand) {
+                }
 
 
             }
@@ -152,7 +168,7 @@ public class SavedItems extends AppCompatActivity {
 
 
         //add on click listeners to the views
-        mainFastAdapter.withEventHook(new ClickEventHook<SavedHousesResponse>() {
+        mainSavedHousesFastAdapter.withEventHook(new ClickEventHook<SavedHousesResponse>() {
 
 
             @Nullable
@@ -171,15 +187,44 @@ public class SavedItems extends AppCompatActivity {
 
 
                 Toast.makeText(SavedItems.this, "On click works: " + item.getLocation(), Toast.LENGTH_LONG).show();
-                deletableHouseId = fastAdapter.getItem(i).getObjectId();
+                deletableVenueId = fastAdapter.getItem(i).getObjectId();
                 deletedItemPosition = i;
-                Log.d("myLogsDelHseId", deletableHouseId);
-                deleteSavedHouse();
+                Log.d("myLogsDelVenId", deletableVenueId);
+                deleteSavedVenue();
 
 
             }
 
 
+        });
+
+
+        mainSavedVenuesFastAdapter.withEventHook(new ClickEventHook<SavedVenuesResponse>() {
+
+            @Nullable
+            @Override
+            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+
+                if (viewHolder instanceof SavedVenuesResponse.SavedVenuesViewHolder) {
+                    return ((SavedVenuesResponse.SavedVenuesViewHolder) viewHolder).deleteItem;
+                }
+
+
+                return super.onBind(viewHolder);
+            }
+
+            @Override
+            public void onClick(View view, int i, FastAdapter<SavedVenuesResponse> fastAdapter, SavedVenuesResponse item) {
+
+
+                Toast.makeText(SavedItems.this, "On click works: " + item.getLocation(), Toast.LENGTH_LONG).show();
+                deletableVenueId = fastAdapter.getItem(i).getObjectId();
+                deletedItemPosition = i;
+                Log.d("myLogsDelVenId", deletableVenueId);
+                deleteSavedVenue();
+
+
+            }
         });
 
 
@@ -217,8 +262,11 @@ public class SavedItems extends AppCompatActivity {
 
                 } else if (isVenues) {
 
+                    refreshSavedVenues();
 
                 } else if (isLand) {
+
+
                 }
 
 
@@ -313,9 +361,9 @@ public class SavedItems extends AppCompatActivity {
                 savedHousesResponse = createSavedHouseObjectArraylist(response);
                 if (!savedHousesResponse.isEmpty()) {
 
-                    mainFastAdapter.add(savedHousesResponse);
+                    mainSavedHousesFastAdapter.add(savedHousesResponse);
                     // mainRecyclerView.setAdapter(footerAdapter.wrap(mainFastAdapter));
-                    mainRecyclerView.setAdapter(mainFastAdapter);
+                    mainRecyclerView.setAdapter(mainSavedHousesFastAdapter);
 
 
                 } else {
@@ -342,6 +390,9 @@ public class SavedItems extends AppCompatActivity {
 
 
     }
+
+
+    /**********************************************************************************************************************************************/
 
 
     ArrayList<SavedHousesResponse> createSavedHouseObjectArraylist(List<Map<String, Object>> response) {
@@ -404,8 +455,121 @@ public class SavedItems extends AppCompatActivity {
 
     }
 
+
+    /**********************************************************************************************************************************************/
+
+
     void requestSavedVenues() {
+
+        savedVenuesQueryBuilder = LoadRelationsQueryBuilder.ofMap();
+        savedVenuesQueryBuilder.setRelationName("saved_venues");
+        savedVenuesQueryBuilder.setPageSize(4).setOffset(0);
+
+
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedVenuesQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
+            @Override
+            public void handleResponse(List<Map<String, Object>> response) {
+
+                savedVenuesResponse = createSavedVenueObjectArraylist(response);
+
+
+                if (!savedVenuesResponse.isEmpty()) {
+
+                    mainSavedVenuesFastAdapter.add(savedVenuesResponse);
+                    // mainRecyclerView.setAdapter(footerAdapter.wrap(mainFastAdapter));
+                    mainRecyclerView.setAdapter(mainSavedVenuesFastAdapter);
+
+
+                } else {
+
+
+                    Log.d("myLogsSvdVenReq", "saved venue array is empty");
+
+
+                }
+
+
+                Log.d("myLogsSvdVenReq", response.toString());
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsSvdVenReqFail", fault.toString());
+
+
+            }
+        });
+
+
     }
+
+
+    /**********************************************************************************************************************************************/
+
+
+    ArrayList<SavedVenuesResponse> createSavedVenueObjectArraylist(List<Map<String, Object>> response) {
+
+        //String mainImageReference,String img2, String img3, String img4, String img5,
+        // String description, String title,  String capacity,  String price, String location, String objectId, String phone
+
+
+        ArrayList<SavedVenuesResponse> savedVenues = new ArrayList<>();
+
+        int count = response.size() - 1;
+
+
+        String mianImageReference, img2, img3, img4, img5, title, description, phone, price, objectId, location, capacity;
+        Map<String, Object> currentItem = new HashMap<>();
+
+        SavedVenuesResponse savedVenuesResponse;
+
+
+        for (int i = 0; i <= count; i++) {
+
+            currentItem = response.get(i);
+
+            mianImageReference = (String) currentItem.get("main_image_reference");
+            img2 = (String) currentItem.get("img2");
+            img3 = (String) currentItem.get("img3");
+            img4 = (String) currentItem.get("img4");
+            img5 = (String) currentItem.get("img5");
+            title = (String) currentItem.get("title");
+            description = (String) currentItem.get("description");
+            phone = (String) currentItem.get("phone");
+            price = (String) currentItem.get("price");
+            objectId = (String) currentItem.get("objectId");
+            location = (String) currentItem.get("location");
+            capacity = (String) currentItem.get("capacity");
+
+
+
+
+            savedVenuesResponse = new SavedVenuesResponse(mianImageReference, img2, img3, img4, img5, description, title, capacity, price, location, objectId, phone);
+
+            savedVenues.add(savedVenuesResponse);
+
+
+            if (!savedVenues.isEmpty()) {
+
+                Log.d("myLogsSvdVenue", savedVenues.get(0).toString());
+
+
+            }
+
+
+        }
+
+
+        return savedVenues;
+
+    }
+
+
+    /**********************************************************************************************************************************************/
+
 
     void requestSavedLand() {
     }
@@ -426,7 +590,7 @@ public class SavedItems extends AppCompatActivity {
 
                     savedHousesResponse.clear();
                     savedHousesResponse.addAll(createSavedHouseObjectArraylist(response));
-                    mainFastAdapter.add(savedHousesResponse);
+                    mainSavedHousesFastAdapter.add(savedHousesResponse);
                 } else {
                     Toast.makeText(SavedItems.this, "No more items", Toast.LENGTH_LONG).show();
                 }
@@ -440,6 +604,38 @@ public class SavedItems extends AppCompatActivity {
 
                 Log.d("myLogsSvdHseLdMrReqFail", fault.toString());
 
+
+            }
+        });
+
+
+    }
+
+    void loadMoreSavedVenues() {
+
+        savedVenuesQueryBuilder.prepareNextPage();
+
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedVenuesQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
+            @Override
+            public void handleResponse(List<Map<String, Object>> response) {
+
+
+                if (response.size() > 0) {
+
+                    savedVenuesResponse.clear();
+                    savedVenuesResponse.addAll(createSavedVenueObjectArraylist(response));
+                    mainSavedVenuesFastAdapter.add(savedVenuesResponse);
+                } else {
+                    Toast.makeText(SavedItems.this, "No more items", Toast.LENGTH_LONG).show();
+                }
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsSvdVenLdMrReqFail", fault.toString());
 
             }
         });
@@ -461,10 +657,10 @@ public class SavedItems extends AppCompatActivity {
                 //perform the sequence of actions for a refreshed load
                 savedHousesResponse.clear();
                 savedHousesResponse.addAll(createSavedHouseObjectArraylist(response));
-                mainFastAdapter.clear();
+                mainSavedHousesFastAdapter.clear();
                 //  mainRecyclerView.clearOnScrollListeners();
                 // mainRecyclerView.addOnScrollListener(endlessRecyclerOnScrollListener);
-                mainFastAdapter.add(savedHousesResponse);
+                mainSavedHousesFastAdapter.add(savedHousesResponse);
                 // endlessRecyclerOnScrollListener.resetPageCount();
 
 
@@ -481,6 +677,46 @@ public class SavedItems extends AppCompatActivity {
             public void handleFault(BackendlessFault fault) {
 
                 Log.d("myLogsSvdHseReqORFail", fault.toString());
+
+
+            }
+        });
+
+
+    }
+
+    void refreshSavedVenues() {
+
+
+        savedVenuesQueryBuilder.setPageSize(4).setOffset(0);
+
+
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedVenuesQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
+            @Override
+            public void handleResponse(List<Map<String, Object>> response) {
+
+
+                //perform the sequence of actions for a refreshed load
+                savedVenuesResponse.clear();
+                savedVenuesResponse.addAll(createSavedVenueObjectArraylist(response));
+                mainSavedVenuesFastAdapter.clear();
+                mainSavedVenuesFastAdapter.add(savedVenuesResponse);
+
+
+                Log.d("myLogsSvdVenReqOR", response.toString());
+
+
+                //stop the refreshing animation
+                mainSwipeRefresh.setRefreshing(false);
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+
+                Log.d("myLogsSvdVenReqORFail", fault.toString());
 
 
             }
@@ -514,9 +750,9 @@ public class SavedItems extends AppCompatActivity {
 
                 if (!(deletedItemPosition == null)) {
 
-                    mainFastAdapter.remove(deletedItemPosition);
+                    mainSavedVenuesFastAdapter.remove(deletedItemPosition);
 
-                }else{
+                } else {
 
                     refreshSavedHouses();
                     Log.d("myLogsDelHse", "deleted item position is null: refresh view ");
@@ -534,6 +770,49 @@ public class SavedItems extends AppCompatActivity {
             public void handleFault(BackendlessFault fault) {
 
                 Log.d("myLogsDelHse", "saved house items deletion failed: " + fault.toString());
+
+            }
+        });
+
+
+    }
+
+    void deleteSavedVenue() {
+
+
+        Map<String, String> deletableVenue = new HashMap<>();
+        deletableVenue.put("objectId", deletableVenueId);
+        deletableVenuesList.add(deletableVenue);
+
+
+        Backendless.Data.of(BackendlessUser.class).deleteRelation(currentUser, "saved_venues", deletableVenuesList, new AsyncCallback<Integer>() {
+            @Override
+            public void handleResponse(Integer response) {
+
+
+                Log.d("myLogsDelVen", "items Deleted: " + response);
+
+
+                if (!(deletedItemPosition == null)) {
+
+                    mainSavedVenuesFastAdapter.remove(deletedItemPosition);
+
+                } else {
+
+                    refreshSavedVenues();
+                    Log.d("myLogsDelVen", "deleted item position is null: refresh view ");
+
+
+                }
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsDelVen", "saved venue items deletion failed: " + fault.toString());
+
 
             }
         });
