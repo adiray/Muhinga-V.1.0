@@ -320,8 +320,10 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
         }
 
         viewHolder.title_vh.setText(title);
+        viewHolder.location_vh.setText(location);
+        viewHolder.price_vh.setText(price);
 
-        String mainImageRef = mianImageReference;
+
 
 
         Glide.with(viewHolder.itemView).load(mianImageReference).into(viewHolder.house_main_image_vh);
@@ -337,7 +339,7 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
 
         //declaring the views
         TextView title_vh, location_vh, rent_vh, price_vh;
-        ImageView house_main_image_vh;
+        ImageView house_main_image_vh, deleteItem;
 
 
         public savedHousesViewHolder( View itemView) {
@@ -349,6 +351,7 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
             price_vh = itemView.findViewById(R.id.saved_houses_houses_rec_view_single_object_price);
             rent_vh = itemView.findViewById(R.id.saved_houses_houses_rec_view_single_object_rent_sale);
             house_main_image_vh = itemView.findViewById(R.id.saved_houses_houses_rec_view_single_object_image);
+            deleteItem = itemView.findViewById(R.id.saved_houses_unsave_house_button);
 
 
 

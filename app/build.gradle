@@ -30,6 +30,9 @@ dependencies {
     //ios style dialog library
     implementation 'com.gdacciaro:iosdialog:1.0.3'
 
+    //the FAB library
+    implementation 'com.github.clans:fab:1.6.4'
+
     //used for the rotating reply song view
     implementation 'theanilpaudel:rotatinganimation:1.0.0'
     //used for the circular image view in the play song activity

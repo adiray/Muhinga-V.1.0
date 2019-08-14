@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".SavedItems">
 
 
@@ -14,36 +14,66 @@
         android:layout_height="wrap_content"
         android:background="@color/my_color_primary"
         android:minHeight="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
 
         app:titleTextColor="@color/my_color_bg" />
 
 
     <TextView
-        android:layout_marginTop="16dp"
-        android:gravity="center_horizontal"
+        android:id="@+id/textView4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
         android:text="@string/saved_items"
         android:textColor="@color/my_color_secondary"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/saved_items_action_bar" />
 
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/saved_items_rec_view_swipe_refresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp">
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4">
+
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/saved_items_activity_rec_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginStart="7dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="7dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:scrollbars="vertical" />
+
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
 
-</LinearLayout>
+    <com.github.clans.fab.FloatingActionButton
+
+        android:id="@+id/saved_items_load_more_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/blue_load_more_icon"
+        app:fab_colorNormal="#98ccfd"
+        app:fab_colorPressed="#3498db"
+        app:fab_colorRipple="#99FFFFFF"
+        app:fab_label="Load More"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+</android.support.constraint.ConstraintLayout>
