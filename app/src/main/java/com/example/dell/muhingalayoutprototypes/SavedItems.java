@@ -36,44 +36,49 @@ import java.util.Map;
 public class SavedItems extends AppCompatActivity {
 
 
-    //other items
-    Boolean onRefreshing = false, isHouses = false, isLand = false, isVenues = false;
+    //QUERY BUILDERS
+    LoadRelationsQueryBuilder<Map<String, Object>> savedVenuesQueryBuilder;
+    LoadRelationsQueryBuilder<Map<String, Object>> savedLandQueryBuilder;
+    LoadRelationsQueryBuilder<Map<String, Object>> savedHousesQueryBuilder;
 
-    //deleting houses items
+
+    //HASH MAPS
+    Map<String, Object> savedHousesResponseMap = new HashMap<>();
+
+
+    //ARRAY LISTS
     List<Map<String, String>> deletableHousesList = new ArrayList<>();
     List<Map<String, String>> deletableVenuesList = new ArrayList<>();
     List<Map<String, String>> deletableLandList = new ArrayList<>();
-    Integer deletedItemPosition;
-    String deletableHouseId = "not found", deletableVenueId = "not found";
+    ArrayList<SavedHousesResponse> savedHousesResponse = new ArrayList<>();
+    ArrayList<SavedVenuesResponse> savedVenuesResponse = new ArrayList<>();
+    ArrayList<SavedLandResponse> savedLandResponse = new ArrayList<>();
 
-    //backendless
-    //LoadRelationsQueryBuilder<HousesResponse> savedHousesQueryBuilder;
-    LoadRelationsQueryBuilder<Map<String, Object>> savedVenuesQueryBuilder;
-    LoadRelationsQueryBuilder<Map<String, Object>> savedHousesQueryBuilder;
-    Map<String, Object> savedHousesResponseMap = new HashMap<>();
+
+    //BOOLEANS
+    Boolean onRefreshing = false, isHouses = false, isLand = false, isVenues = false;
+
+    //STRINGS
+    String deletableHouseId = "not found", deletableVenueId = "not found",deletableLandId = "not found";
     String globalCurrentUserJson, selectedCategory, currentUserId;
-    BackendlessUser currentUser;
 
-    //FAB
+    //VIEWS
     FloatingActionButton loadMoreFAB;
-
-    //toolBar
     Toolbar mainToolBar;
-
-
-    //recycler view objects
     RecyclerView mainRecyclerView;
     SwipeRefreshLayout mainSwipeRefresh;
 
-    //response objects
-    ArrayList<SavedHousesResponse> savedHousesResponse = new ArrayList<>();
-    ArrayList<SavedVenuesResponse> savedVenuesResponse = new ArrayList<>();
+    //INTEGERS
+    Integer deletedItemPosition;
 
-    //create our FastAdapter which will manage everything
+
+    //BACKENDLESS USER
+    BackendlessUser currentUser;
+
+    //FAST ADAPTER
     FastItemAdapter<SavedHousesResponse> mainSavedHousesFastAdapter;
     FastItemAdapter<SavedVenuesResponse> mainSavedVenuesFastAdapter;
-    // FooterAdapter<ProgressItem> footerAdapter = new FooterAdapter<>();
-    //  EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
+    FastItemAdapter<SavedLandResponse> mainSavedLandFastAdapter;
 
 
     @Override
@@ -116,33 +121,7 @@ public class SavedItems extends AppCompatActivity {
         //initialize our FastAdapter which will manage everything
         mainSavedHousesFastAdapter = new FastItemAdapter<>();
         mainSavedVenuesFastAdapter = new FastItemAdapter<>();
-
-
-        //initialize the endless scroll listener
-     /*   endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(footerAdapter) {
-            @Override
-            public void onLoadMore(int currentPage) {
-
-                footerAdapter.clear();
-                footerAdapter.add(new ProgressItem().withEnabled(false));
-
-                //check which item is being loaded
-                if (isHouses) {
-
-                    loadMoreSavedHouses();
-
-                } else if (isVenues) {
-
-
-                } else if (isLand) {
-                }
-
-
-            }
-        };
-
-*/
-
+        mainSavedLandFastAdapter = new FastItemAdapter<>();
 
         //add on click listeners to the views
         loadMoreFAB.setOnClickListener(new View.OnClickListener() {
@@ -151,15 +130,11 @@ public class SavedItems extends AppCompatActivity {
 
                 //check which item is being loaded
                 if (isHouses) {
-
                     loadMoreSavedHouses();
-
                 } else if (isVenues) {
-
                     loadMoreSavedVenues();
-
-
                 } else if (isLand) {
+                    loadMoreSavedLand();
                 }
 
 
@@ -187,10 +162,10 @@ public class SavedItems extends AppCompatActivity {
 
 
                 Toast.makeText(SavedItems.this, "On click works: " + item.getLocation(), Toast.LENGTH_LONG).show();
-                deletableVenueId = fastAdapter.getItem(i).getObjectId();
+                deletableHouseId = fastAdapter.getItem(i).getObjectId();
                 deletedItemPosition = i;
-                Log.d("myLogsDelVenId", deletableVenueId);
-                deleteSavedVenue();
+                Log.d("myLogsDelHseId", deletableHouseId);
+                deleteSavedHouse();
 
 
             }
@@ -223,6 +198,32 @@ public class SavedItems extends AppCompatActivity {
                 Log.d("myLogsDelVenId", deletableVenueId);
                 deleteSavedVenue();
 
+
+            }
+        });
+
+
+        mainSavedLandFastAdapter.withEventHook(new ClickEventHook<SavedLandResponse>() {
+
+            @Nullable
+            @Override
+            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+
+                if (viewHolder instanceof SavedLandResponse.SavedLandViewHolder) {
+                    return ((SavedLandResponse.SavedLandViewHolder) viewHolder).deleteItem;
+                }
+
+                return super.onBind(viewHolder);
+            }
+
+            @Override
+            public void onClick(View view, int i, FastAdapter<SavedLandResponse> fastAdapter, SavedLandResponse item) {
+
+                Toast.makeText(SavedItems.this, "On click works: " + item.getLocation(), Toast.LENGTH_LONG).show();
+                deletableLandId = fastAdapter.getItem(i).getObjectId();
+                deletedItemPosition = i;
+                Log.d("myLogsDelLandId", deletableHouseId);
+                deleteSavedLand();
 
             }
         });
@@ -266,6 +267,7 @@ public class SavedItems extends AppCompatActivity {
 
                 } else if (isLand) {
 
+                    refreshSavedLand();
 
                 }
 
@@ -275,9 +277,6 @@ public class SavedItems extends AppCompatActivity {
 
         });
 
-
-        //set the infinite/endless load on scroll listener to the recycler view
-        // mainRecyclerView.addOnScrollListener(endlessRecyclerOnScrollListener);
 
 
     }
@@ -545,8 +544,6 @@ public class SavedItems extends AppCompatActivity {
             capacity = (String) currentItem.get("capacity");
 
 
-
-
             savedVenuesResponse = new SavedVenuesResponse(mianImageReference, img2, img3, img4, img5, description, title, capacity, price, location, objectId, phone);
 
             savedVenues.add(savedVenuesResponse);
@@ -572,8 +569,103 @@ public class SavedItems extends AppCompatActivity {
 
 
     void requestSavedLand() {
+
+        savedLandQueryBuilder = LoadRelationsQueryBuilder.ofMap();
+        savedLandQueryBuilder.setRelationName("saved_land");
+        savedLandQueryBuilder.setPageSize(4).setOffset(0);
+
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedLandQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
+            @Override
+            public void handleResponse(List<Map<String, Object>> response) {
+
+
+                savedLandResponse = createSavedLandObjectArraylist(response);
+                if (!savedLandResponse.isEmpty()) {
+
+                    mainSavedLandFastAdapter.add(savedLandResponse);
+                    mainRecyclerView.setAdapter(mainSavedLandFastAdapter);
+
+
+                } else {
+
+
+                    Log.d("myLogsSvdLanReq", "saved land array is empty");
+
+
+                }
+
+
+                Log.d("myLogsSvdLanReq", response.toString());
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+            }
+        });
+
+
     }
 
+
+    /**********************************************************************************************************************************************/
+
+
+    ArrayList<SavedLandResponse> createSavedLandObjectArraylist(List<Map<String, Object>> response) {
+
+        ArrayList<SavedLandResponse> savedLand = new ArrayList<>();
+        int count = response.size() - 1;
+
+
+        String mianImageReference, img2, img3, img4, img5, title, description, phone, price, viewingDates, objectId, location, size;
+        Map<String, Object> currentItem = new HashMap<>();
+
+        SavedLandResponse savedLandResponse;
+
+        for (int i = 0; i <= count; i++) {
+
+
+            currentItem = response.get(i);
+
+            mianImageReference = (String) currentItem.get("mian_image_reference");
+            img2 = (String) currentItem.get("img2");
+            img3 = (String) currentItem.get("img3");
+            img4 = (String) currentItem.get("img4");
+            img5 = (String) currentItem.get("img5");
+            title = (String) currentItem.get("title");
+            description = (String) currentItem.get("description");
+            phone = (String) currentItem.get("phone");
+            price = (String) currentItem.get("price");
+            viewingDates = (String) currentItem.get("viewing_dates");
+            objectId = (String) currentItem.get("objectId");
+            size = (String) currentItem.get("size");
+            location = (String) currentItem.get("Location");
+
+
+            savedLandResponse = new SavedLandResponse(phone, viewingDates, title, description, img2, img3, img4, size, img5, objectId, location, price, mianImageReference);
+
+
+            savedLand.add(savedLandResponse);
+
+
+        }
+
+        if (!savedLand.isEmpty()) {
+
+            Log.d("myLogsSvdLand", savedLand.get(0).toString());
+
+
+        }
+
+        return savedLand;
+
+
+    }
+
+
+    /**********************************************************************************************************************************************/
 
     void loadMoreSavedHouses() {
 
@@ -643,6 +735,40 @@ public class SavedItems extends AppCompatActivity {
 
     }
 
+    void loadMoreSavedLand() {
+
+        savedLandQueryBuilder.prepareNextPage();
+
+
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedLandQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
+            @Override
+            public void handleResponse(List<Map<String, Object>> response) {
+
+
+                if (response.size() > 0) {
+
+                    savedLandResponse.clear();
+                    savedLandResponse.addAll(createSavedLandObjectArraylist(response));
+                    mainSavedLandFastAdapter.add(savedLandResponse);
+                } else {
+                    Toast.makeText(SavedItems.this, "No more items", Toast.LENGTH_LONG).show();
+                }
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+
+                Log.d("myLogsSvdLanLdMrReqFail", fault.toString());
+
+
+            }
+        });
+
+
+    }
 
     void refreshSavedHouses() {
 
@@ -725,6 +851,45 @@ public class SavedItems extends AppCompatActivity {
 
     }
 
+    void refreshSavedLand(){
+
+        savedLandQueryBuilder.setPageSize(4).setOffset(0);
+
+
+        Backendless.Data.of(BackendlessUser.class).loadRelations(currentUserId, savedLandQueryBuilder, new AsyncCallback<List<Map<String, Object>>>() {
+            @Override
+            public void handleResponse(List<Map<String, Object>> response) {
+
+                //perform the sequence of actions for a refreshed load
+                savedLandResponse.clear();
+                savedLandResponse.addAll(createSavedLandObjectArraylist(response));
+                mainSavedLandFastAdapter.clear();
+                mainSavedLandFastAdapter.add(savedLandResponse);
+
+
+                Log.d("myLogsSvdLanReqOR", response.toString());
+
+
+                //stop the refreshing animation
+                mainSwipeRefresh.setRefreshing(false);
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsSvdLanReqORFail", fault.toString());
+
+
+            }
+        });
+
+
+
+
+
+    }
 
     void deleteSavedHouse() {
 
@@ -750,7 +915,7 @@ public class SavedItems extends AppCompatActivity {
 
                 if (!(deletedItemPosition == null)) {
 
-                    mainSavedVenuesFastAdapter.remove(deletedItemPosition);
+                    mainSavedHousesFastAdapter.remove(deletedItemPosition);
 
                 } else {
 
@@ -820,6 +985,49 @@ public class SavedItems extends AppCompatActivity {
 
     }
 
+    void deleteSavedLand(){
+
+        Map<String, String> deletableLand = new HashMap<>();
+        deletableLand.put("objectId", deletableLandId);
+        deletableLandList.add(deletableLand);
+
+        Backendless.Data.of(BackendlessUser.class).deleteRelation(currentUser, "saved_land", deletableLandList, new AsyncCallback<Integer>() {
+            @Override
+            public void handleResponse(Integer response) {
+
+                Log.d("myLogsDelLan", "items Deleted: " + response);
+
+
+                if (!(deletedItemPosition == null)) {
+
+                    mainSavedLandFastAdapter.remove(deletedItemPosition);
+
+                } else {
+
+                    refreshSavedLand();
+                    Log.d("myLogsDelLan", "deleted item position is null: refresh view ");
+
+
+                }
+
+
+
+
+
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+
+                Log.d("myLogsDelLan", "saved land items deletion failed: " + fault.toString());
+
+            }
+        });
+
+
+
+
+    }
 
 }
 
