@@ -247,6 +247,7 @@ public class Venues extends AppCompatActivity {
                 intent.putExtra(EXTRA_SIZE, size);
                 intent.putExtra(EXTRA_DESCRIPTION, description);
                 intent.putExtra(EXTRA_PHONE,ownerPhone);
+                intent.putExtra("startingActivity", "VenuesHomeActivity");
                 startActivity(intent);
 
 

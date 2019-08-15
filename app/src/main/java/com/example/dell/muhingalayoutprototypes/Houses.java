@@ -267,6 +267,8 @@ public class Houses extends AppCompatActivity {
                 intent.putExtra(EXTRA_VIEWING_DATES,viewingDates);
                 intent.putExtra("globalCurrentUser",globalCurrentUserJson);
                 intent.putExtra("currentHouseId",objectId);
+                intent.putExtra("startingActivity", "HousesMainActivity");
+
 
                 startActivity(intent);
 

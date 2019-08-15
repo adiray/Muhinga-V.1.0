@@ -44,7 +44,7 @@ public class HousesDetails extends AppCompatActivity {
     String housesDetailsTitle, housesDetailsRentOrSale, housesDetailsPrice, housesDetailsDescription, housesDetailsLocation;
     String houseDetailsViewingDates, houseDetailsOwnerPhone, houseId;
 
-    String shareMessage;
+    String shareMessage, startingActivity;
 
 
     //user
@@ -73,21 +73,49 @@ public class HousesDetails extends AppCompatActivity {
 
         // Get the Intent that started this activity and extract the image references array
         Intent intent = getIntent();
-        housesItemImageReferences = intent.getStringArrayListExtra(Houses.EXTRA_ARRAY_H);
-        housesDetailsDescription = intent.getStringExtra(Houses.EXTRA_DESCRIPTION_H);
-        housesDetailsLocation = intent.getStringExtra(Houses.EXTRA_LOCATION_H);
-        housesDetailsPrice = intent.getStringExtra(Houses.EXTRA_PRICE_H);
-        housesDetailsRentOrSale = intent.getStringExtra(Houses.EXTRA_RENT_SALE_H);
-        housesDetailsTitle = intent.getStringExtra(Houses.EXTRA_TITLE_H);
-        houseDetailsViewingDates = intent.getStringExtra(Houses.EXTRA_VIEWING_DATES);
-        houseDetailsOwnerPhone = intent.getStringExtra(Houses.EXTRA_OWNER_PHONE);
-        houseId = intent.getStringExtra("currentHouseId");
+        startingActivity = intent.getStringExtra("startingActivity");
 
-        //get user
-        globalCurrentUserJson = intent.getStringExtra("globalCurrentUser");
-        Gson gson = new Gson();
-        currentUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
-        currentUserId = currentUser.getObjectId();
+        if (startingActivity.equals("SavedItems")) {
+
+
+            housesItemImageReferences = intent.getStringArrayListExtra("housesItemImageReferences");
+            housesDetailsDescription = intent.getStringExtra("description");
+            housesDetailsLocation = intent.getStringExtra("location");
+            housesDetailsPrice = intent.getStringExtra("price");
+            housesDetailsRentOrSale = intent.getStringExtra("rentSale");
+            housesDetailsTitle = intent.getStringExtra("title");
+            houseDetailsViewingDates = intent.getStringExtra("viewingDates");
+            houseDetailsOwnerPhone = intent.getStringExtra("ownerPhone");
+            houseId = intent.getStringExtra("currentHouseId");
+
+            //get user
+            globalCurrentUserJson = intent.getStringExtra("globalCurrentUser");
+            Gson gson = new Gson();
+            currentUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+            currentUserId = currentUser.getObjectId();
+
+
+        } else if (startingActivity.equals("HousesMainActivity")) {
+
+
+            housesItemImageReferences = intent.getStringArrayListExtra(Houses.EXTRA_ARRAY_H);
+            housesDetailsDescription = intent.getStringExtra(Houses.EXTRA_DESCRIPTION_H);
+            housesDetailsLocation = intent.getStringExtra(Houses.EXTRA_LOCATION_H);
+            housesDetailsPrice = intent.getStringExtra(Houses.EXTRA_PRICE_H);
+            housesDetailsRentOrSale = intent.getStringExtra(Houses.EXTRA_RENT_SALE_H);
+            housesDetailsTitle = intent.getStringExtra(Houses.EXTRA_TITLE_H);
+            houseDetailsViewingDates = intent.getStringExtra(Houses.EXTRA_VIEWING_DATES);
+            houseDetailsOwnerPhone = intent.getStringExtra(Houses.EXTRA_OWNER_PHONE);
+            houseId = intent.getStringExtra("currentHouseId");
+
+            //get user
+            globalCurrentUserJson = intent.getStringExtra("globalCurrentUser");
+            Gson gson = new Gson();
+            currentUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+            currentUserId = currentUser.getObjectId();
+
+
+        }
 
 
         //get references to the view objects
@@ -347,7 +375,7 @@ public class HousesDetails extends AppCompatActivity {
 
     void saveHouse() {
 
-       //disable the button and show that its disabled so user doesn't press twice
+        //disable the button and show that its disabled so user doesn't press twice
         saveHouseButton.setEnabled(false);
         saveHouseButton.setImageResource(R.drawable.contacts_saving_progress);
 
@@ -369,18 +397,17 @@ public class HousesDetails extends AppCompatActivity {
             public void handleResponse(Integer response) {
 
 
-                if (response==0){
+                if (response == 0) {
 
                     Toast.makeText(HousesDetails.this, "The property has already been saved before", Toast.LENGTH_LONG).show();
 
-                }else if(response>=1){
+                } else if (response >= 1) {
 
 
                     Toast.makeText(HousesDetails.this, "The property has been saved successfully", Toast.LENGTH_LONG).show();
 
 
                 }
-
 
 
                 Log.d("myLogSaveHouse", "User object updated with saved house: " + response.toString());
@@ -403,8 +430,6 @@ public class HousesDetails extends AppCompatActivity {
 
 
     }
-
-
 
 
 }

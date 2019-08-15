@@ -248,6 +248,7 @@ public class Land extends AppCompatActivity {
                 intent.putExtra(EXTRA_OWNER_PHONE, ownerPhone);
                 intent.putExtra("globalCurrentUser",globalCurrentUserJson);
                 intent.putExtra("currentLandId",objectId);
+                intent.putExtra("startingActivity", "LandHomeActivity");
 
                 startActivity(intent);
 

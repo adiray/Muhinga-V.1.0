@@ -35,7 +35,7 @@ public class VenuesDetails extends AppCompatActivity {
 
     ArrayList<String> itemImageReferences = new ArrayList<>();
     String venuesDetailsId, venuesDetailsTitle, venuesDetailsSize, venuesDetailsPrice, venuesDetailsDescription, venuesDetailsLocation, venuesOwnerPhone;
-
+    String startingActivity;
     //current user
     String globalCurrentUserJson, currentUserId;
     BackendlessUser backendlessUser;
@@ -68,20 +68,47 @@ public class VenuesDetails extends AppCompatActivity {
 
         // Get the Intent that started this activity and extract the image references array
         final Intent intent = getIntent();
-        itemImageReferences = intent.getStringArrayListExtra(Venues.EXTRA_ARRAY);
-        venuesDetailsDescription = intent.getStringExtra(Venues.EXTRA_DESCRIPTION);
-        venuesDetailsLocation = intent.getStringExtra(Venues.EXTRA_LOCATION);
-        venuesDetailsPrice = intent.getStringExtra(Venues.EXTRA_PRICE);
-        venuesDetailsSize = intent.getStringExtra(Venues.EXTRA_SIZE);
-        venuesDetailsTitle = intent.getStringExtra(Venues.EXTRA_TITLE);
-        venuesOwnerPhone = intent.getStringExtra(Venues.EXTRA_PHONE);
-        venuesDetailsId = intent.getStringExtra(Venues.EXTRA_ID);
+        startingActivity = intent.getStringExtra("startingActivity");
 
-        //get user
-        globalCurrentUserJson = intent.getStringExtra(MainActivity.EXTRA_GLOBAL_USER);
-        Gson gson = new Gson();
-        backendlessUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
-        currentUserId = backendlessUser.getObjectId();
+
+        if (startingActivity.equals("SavedItems")) {
+
+
+            itemImageReferences = intent.getStringArrayListExtra("venuesItemImageReferences");
+            venuesDetailsDescription = intent.getStringExtra("description");
+            venuesDetailsLocation = intent.getStringExtra("location");
+            venuesDetailsPrice = intent.getStringExtra("price");
+            venuesDetailsSize = intent.getStringExtra("size");
+            venuesDetailsTitle = intent.getStringExtra("title");
+            venuesOwnerPhone = intent.getStringExtra("ownerPhone");
+            venuesDetailsId = intent.getStringExtra("venueId");
+
+            //get user
+            globalCurrentUserJson = intent.getStringExtra("globalCurrentUserJson");
+            Gson gson = new Gson();
+            backendlessUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+            currentUserId = backendlessUser.getObjectId();
+
+
+        } else if (startingActivity.equals("VenuesHomeActivity")) {
+
+            itemImageReferences = intent.getStringArrayListExtra(Venues.EXTRA_ARRAY);
+            venuesDetailsDescription = intent.getStringExtra(Venues.EXTRA_DESCRIPTION);
+            venuesDetailsLocation = intent.getStringExtra(Venues.EXTRA_LOCATION);
+            venuesDetailsPrice = intent.getStringExtra(Venues.EXTRA_PRICE);
+            venuesDetailsSize = intent.getStringExtra(Venues.EXTRA_SIZE);
+            venuesDetailsTitle = intent.getStringExtra(Venues.EXTRA_TITLE);
+            venuesOwnerPhone = intent.getStringExtra(Venues.EXTRA_PHONE);
+            venuesDetailsId = intent.getStringExtra(Venues.EXTRA_ID);
+
+            //get user
+            globalCurrentUserJson = intent.getStringExtra(MainActivity.EXTRA_GLOBAL_USER);
+            Gson gson = new Gson();
+            backendlessUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+            currentUserId = backendlessUser.getObjectId();
+
+
+        }
 
 
         //get references to the view objects
@@ -174,8 +201,7 @@ public class VenuesDetails extends AppCompatActivity {
      */
 
 
-
-    void shareVenueClicked(){
+    void shareVenueClicked() {
 
 
         shareMessage = "Check out this great property on the MUHINGA app." + " " + venuesDetailsTitle + ". " + " Price: " +
@@ -201,12 +227,7 @@ public class VenuesDetails extends AppCompatActivity {
         }).build().show();
 
 
-
-
-
-
     }
-
 
 
     void shareVenueDetails() {
@@ -220,13 +241,6 @@ public class VenuesDetails extends AppCompatActivity {
         startActivity(Intent.createChooser(sharingIntent, getResources().getString(R.string.share_using)));
 
     }
-
-
-
-
-
-
-
 
 
     /**

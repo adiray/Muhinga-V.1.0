@@ -59,7 +59,7 @@ public class SavedItems extends AppCompatActivity {
     Boolean onRefreshing = false, isHouses = false, isLand = false, isVenues = false;
 
     //STRINGS
-    String deletableHouseId = "not found", deletableVenueId = "not found",deletableLandId = "not found";
+    String deletableHouseId = "not found", deletableVenueId = "not found", deletableLandId = "not found";
     String globalCurrentUserJson, selectedCategory, currentUserId;
 
     //VIEWS
@@ -143,6 +143,184 @@ public class SavedItems extends AppCompatActivity {
 
 
         //add on click listeners to the views
+
+
+        mainSavedHousesFastAdapter.withEventHook(new ClickEventHook<SavedHousesResponse>() {
+
+            @Nullable
+            @Override
+            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+
+                if (viewHolder instanceof SavedHousesResponse.savedHousesViewHolder) {
+                    return ((SavedHousesResponse.savedHousesViewHolder) viewHolder).house_main_image_vh;
+                }
+                return super.onBind(viewHolder);
+            }
+
+            @Override
+            public void onClick(View view, int i, FastAdapter<SavedHousesResponse> fastAdapter, SavedHousesResponse item) {
+
+
+                // Handle click here
+                Intent intent = new Intent(SavedItems.this, HousesDetails.class);
+                ArrayList<String> housesItemImageReferences = new ArrayList<>();
+                String location, title, price, rentSale, description, ownerPhone, viewingDates, objectId;
+
+
+                //add the image references to the image reference array
+                housesItemImageReferences.add(item.getMianImageReference());
+                housesItemImageReferences.add((String) item.getImg2());
+                housesItemImageReferences.add((String) item.getImg3());
+                housesItemImageReferences.add((String) item.getImg4());
+                housesItemImageReferences.add((String) item.getImg5());
+
+                //add the other details to the respective variables
+                location = item.getLocation();
+                title = item.getTitle();
+                price = item.getPrice();
+                description = item.getDescription();
+                viewingDates = item.getViewingDates();
+                ownerPhone = item.getPhone();
+                objectId = item.getObjectId();
+
+                if (item.getRent()) {
+
+                    rentSale = "For Rent";
+                } else {
+                    rentSale = "For Sale";
+                }
+
+
+                intent.putExtra("housesItemImageReferences", housesItemImageReferences);
+                intent.putExtra("location", location);
+                intent.putExtra("title", title);
+                intent.putExtra("price", price);
+                intent.putExtra("rentSale", rentSale);
+                intent.putExtra("description", description);
+                intent.putExtra("ownerPhone", ownerPhone);
+                intent.putExtra("viewingDates", viewingDates);
+                intent.putExtra("globalCurrentUser", globalCurrentUserJson);
+                intent.putExtra("currentHouseId", objectId);
+                intent.putExtra("startingActivity", "SavedItems");
+
+                startActivity(intent);
+
+
+            }
+        });
+
+
+        mainSavedLandFastAdapter.withEventHook(new ClickEventHook<SavedLandResponse>() {
+            @Nullable
+            @Override
+            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+
+                if (viewHolder instanceof SavedLandResponse.SavedLandViewHolder) {
+                    return ((SavedLandResponse.SavedLandViewHolder) viewHolder).land_main_image_vh;
+                }
+                return super.onBind(viewHolder);
+            }
+
+            @Override
+            public void onClick(View view, int i, FastAdapter<SavedLandResponse> fastAdapter, SavedLandResponse item) {
+
+
+                // Handle click here
+
+                Intent intent = new Intent(SavedItems.this, LandDetails.class);
+                ArrayList<Object> landItemImageReferences = new ArrayList<>();
+                String location, title, price, size, description , ownerPhone, viewingDates,objectId;
+
+                //add the image references to the image reference array
+                landItemImageReferences.add(item.getMianImageReference());
+                landItemImageReferences.add(item.getImg2());
+                landItemImageReferences.add(item.getImg3());
+                landItemImageReferences.add(item.getImg4());
+                landItemImageReferences.add(item.getImg5());
+
+                //add the other details to the respective variables
+                location = item.getLocation();
+                title = item.getTitle();
+                price = item.getPrice();
+                size = item.getSize();
+                description = item.getDescription();
+                ownerPhone = item.getPhone();
+                viewingDates = item.getViewingDates();
+                objectId = item.getObjectId();
+
+                intent.putExtra("landItemImageReferences", landItemImageReferences);
+                intent.putExtra("location", location);
+                intent.putExtra("title", title);
+                intent.putExtra("price", price);
+                intent.putExtra("size", size);
+                intent.putExtra("description", description);
+                intent.putExtra("viewingDates", viewingDates);
+                intent.putExtra("ownerPhone", ownerPhone);
+                intent.putExtra("globalCurrentUser",globalCurrentUserJson);
+                intent.putExtra("currentLandId",objectId);
+                intent.putExtra("startingActivity", "SavedItems");
+
+                startActivity(intent);
+
+
+
+
+            }
+        });
+
+
+        mainSavedVenuesFastAdapter.withEventHook(new ClickEventHook<SavedVenuesResponse>() {
+            @Nullable
+            @Override
+            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+                if (viewHolder instanceof SavedVenuesResponse.SavedVenuesViewHolder) {
+                    return ((SavedVenuesResponse.SavedVenuesViewHolder) viewHolder).venues_main_image_vh;
+                }
+                return super.onBind(viewHolder);
+            }
+
+            @Override
+            public void onClick(View view, int i, FastAdapter<SavedVenuesResponse> fastAdapter, SavedVenuesResponse item) {
+
+
+                Intent intent = new Intent(SavedItems.this, VenuesDetails.class);
+                ArrayList<Object> venuesItemImageReferences = new ArrayList<>();
+                String location, title, price, size, description, ownerPhone, venueId;
+
+
+                //add the image references to the image reference array
+                venuesItemImageReferences.add(item.getMainImageReference());
+                venuesItemImageReferences.add(item.getImg2());
+                venuesItemImageReferences.add(item.getImg3());
+                venuesItemImageReferences.add(item.getImg4());
+                venuesItemImageReferences.add(item.getImg5());
+
+                //add the other details to the respective variables
+                location = item.getLocation();
+                title = item.getTitle();
+                price = item.getPrice();
+                size = item.getCapacity();
+                description = item.getDescription();
+                ownerPhone = item.getPhone();
+                venueId = item.getObjectId();
+
+                intent.putExtra("globalCurrentUserJson", globalCurrentUserJson);
+                intent.putExtra("venuesItemImageReferences", venuesItemImageReferences);
+                intent.putExtra("venueId", venueId);
+                intent.putExtra("location", location);
+                intent.putExtra("title", title);
+                intent.putExtra("price", price);
+                intent.putExtra("size", size);
+                intent.putExtra("description", description);
+                intent.putExtra("ownerPhone", ownerPhone);
+                intent.putExtra("startingActivity", "SavedItems");
+                startActivity(intent);
+
+
+            }
+        });
+
+
         mainSavedHousesFastAdapter.withEventHook(new ClickEventHook<SavedHousesResponse>() {
 
 
@@ -276,7 +454,6 @@ public class SavedItems extends AppCompatActivity {
 
 
         });
-
 
 
     }
@@ -851,7 +1028,7 @@ public class SavedItems extends AppCompatActivity {
 
     }
 
-    void refreshSavedLand(){
+    void refreshSavedLand() {
 
         savedLandQueryBuilder.setPageSize(4).setOffset(0);
 
@@ -884,9 +1061,6 @@ public class SavedItems extends AppCompatActivity {
 
             }
         });
-
-
-
 
 
     }
@@ -985,7 +1159,7 @@ public class SavedItems extends AppCompatActivity {
 
     }
 
-    void deleteSavedLand(){
+    void deleteSavedLand() {
 
         Map<String, String> deletableLand = new HashMap<>();
         deletableLand.put("objectId", deletableLandId);
@@ -1011,9 +1185,6 @@ public class SavedItems extends AppCompatActivity {
                 }
 
 
-
-
-
             }
 
             @Override
@@ -1023,8 +1194,6 @@ public class SavedItems extends AppCompatActivity {
 
             }
         });
-
-
 
 
     }

@@ -37,12 +37,11 @@ public class LandDetails extends AppCompatActivity {
 
     //miscellaneous objects
     ArrayList<LandDetailsViewSingleImage> mainImageDataSource = new ArrayList<>();
-    String shareMessage;
+    String shareMessage, startingActivity;
 
     //user object
     String globalCurrentUserJson, currentUserId;
     BackendlessUser currentUser;
-
 
 
     //view objects
@@ -63,26 +62,51 @@ public class LandDetails extends AppCompatActivity {
         setContentView(R.layout.activity_land_details);
         // Get the Intent that started this activity and extract the image references array
         Intent intent = getIntent();
-        itemImageReferences = intent.getStringArrayListExtra(Land.EXTRA_ARRAY);
-        landDetailsDescription = intent.getStringExtra(Land.EXTRA_DESCRIPTION);
-        landDetailsLocation = intent.getStringExtra(Land.EXTRA_LOCATION);
-        landDetailsPrice = intent.getStringExtra(Land.EXTRA_PRICE);
-        landDetailsSize = intent.getStringExtra(Land.EXTRA_SIZE);
-        landDetailsTitle = intent.getStringExtra(Land.EXTRA_TITLE);
-        ownerPhone = intent.getStringExtra(Land.EXTRA_OWNER_PHONE);
-        viewingDates = intent.getStringExtra(Land.EXTRA_VIEWING_DATES);
-
-        landId = intent.getStringExtra("currentLandId");
-
-        //get user
-        globalCurrentUserJson = intent.getStringExtra("globalCurrentUser");
-        Gson gson = new Gson();
-        currentUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
-        currentUserId = currentUser.getObjectId();
+        startingActivity = intent.getStringExtra("startingActivity");
 
 
+        if (startingActivity.equals("SavedItems")) {
+
+            itemImageReferences = intent.getStringArrayListExtra("landItemImageReferences");
+            landDetailsDescription = intent.getStringExtra("description");
+            landDetailsLocation = intent.getStringExtra("location");
+            landDetailsPrice = intent.getStringExtra("price");
+            landDetailsSize = intent.getStringExtra("size");
+            landDetailsTitle = intent.getStringExtra("title");
+            ownerPhone = intent.getStringExtra("ownerPhone");
+            viewingDates = intent.getStringExtra("viewingDates");
+
+            landId = intent.getStringExtra("currentLandId");
+
+            //get user
+            globalCurrentUserJson = intent.getStringExtra("globalCurrentUser");
+            Gson gson = new Gson();
+            currentUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+            currentUserId = currentUser.getObjectId();
 
 
+        } else if (startingActivity.equals("LandHomeActivity")) {
+
+
+            itemImageReferences = intent.getStringArrayListExtra(Land.EXTRA_ARRAY);
+            landDetailsDescription = intent.getStringExtra(Land.EXTRA_DESCRIPTION);
+            landDetailsLocation = intent.getStringExtra(Land.EXTRA_LOCATION);
+            landDetailsPrice = intent.getStringExtra(Land.EXTRA_PRICE);
+            landDetailsSize = intent.getStringExtra(Land.EXTRA_SIZE);
+            landDetailsTitle = intent.getStringExtra(Land.EXTRA_TITLE);
+            ownerPhone = intent.getStringExtra(Land.EXTRA_OWNER_PHONE);
+            viewingDates = intent.getStringExtra(Land.EXTRA_VIEWING_DATES);
+
+            landId = intent.getStringExtra("currentLandId");
+
+            //get user
+            globalCurrentUserJson = intent.getStringExtra("globalCurrentUser");
+            Gson gson = new Gson();
+            currentUser = gson.fromJson(globalCurrentUserJson, BackendlessUser.class);
+            currentUserId = currentUser.getObjectId();
+
+
+        }
 
 
         //get references to the view objects
@@ -176,9 +200,7 @@ public class LandDetails extends AppCompatActivity {
     }
 
 
-
-
-    void saveLandButtonClicked(){
+    void saveLandButtonClicked() {
 
 
         //disable the button and show that its disabled so user doesn't press twice
@@ -191,7 +213,7 @@ public class LandDetails extends AppCompatActivity {
 
         //house object to be saved in the relations column
         Map<String, Object> landObject = new HashMap<String, Object>();
-        landObject.put("objectId",landId);
+        landObject.put("objectId", landId);
         Log.d("myLogSaveland", "Land id: " + landId);
 
 
@@ -203,18 +225,17 @@ public class LandDetails extends AppCompatActivity {
             public void handleResponse(Integer response) {
 
 
-                if (response==0){
+                if (response == 0) {
 
                     Toast.makeText(LandDetails.this, "The property has already been saved before", Toast.LENGTH_LONG).show();
 
-                }else if(response>=1){
+                } else if (response >= 1) {
 
 
                     Toast.makeText(LandDetails.this, "The property has been saved successfully", Toast.LENGTH_LONG).show();
 
 
                 }
-
 
 
                 Log.d("myLogSaveLand", "User object updated with saved land: " + response.toString());
@@ -232,20 +253,11 @@ public class LandDetails extends AppCompatActivity {
                 saveLandButton.setImageResource(R.drawable.contacts_colored_red_filled);
 
 
-
             }
         });
 
 
-
-
-
-
     }
-
-
-
-
 
 
     void viewLandButtonClicked() {
