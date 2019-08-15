@@ -3,8 +3,11 @@ package com.example.dell.muhingalayoutprototypes;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
 
 public class SavedCategories extends AppCompatActivity {
 
@@ -19,6 +22,9 @@ public class SavedCategories extends AppCompatActivity {
     //initialize views
     //buttons
     ImageView housesButton, venuesButton, landButton;
+
+    //Toolbar objects
+    Toolbar mainToolBar;
 
 
 
@@ -62,6 +68,18 @@ public class SavedCategories extends AppCompatActivity {
         landButton = findViewById(R.id.saved_land_category_image);
 
 
+
+        //initialize the toolbar
+        mainToolBar = findViewById(R.id.saved_categories_action_bar);
+        mainToolBar.setTitle(R.string.saved_categories);
+        setSupportActionBar(mainToolBar);
+
+
+
+
+        Glide.with(this).load(R.drawable.houses_category_image).into(housesButton);
+        Glide.with(this).load(R.drawable.land_category_image).into(landButton);
+        Glide.with(this).load(R.drawable.venues_category_image).into(venuesButton);
 
         housesButton.setOnClickListener(new View.OnClickListener() {
             @Override

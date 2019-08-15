@@ -94,6 +94,7 @@
     <string name="cancel">Cancel</string>
     <string name="categories">Categories</string>
     <string name="saved_items">Saved Items</string>
+    <string name="saved_categories">Saved Categories</string>
 
 
 </resources>
