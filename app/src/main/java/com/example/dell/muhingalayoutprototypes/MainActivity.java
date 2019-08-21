@@ -28,9 +28,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.github.javiersantos.bottomdialogs.BottomDialog;
 import com.google.gson.Gson;
 import com.novoda.merlin.Connectable;
 import com.novoda.merlin.Merlin;
+import com.novoda.merlin.MerlinsBeard;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -45,12 +47,13 @@ import br.vince.easysave.LoadAsyncCallback;
 
 public class MainActivity extends AppCompatActivity {
 
-  //Merlin
+    //Merlin
     Merlin merlin;
     Boolean isNetworkAvailable = false;
+    MerlinsBeard merlinsBeard;
 
     //Declare views
-    ImageView housesButton, landButton, venuesButton, musicButton, profilePictureButton , savedItemsButton;
+    ImageView housesButton, landButton, venuesButton, musicButton, profilePictureButton, savedItemsButton;
 
     //TOOLBAR VIEWS
     Toolbar homeMainToolBar;
@@ -91,14 +94,10 @@ public class MainActivity extends AppCompatActivity {
         automaticallyLogUserIn();
 
 
-
-
         //todo you stopped here
 
 
     }
-
-
 
 
     /*************************************************************************************************************************************************/
@@ -141,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                         Glide.with(MainActivity.this).load(user.getProperty("profile_picture")).apply(options).into(profilePictureButton);
                     }
 
-                    pausedForProfileActivity =false;
+                    pausedForProfileActivity = false;
 
                 }
 
@@ -170,17 +169,20 @@ public class MainActivity extends AppCompatActivity {
 
     /*************************************************************************************************************************************************/
 
-    void createMerlin(){
+    void createMerlin() {
 
-        merlin =  new Merlin.Builder().withConnectableCallbacks().build(this);
+        merlin = new Merlin.Builder().withConnectableCallbacks().build(this);
         merlin.registerConnectable(new Connectable() {
             @Override
             public void onConnect() {
 
-                isNetworkAvailable = true;
 
+                //do something
             }
         });
+
+        //deprecated code
+        merlinsBeard = MerlinsBeard.from(this);
 
 
     }
@@ -231,12 +233,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case (R.id.home_app_bar_settings_button):
-
-                break;
 
             case (R.id.home_sign_up_button):
-                createSignupOrLoginDialog();
+
+                if (!isLoggedIn) {
+                    createSignupOrLoginDialog();
+                } else {
+
+                    Toast.makeText(MainActivity.this, "You have already logged in!", Toast.LENGTH_LONG).show();
+
+                }
+
 
                 break;
 
@@ -244,6 +251,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if (isLoggedIn) {
                     createLogoutConfirmationDialog();
+                } else {
+
+                    Toast.makeText(MainActivity.this, "Please log in first!", Toast.LENGTH_LONG).show();
+
                 }
 
                 break;
@@ -273,6 +284,14 @@ public class MainActivity extends AppCompatActivity {
         homeMainToolBar.setTitle("Muhinga");
         Objects.requireNonNull(homeMainToolBar.getOverflowIcon()).setColorFilter(getResources().getColor(R.color.my_color_white), PorterDuff.Mode.SRC_ATOP);
         setSupportActionBar(homeMainToolBar);
+
+
+        //set the images
+        Glide.with(this).load(R.drawable.house_home_img).into(housesButton);
+        Glide.with(this).load(R.drawable.venue_home_img).into(venuesButton);
+        Glide.with(this).load(R.drawable.land_home_img).into(landButton);
+        Glide.with(this).load(R.drawable.music_home_img).into(musicButton);
+
 
         //set the on click listeners
         savedItemsButton.setOnClickListener(new View.OnClickListener() {
@@ -315,16 +334,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    void savedItemsButtonClicked() {
 
-    void savedItemsButtonClicked(){
 
-        Intent intent = new Intent(MainActivity.this, SavedCategories.class);
-        Gson gson = new Gson();
-        intent.putExtra(EXTRA_GLOBAL_USER, gson.toJson(globalCurrentUser));
-        MainActivity.this.startActivity(intent);
+        if (isLoggedIn) {
+            Intent intent = new Intent(MainActivity.this, SavedCategories.class);
+            Gson gson = new Gson();
+            intent.putExtra(EXTRA_GLOBAL_USER, gson.toJson(globalCurrentUser));
+            MainActivity.this.startActivity(intent);
+        } else {
+            Toast.makeText(MainActivity.this, "Please log in first!", Toast.LENGTH_LONG).show();
+        }
+
+
     }
-
-
 
 
     void profilePictureButtonClicked() {
@@ -383,6 +406,64 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    void createBottomDialog(Integer tag) {
+
+
+        if (tag == 1) {
+
+            new BottomDialog.Builder(this)
+                    .setTitle("SORRY!")
+                    .setContent("You do not seem to have a working internet connection. We can't log you in")
+                    .setPositiveText("Retry")
+                    .setPositiveBackgroundColorResource(R.color.my_color_primary)
+                    .setPositiveTextColorResource(android.R.color.white)
+                    .onPositive(new BottomDialog.ButtonCallback() {
+                        @Override
+                        public void onClick(BottomDialog dialog) {
+
+
+                            if (merlinsBeard.isConnected()) {
+
+                                automaticallyLogUserIn();
+
+                            } else {
+
+                                createBottomDialog(1);
+
+                            }
+
+
+                            Log.d("BottomDialogs", "Do something!");
+                        }
+                    }).show();
+        }else if( tag ==2){
+
+
+            new BottomDialog.Builder(this)
+                    .setTitle("SORRY!")
+                    .setContent("We have failed to automatically log you in, Please retry!")
+                    .setPositiveText("Retry")
+                    .setPositiveBackgroundColorResource(R.color.my_color_primary)
+                    .setPositiveTextColorResource(android.R.color.white)
+                    .onPositive(new BottomDialog.ButtonCallback() {
+                        @Override
+                        public void onClick(BottomDialog dialog) {
+
+                            automaticallyLogUserIn();
+
+                        }
+                    }).show();
+
+
+
+
+
+        }
+
+
+    }
+
+
     /*************************************************************************************************************************************************/
 
     void automaticallyLogUserIn() {
@@ -393,11 +474,27 @@ public class MainActivity extends AppCompatActivity {
         //todo find a way of retreiving the user object
 
 
-        if (userToken != null && !userToken.equals("")) {
+        if (merlinsBeard.isConnected()) {
 
-            // user login is available, skip the login activity/login form
-            Log.d("myLogsUserLogMATkn", userToken);
-            retrieveCachedUser();
+
+            Log.d("MyLogsMerlin", "Merlin is connected!");
+
+            if (userToken != null && !userToken.equals("")) {
+
+                // user login is available, skip the login activity/login form
+                Log.d("myLogsUserLogMATkn", userToken);
+                retrieveCachedUser();
+                isNetworkAvailable = true;
+
+
+            }
+
+        } else {
+
+
+            Log.d("MyLogsMerlin", "Is connected?! :" + isNetworkAvailable);
+            createBottomDialog(1);
+
 
         }
 
@@ -472,6 +569,7 @@ public class MainActivity extends AppCompatActivity {
                         public void handleFault(BackendlessFault fault) {
 
                             Log.d("myLogsUserCacheRetSx", "user retrieval failed : error: " + fault.toString());
+                            createBottomDialog(2);
 
 
                         }
@@ -738,3 +836,204 @@ public class MainActivity extends AppCompatActivity {
 
 
             */
+
+
+
+
+/*  <?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/services_user_area_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="15dp">
+
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/services"
+        android:textSize="15sp"
+        app:fontFamily="@font/montserrat_regular"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayout3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp"
+            app:contentPadding="10dp"
+
+            >
+
+
+            <ImageView
+                android:id="@+id/houses_services_user_area"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/rent_icon_colored_filled" />
+
+        </android.support.v7.widget.CardView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/houses"
+            android:textSize="12sp"
+            app:fontFamily="@font/montserrat_regular" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayout4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/linearLayout2"
+        app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp"
+            app:contentPadding="10dp">
+
+            <ImageView
+                android:id="@+id/land_services_user_area"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/land_icon_colored_filled" />
+
+        </android.support.v7.widget.CardView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/land"
+            android:textSize="12sp"
+            app:fontFamily="@font/montserrat_regular" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayout5"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/linearLayout3"
+        app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp"
+            app:contentPadding="10dp">
+
+            <ImageView
+                android:id="@+id/venues_services_user_area"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/venue_icon_colored_filled" />
+
+        </android.support.v7.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/venues"
+            android:textSize="12sp"
+            app:fontFamily="@font/montserrat_regular" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/linearLayout4"
+        app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp"
+            app:contentPadding="10dp"
+
+            >
+
+            <ImageView
+                android:id="@+id/music_services_user_area"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/music_icon_filled_colored" />
+
+        </android.support.v7.widget.CardView>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/music"
+            android:textSize="12sp"
+            app:fontFamily="@font/montserrat_regular" />
+
+
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>*/

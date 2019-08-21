@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
 import java.util.List;
@@ -57,7 +58,12 @@ public class LandDetailsViewSingleImage extends AbstractItem<LandDetailsViewSing
         super.bindView(holder, payloads);
 
 
-        Glide.with(holder.itemView).load(landDetailsImageReference).into(holder.land_details_main_image_vh);
+        RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.loading_default_img_square).fallback(R.drawable.default_image_fallback_169)
+                .error(R.drawable.default_error_img);
+
+
+        Glide.with(holder.itemView).load(landDetailsImageReference).apply(options).into(holder.land_details_main_image_vh);
 
 
     }

@@ -6,6 +6,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.mikepenz.fastadapter.items.AbstractItem;
@@ -81,11 +84,6 @@ public class HousesResponse extends AbstractItem<HousesResponse, HousesResponse.
     private String viewingDates;
 
 
-
-
-
-
-
     public void setViewingDates(String viewingDates) {
         this.viewingDates = viewingDates;
     }
@@ -96,11 +94,9 @@ public class HousesResponse extends AbstractItem<HousesResponse, HousesResponse.
     }
 
 
-
     public void setPhone(String phone) {
         this.phone = phone;
     }
-
 
 
     public String getPhone() {
@@ -307,8 +303,12 @@ public class HousesResponse extends AbstractItem<HousesResponse, HousesResponse.
 
         viewHolder.title_vh.setText(title);
 
+        RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.loading_default_img_square).fallback(R.drawable.default_image_fallback_169)
+                .error(R.drawable.default_error_img);
 
-        Glide.with(viewHolder.itemView).load(mianImageReference).into(viewHolder.house_main_image_vh);
+
+        Glide.with(viewHolder.itemView).load(mianImageReference).apply(options).into(viewHolder.house_main_image_vh);
 
     }
 

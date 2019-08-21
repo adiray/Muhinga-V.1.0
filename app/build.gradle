@@ -27,11 +27,19 @@ dependencies {
     //calendar aige datepicker
     implementation 'cn.aigestudio.datepicker:DatePicker:2.2.0'
 
+
+
+    //bottom Dialog
+    implementation 'com.github.javiersantos:BottomDialogs:1.2.1'
+
     //ios style dialog library
     implementation 'com.gdacciaro:iosdialog:1.0.3'
 
     //the FAB library
     implementation 'com.github.clans:fab:1.6.4'
+
+    //glide image transform library
+    implementation 'jp.wasabeef:glide-transformations:4.1.0'
 
     //used for the rotating reply song view
     implementation 'theanilpaudel:rotatinganimation:1.0.0'

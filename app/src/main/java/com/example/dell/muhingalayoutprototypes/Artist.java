@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.FooterAdapter;
@@ -122,7 +123,12 @@ public class Artist extends AppCompatActivity {
 
 
         //load the profile and cover images into the respective views
-        Glide.with(this).load(selectedArtistCoverImageReference).into(artistCoverImage);
+
+        RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.song_default_img).fallback(R.drawable.default_image_fallback_169)
+                .error(R.drawable.default_error_img);
+
+        Glide.with(this).load(selectedArtistCoverImageReference).apply(options).into(artistCoverImage);
         Glide.with(this).load(selectedArtistProfileImageReference).into(artistProfileImage);
         selectedArtistNameTextView.setText(selectedArtistName);
 

@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.mikepenz.fastadapter.items.AbstractItem;
@@ -336,7 +337,14 @@ public class SavedLandResponse extends AbstractItem<SavedLandResponse, SavedLand
         holder.price_vh.setText(getPrice());
         holder.size_vh.setText(getSize());
         holder.title_vh.setText(getTitle());
-        Glide.with(holder.itemView).load(mianImageReference).into(holder.land_main_image_vh);
+
+        RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.loading_default_img_square).fallback(R.drawable.default_image_fallback_169)
+                .error(R.drawable.default_error_img);
+
+
+
+        Glide.with(holder.itemView).load(mianImageReference).apply(options).into(holder.land_main_image_vh);
 
     }
 

@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.annotations.SerializedName;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
@@ -160,6 +161,9 @@ public class SongsItem extends AbstractItem<SongsItem, SongsItem.SongItemViewHol
 
         holder.title_vh.setText(getTitle());
         holder.artistNameVh.setText(getArtist());
+
+
+
         Glide.with(holder.itemView).load(getCoverImage()).into(holder.song_cover_vh);
 
 

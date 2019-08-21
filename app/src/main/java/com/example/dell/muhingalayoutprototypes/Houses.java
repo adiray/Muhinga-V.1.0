@@ -614,13 +614,22 @@ public class Houses extends AppCompatActivity {
             public void onResponse(Call<ArrayList<HousesResponse>> call, Response<ArrayList<HousesResponse>> response) {
 
                 String stringHolder;
-                int rSize = response.body().size();
+                int rSize = 0;
+                if (response.body() != null) {
+                    rSize = response.body().size();
+                }else{
+
+                    Log.d("myLogsLocRes", "response is empty!");
+
+
+                }
 
                 //a for statement to cycle through the response and add every unique location to the locationOptions array
                 for (int counter = 0; counter < rSize; counter++) {
                     stringHolder = response.body().get(counter).getLocation();
-                    if (!locationOptions.contains(stringHolder)) {
+                    if (!locationOptions.contains(stringHolder) && !(stringHolder == null)) {
                         locationOptions.add(stringHolder);
+                        Log.d("myLogsLocRes", "Location " + counter + ":" + stringHolder);
                     }
                 }
 

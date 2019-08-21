@@ -61,6 +61,7 @@ public class PlayMusic extends AppCompatActivity {
 
     //miscellaneous objects
     String songTitle, artistName, songFileReference, albumName, coverImage;
+    Boolean isPauseClicked = false;
 
 
     //notification objects
@@ -161,13 +162,11 @@ public class PlayMusic extends AppCompatActivity {
         likeButton = findViewById(R.id.play_music_like_button);
 
 
-
         //toolbar views
         playMusicMainToolBar = findViewById(R.id.play_music_app_bar);
         playMusicMainToolBar.setTitle("Play Music");
         Objects.requireNonNull(playMusicMainToolBar.getOverflowIcon()).setColorFilter(getResources().getColor(R.color.my_color_white), PorterDuff.Mode.SRC_ATOP);
         setSupportActionBar(playMusicMainToolBar);
-
 
 
         //assign the text to the textViews
@@ -214,19 +213,19 @@ public class PlayMusic extends AppCompatActivity {
 */
 
 
-                if (songFile.exists()) {
+                if (songFile.exists() && !isCurrentlyDownloading) {
 
                     playSongFromStorage();
-                 //   playerCleanup();
+                    //   playerCleanup();
 
                 } else {
 
                     playSongFromServer();
-                   // playerCleanup();
+                    // playerCleanup();
 
                 }
 
-                if (!isOnCompletionListenerAttached){
+                if (!isOnCompletionListenerAttached) {
                     playerCleanup();
                 }
 
@@ -254,7 +253,7 @@ public class PlayMusic extends AppCompatActivity {
             public void onClick(View view) {
 
 
-                if (songFile.exists()){
+                if (songFile.exists() && !isCurrentlyDownloading) {
 
                     Toast.makeText(PlayMusic.this, songFile.getName() + " " + "has already been downloaded!", Toast.LENGTH_LONG).show();
 
@@ -270,10 +269,7 @@ public class PlayMusic extends AppCompatActivity {
                     }
 
 
-
                 }
-
-
 
 
             }
@@ -295,6 +291,16 @@ public class PlayMusic extends AppCompatActivity {
     }
 
 
+    //handle on back pressed
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        stopButton.callOnClick();
+
+
+    }
 
     //inflate the menu layout file for the toolbar
     @Override
@@ -304,22 +310,6 @@ public class PlayMusic extends AppCompatActivity {
         return true;
     }
 
-
-    //specify the actions that happen when each menu item is clicked
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case (R.id.play_music_liked_songs):
-
-
-
-
-                break;
-            default:
-                break;
-        }
-        return true;
-    }
 
 
 
@@ -413,7 +403,11 @@ public class PlayMusic extends AppCompatActivity {
 
                         mediaPlayer.start();
                         isPaused = false;
+                        isPauseClicked = false;
                         isStopped = false;
+                        playButton.setImageResource(R.drawable.play_blue_active);
+                        stopButton.setImageResource(R.drawable.stop_red_inactive);
+                        pauseButton.setImageResource(R.drawable.pause_blue_inactive);
 
                         if (mediaPlayer.isPlaying()) {
 
@@ -437,7 +431,11 @@ public class PlayMusic extends AppCompatActivity {
                     mediaPlayer.seekTo(newTime);
                     mediaPlayer.start();
                     isPaused = false;
+                    isPauseClicked = false;
                     isSeekUsedWhilePaused = false;
+                    playButton.setImageResource(R.drawable.play_blue_active);
+                    stopButton.setImageResource(R.drawable.stop_red_inactive);
+                    pauseButton.setImageResource(R.drawable.pause_blue_inactive);
 
 
                 } else {
@@ -445,6 +443,10 @@ public class PlayMusic extends AppCompatActivity {
                     mediaPlayer.seekTo(songPausePosition);
                     mediaPlayer.start();
                     isPaused = false;
+                    isPauseClicked = false;
+                    playButton.setImageResource(R.drawable.play_blue_active);
+                    stopButton.setImageResource(R.drawable.stop_red_inactive);
+                    pauseButton.setImageResource(R.drawable.pause_blue_inactive);
 
 
                 }
@@ -462,14 +464,13 @@ public class PlayMusic extends AppCompatActivity {
      */
 
 
-    public void playerCleanup(){
+    public void playerCleanup() {
 
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
 
                 //set progress to 0
-
 
 
                 //set timer to 0
@@ -481,17 +482,14 @@ public class PlayMusic extends AppCompatActivity {
                 stopButton.callOnClick();
 
 
-
             }
 
         });
 
 
- isOnCompletionListenerAttached =true;
+        isOnCompletionListenerAttached = true;
 
     }
-
-
 
 
     /**
@@ -501,17 +499,17 @@ public class PlayMusic extends AppCompatActivity {
 
     public void replaySong() {
 
+
         //replayButton.getPivotX();
 
-        int halfX = replayButton.getWidth()  / 2;
-        int halfY =  replayButton.getHeight() / 2;
-
+        int halfX = replayButton.getWidth() / 2;
+        int halfY = replayButton.getHeight() / 2;
 
 
         //Log.d("myLogsReplayButton", "halfX: " + halfX + "halfY: " + halfY + "centerX :" + centreX + "centerY :"+ centerY );
         //rotation =new Rotation(replayButton,0,340);
 
-       rotation = new Rotation(replayButton,0,350,halfX,halfY,Rotation.ABSOLUTE,Rotation.ABSOLUTE);
+        rotation = new Rotation(replayButton, 0, 350, halfX, halfY, Rotation.ABSOLUTE, Rotation.ABSOLUTE);
         rotation.roatateView(700);
         rotation.stopRotation(350);
 
@@ -536,6 +534,8 @@ public class PlayMusic extends AppCompatActivity {
 
         if (!isPlayPressed) {
             if (!isPaused) {
+                android.widget.Toast.makeText(getApplicationContext(), "The song will be streamed shortly. Please be patient!!", android.widget.Toast.LENGTH_LONG).show();
+                playButton.setImageResource(R.drawable.play_blue_active);
                 mediaPlayer = new android.media.MediaPlayer();
                 isPlayPressed = true;
                 mediaPlayer.setAudioStreamType(android.media.AudioManager.STREAM_MUSIC);
@@ -545,11 +545,16 @@ public class PlayMusic extends AppCompatActivity {
 
                 } catch (IllegalArgumentException | SecurityException | IllegalStateException e) {
 
-                    android.widget.Toast.makeText(getApplicationContext(), "You might not have set the URI correctly!", android.widget.Toast.LENGTH_LONG).show();
+                    android.widget.Toast.makeText(getApplicationContext(), "The song can't be streamed right now. Please retry!!", android.widget.Toast.LENGTH_LONG).show();
+                    playButton.setImageResource(R.drawable.play_blue_inactive);
+
+
 
                 } catch (java.io.IOException e) {
 
                     e.printStackTrace();
+                    playButton.setImageResource(R.drawable.play_blue_inactive);
+
 
                 }
 
@@ -560,7 +565,11 @@ public class PlayMusic extends AppCompatActivity {
 
                         mediaPlayer.start();
                         isPaused = false;
+                        isPauseClicked = false;
                         isStopped = false;
+                        playButton.setImageResource(R.drawable.play_blue_active);
+                        stopButton.setImageResource(R.drawable.stop_red_inactive);
+                        pauseButton.setImageResource(R.drawable.pause_blue_inactive);
 
                         if (mediaPlayer.isPlaying()) {
 
@@ -584,7 +593,11 @@ public class PlayMusic extends AppCompatActivity {
                     mediaPlayer.seekTo(newTime);
                     mediaPlayer.start();
                     isPaused = false;
+                    isPauseClicked = false;
                     isSeekUsedWhilePaused = false;
+                    playButton.setImageResource(R.drawable.play_blue_active);
+                    stopButton.setImageResource(R.drawable.stop_red_inactive);
+                    pauseButton.setImageResource(R.drawable.pause_blue_inactive);
 
 
                 } else {
@@ -592,6 +605,10 @@ public class PlayMusic extends AppCompatActivity {
                     mediaPlayer.seekTo(songPausePosition);
                     mediaPlayer.start();
                     isPaused = false;
+                    isPauseClicked = false;
+                    playButton.setImageResource(R.drawable.play_blue_active);
+                    stopButton.setImageResource(R.drawable.stop_red_inactive);
+                    pauseButton.setImageResource(R.drawable.pause_blue_inactive);
 
 
                 }
@@ -621,12 +638,15 @@ public class PlayMusic extends AppCompatActivity {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
-                //remove the handler from updating the progress bar
-                updateTimerHandler.removeCallbacks(updateTimerRunnable);
+                if (!(mediaPlayer == null)) {
+                    updateTimerHandler.removeCallbacks(updateTimerRunnable);
 
-                if (isPaused) {
-                    isSeekUsedWhilePaused = true;
+                    if (isPaused) {
+                        isSeekUsedWhilePaused = true;
+                    }
+
                 }
+                //remove the handler from updating the progress bar
 
 
             }
@@ -634,14 +654,16 @@ public class PlayMusic extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
-                //remove the handler from updating the progress bar
-                updateTimerHandler.removeCallbacks(updateTimerRunnable);
 
-                //get the new progress from the seek bar and update the timer and media player
-                newTime = seekBar.getProgress();
-                mediaPlayer.seekTo(newTime);
+                if (!(mediaPlayer == null)) {  //remove the handler from updating the progress bar
+                    updateTimerHandler.removeCallbacks(updateTimerRunnable);
 
-                updateTimerHandler.postDelayed(updateTimerRunnable, 1000);
+                    //get the new progress from the seek bar and update the timer and media player
+                    newTime = seekBar.getProgress();
+                    mediaPlayer.seekTo(newTime);
+
+                    updateTimerHandler.postDelayed(updateTimerRunnable, 1000);
+                }
 
 
             }
@@ -659,15 +681,24 @@ public class PlayMusic extends AppCompatActivity {
 
     public void pauseSong() {
 
-        if (mediaPlayer != null) {
-            songPausePosition = mediaPlayer.getCurrentPosition();
-            mediaPlayer.pause();
-            isPaused = true;
-            isPlayPressed = false;
-            playButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
-            stopButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
-            pauseButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
 
+        if (!isPauseClicked) {
+
+
+            if (mediaPlayer != null) {
+                songPausePosition = mediaPlayer.getCurrentPosition();
+                mediaPlayer.pause();
+                isPaused = true;
+                isPlayPressed = false;
+                playButton.setImageResource(R.drawable.play_blue_inactive);
+                stopButton.setImageResource(R.drawable.stop_red_inactive);
+                pauseButton.setImageResource(R.drawable.pause_blue_active);
+                // playButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
+                // stopButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
+                // pauseButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
+                isPauseClicked = true;
+
+            }
         }
 
 
@@ -691,11 +722,15 @@ public class PlayMusic extends AppCompatActivity {
                 mediaPlayer.release();
                 mediaPlayer = null;
                 isPaused = false;
+                isPauseClicked = false;
                 isStopped = true;
                 isPlayPressed = false;
                 elapsedTimeTv.setText("0:00");
-                getTotalTime();
+                //getTotalTime();
                 songSeekBar.setProgress(0);
+                playButton.setImageResource(R.drawable.play_blue_inactive);
+                stopButton.setImageResource(R.drawable.stop_red_active);
+                pauseButton.setImageResource(R.drawable.pause_blue_inactive);
 
 
             } else {
@@ -704,13 +739,18 @@ public class PlayMusic extends AppCompatActivity {
                 mediaPlayer.release();
                 mediaPlayer = null;
                 isPaused = false;
+                isPauseClicked = false;
                 isStopped = true;
                 isPlayPressed = false;
+                playButton.setImageResource(R.drawable.play_blue_inactive);
+                stopButton.setImageResource(R.drawable.stop_red_active);
+                pauseButton.setImageResource(R.drawable.pause_blue_inactive);
             }
 
-            playButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
-            pauseButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
-            stopButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
+
+            // playButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
+            // pauseButton.setBackgroundColor(getResources().getColor(R.color.my_color_bg));
+            //stopButton.setBackgroundColor(getResources().getColor(R.color.my_color_alternative_shade));
             isOnCompletionListenerAttached = false;
 
            /*
@@ -847,7 +887,7 @@ public class PlayMusic extends AppCompatActivity {
                         mNotifyManager.notify(downloadProgressNotificationId, mNotificationBuilder.build());
 
 
-                        downloadButton.setImageResource(R.drawable.download_black);
+                        downloadButton.setImageResource(R.drawable.download_blue_inactive);
                         isCurrentlyDownloading = false;
 
                         Toast.makeText(PlayMusic.this, download.getFile() + " download has been completed!", Toast.LENGTH_LONG).show();
@@ -953,7 +993,7 @@ public class PlayMusic extends AppCompatActivity {
                 @Override
                 public void onCancelled(@NotNull Download download) {
 
-                    downloadButton.setImageResource(R.drawable.download_black);
+                    downloadButton.setImageResource(R.drawable.download_blue_inactive);
                     isCurrentlyDownloading = false;
                     mNotificationBuilder.setContentText("Download Cancelled!");
                     // Removes the progress bar
@@ -1090,6 +1130,16 @@ public class PlayMusic extends AppCompatActivity {
 
     public void getTotalTime() {
 
+
+        /* java.lang.NullPointerException: Attempt to invoke virtual method 'int android.media.MediaPlayer.getDuration()' on a null object reference
+        at com.example.dell.muhingalayoutprototypes.PlayMusic.getTotalTime(PlayMusic.java:1093)
+        at com.example.dell.muhingalayoutprototypes.PlayMusic.stopSong(PlayMusic.java:697)
+        at com.example.dell.muhingalayoutprototypes.PlayMusic$4.onClick(PlayMusic.java:248)
+        at android.view.View.callOnClick(View.java:5718)
+        at com.example.dell.muhingalayoutprototypes.PlayMusic.replaySong(PlayMusic.java:518)
+        at com.example.dell.muhingalayoutprototypes.PlayMusic$6.onClick(PlayMusic.java:286)*/
+
+
         Integer durationMinutes = mediaPlayer.getDuration() / 60000;
         Integer durationSeconds = (mediaPlayer.getDuration() % 60000) / 1000;
 
@@ -1195,6 +1245,7 @@ todo get a dependency for the round image view //done
 TODO ON SONG COMPLETION LITSENER AND WHTA HAPPENS WHEN A SONG COMPLETES //done
 //todo set links to icons 8 and ouch pics https://icons8.com
 //todo set
+//todo stop button should reject input events after clicked
 */
 
 
@@ -1239,3 +1290,275 @@ TODO ON SONG COMPLETION LITSENER AND WHTA HAPPENS WHEN A SONG COMPLETES //done
 
 
     */
+
+
+
+
+
+/*<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/my_color_bg"
+    tools:context=".PlayMusic">
+
+
+
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/play_music_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/my_color_primary"
+        android:minHeight="64dp"
+        app:titleTextColor="@color/my_color_bg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+
+
+
+    <TextView
+        android:id="@+id/play_music_song_title"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:text="song title"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_song_cover_image" />
+
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/play_music_song_cover_image"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/test_default_img1"
+        app:layout_constraintDimensionRatio="H,16:9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_artist_name" />
+
+
+    <ImageButton
+
+        android:id="@+id/play_music_play_button"
+
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/my_color_bg"
+        android:scaleType="centerCrop"
+        android:src="@drawable/play_black_rounded"
+        app:layout_constraintEnd_toStartOf="@+id/play_music_stop_button"
+        app:layout_constraintStart_toEndOf="@+id/play_music_pause_button"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_song_title" />
+
+
+    <ImageButton
+        android:id="@+id/play_music_pause_button"
+
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/my_color_bg"
+        android:scaleType="centerCrop"
+        android:src="@drawable/pause_black_empty"
+        app:layout_constraintEnd_toStartOf="@+id/play_music_play_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_song_title" />
+
+    <ImageButton
+        android:id="@+id/play_music_download_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/my_color_bg"
+        android:scaleType="centerCrop"
+        android:src="@drawable/download_black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/play_music_stop_button"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_song_title" />
+
+
+    <ImageButton
+        android:id="@+id/play_music_stop_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/my_color_bg"
+        android:scaleType="centerCrop"
+        android:src="@drawable/stop_black"
+        app:layout_constraintEnd_toStartOf="@+id/play_music_download_button"
+        app:layout_constraintStart_toEndOf="@+id/play_music_play_button"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_song_title" />
+
+    <TextView
+        android:id="@+id/play_music_artist_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:text="artist name"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_app_bar" />
+
+    <TextView
+        android:id="@+id/song_total_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:gravity="end"
+        android:text="0:00"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_play_button" />
+
+
+    <TextView
+        android:id="@+id/song_elapsed_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:text="0:00"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_play_button" />
+
+
+    <SeekBar
+        android:id="@+id/song_seek_bar"
+        style="?android:attr/seekBarStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/play_music_play_button" />
+
+
+    <ImageButton
+        android:id="@+id/play_music_replay_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="40dp"
+        android:background="@color/my_color_bg"
+        android:scaleType="centerCrop"
+        android:src="@drawable/replay_black"
+        app:layout_constraintEnd_toStartOf="@+id/play_music_like_button"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/song_seek_bar" />
+
+
+    <com.varunest.sparkbutton.SparkButton
+        android:id="@+id/play_music_like_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintEnd_toStartOf="@+id/play_music_share_button"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/play_music_replay_button"
+        app:layout_constraintTop_toBottomOf="@+id/song_seek_bar"
+        app:sparkbutton_activeImage="@drawable/heart_red_filled"
+        app:sparkbutton_animationSpeed="1.5"
+        app:sparkbutton_iconSize="40dp"
+        app:sparkbutton_inActiveImage="@drawable/heart_black_thick_outline"
+        app:sparkbutton_primaryColor="@color/my_color_bg"
+        app:sparkbutton_secondaryColor="@color/my_color_like_button_active" />
+
+
+    <ImageButton
+        android:id="@+id/play_music_share_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="40dp"
+        android:background="@color/my_color_bg"
+        android:scaleType="centerCrop"
+        android:src="@drawable/share_black"
+        app:layout_constraintEnd_toStartOf="@+id/play_music_buy_button"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/play_music_like_button"
+        app:layout_constraintTop_toBottomOf="@+id/song_seek_bar" />
+
+
+    <ImageButton
+        android:id="@+id/play_music_buy_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="32dp"
+        android:background="@color/my_color_bg"
+        android:scaleType="centerCrop"
+        android:src="@drawable/shop_black_filled"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/play_music_share_button"
+        app:layout_constraintTop_toBottomOf="@+id/song_seek_bar" />
+
+
+</android.support.constraint.ConstraintLayout>*/
+
+
+
+/*<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+
+
+    <item
+        android:title="Liked"
+        android:id="@+id/play_music_liked_songs"
+        app:showAsAction="ifRoom"
+        android:orderInCategory="100"
+        android:icon="@drawable/heart_white_outline"
+        />
+
+
+    <item
+        android:title="Contact artist"
+        android:id="@+id/play_music_contact_artist"
+        app:showAsAction="never"
+        android:orderInCategory="100"
+        />
+
+
+</menu>*/

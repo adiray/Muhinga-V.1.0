@@ -504,7 +504,7 @@ public class Venues extends AppCompatActivity {
                 //a for statement to cycle through the response and add every unique location to the locationOptions array
                 for (int counter = 0; counter < rSize; counter++) {
                     stringHolder = response.body().get(counter).getLocation();
-                    if (!locationOptions.contains(stringHolder)) {
+                    if (!locationOptions.contains(stringHolder)&& !(stringHolder == null)) {
                         locationOptions.add(stringHolder);
                     }
                 }

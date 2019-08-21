@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.mikepenz.fastadapter.items.AbstractItem;
@@ -251,15 +252,9 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
     }
 
 
-
-
-
-
-
-
     //constructors
 
-    public SavedHousesResponse( String mianImageReference,Object img2, Object img3, Object img4,Object img5, String title, String description,  String phone, String price, String viewingDates, String objectId, String location, Boolean forSale, Boolean rent) {
+    public SavedHousesResponse(String mianImageReference, Object img2, Object img3, Object img4, Object img5, String title, String description, String phone, String price, String viewingDates, String objectId, String location, Boolean forSale, Boolean rent) {
         this.img5 = img5;
         this.mianImageReference = mianImageReference;
         this.title = title;
@@ -278,17 +273,6 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
 
 
     //Fast Adapter methods and code starts here
-
-
-
-
-
-
-
-
-
-
-
 
 
     @Override
@@ -312,7 +296,6 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
         super.bindView(viewHolder, payloads);
 
 
-
         if (rent) {
             viewHolder.rent_vh.setText(R.string.ForRent);
         } else {
@@ -323,18 +306,17 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
         viewHolder.location_vh.setText(location);
         viewHolder.price_vh.setText(price);
 
+        RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.loading_default_img_square).fallback(R.drawable.default_image_fallback_169)
+                .error(R.drawable.default_error_img);
 
 
-
-        Glide.with(viewHolder.itemView).load(mianImageReference).into(viewHolder.house_main_image_vh);
-
-
-
+        Glide.with(viewHolder.itemView).load(mianImageReference).apply(options).into(viewHolder.house_main_image_vh);
 
 
     }
 
-    protected static class savedHousesViewHolder extends RecyclerView.ViewHolder{
+    protected static class savedHousesViewHolder extends RecyclerView.ViewHolder {
 
 
         //declaring the views
@@ -342,7 +324,7 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
         ImageView house_main_image_vh, deleteItem;
 
 
-        public savedHousesViewHolder( View itemView) {
+        public savedHousesViewHolder(View itemView) {
             super(itemView);
 
             //assigning the previously declared views
@@ -354,10 +336,8 @@ public class SavedHousesResponse extends AbstractItem<SavedHousesResponse, Saved
             deleteItem = itemView.findViewById(R.id.saved_houses_unsave_house_button);
 
 
-
         }
     }
-
 
 
 }

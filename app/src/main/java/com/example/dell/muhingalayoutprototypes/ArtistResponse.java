@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.annotations.SerializedName;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
@@ -144,7 +145,14 @@ public class ArtistResponse extends AbstractItem<ArtistResponse, ArtistResponse.
     public void bindView(ArtistResponse.artistResponseViewHolder holder, List<Object> payloads) {
         super.bindView(holder, payloads);
         holder.artist_name_vh.setText(getName());
-        Glide.with(holder.itemView).load(getProfilePicture()).into(holder.artist_image_vh);
+
+
+        RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.artist_img_default).fallback(R.drawable.default_image_fallback_169)
+                .error(R.drawable.default_error_img);
+
+
+        Glide.with(holder.itemView).load(getProfilePicture()).apply(options).into(holder.artist_image_vh);
     }
 
 

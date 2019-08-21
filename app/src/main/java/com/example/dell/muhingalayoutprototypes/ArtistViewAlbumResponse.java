@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.annotations.SerializedName;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
@@ -134,7 +135,13 @@ public class ArtistViewAlbumResponse extends AbstractItem<ArtistViewAlbumRespons
 
 
         holder.album_name_vh.setText(getName());
-        Glide.with(holder.itemView).load(getCoverImage()).into(holder.album_image_vh);
+
+
+        RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.song_default_img).fallback(R.drawable.default_image_fallback_169)
+                .error(R.drawable.default_error_img);
+
+        Glide.with(holder.itemView).load(getCoverImage()).apply(options).into(holder.album_image_vh);
 
 
     }

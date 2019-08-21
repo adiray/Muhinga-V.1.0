@@ -355,8 +355,6 @@ public class Profile extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case (R.id.profile_app_bar_settings_button):
-                break;
             case (R.id.profile_app_bar_log_out_button):
                 createLogoutConfirmationDialog();
                 break;

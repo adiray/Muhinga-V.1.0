@@ -15,23 +15,29 @@
         android:layout_height="wrap_content"
         android:background="@color/my_color_primary"
         android:minHeight="64dp"
-        app:titleTextColor="@color/my_color_bg"
-        />
+        app:titleTextColor="@color/my_color_bg" />
 
 
     <include
         android:id="@+id/user_area_top_bar_layout"
         layout="@layout/home_user_area_top_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
+        android:layout_height="wrap_content" />
 
-    <include
-        android:id="@+id/services_user_area_layout"
-        layout="@layout/home_services_user_area"
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp" />
+        android:layout_height="wrap_content">
 
+
+        <include
+            android:id="@+id/services_user_area_layout"
+            layout="@layout/home_services_user_area"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+
+    </ScrollView>
 
 </LinearLayout>
