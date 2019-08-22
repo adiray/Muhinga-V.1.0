@@ -28,6 +28,8 @@ dependencies {
     implementation 'cn.aigestudio.datepicker:DatePicker:2.2.0'
 
 
+    //floating action button with text
+    implementation 'com.github.dimorinny:floating-text-button:0.0.4'
 
     //bottom Dialog
     implementation 'com.github.javiersantos:BottomDialogs:1.2.1'

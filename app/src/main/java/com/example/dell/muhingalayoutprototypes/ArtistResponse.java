@@ -13,6 +13,8 @@ import com.mikepenz.fastadapter.items.AbstractItem;
 
 import java.util.List;
 
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+
 public class ArtistResponse extends AbstractItem<ArtistResponse, ArtistResponse.artistResponseViewHolder> {
 
     @SerializedName("created")
@@ -152,7 +154,23 @@ public class ArtistResponse extends AbstractItem<ArtistResponse, ArtistResponse.
                 .error(R.drawable.default_error_img);
 
 
-        Glide.with(holder.itemView).load(getProfilePicture()).apply(options).into(holder.artist_image_vh);
+        /*
+
+
+          RequestOptions options = new RequestOptions()
+                .placeholder(R.drawable.artist_img_default).fallback(R.drawable.default_image_fallback_169)
+                .error(R.drawable.default_error_img).bitmapTransform(new RoundedCornersTransformation(45, 0,
+                        RoundedCornersTransformation.CornerType.BOTTOM));
+
+
+
+         Glide.with(this).load(R.drawable.venues_saved_categories_img).apply(RequestOptions.bitmapTransform(new RoundedCornersTransformation(45, 0,
+                RoundedCornersTransformation.CornerType.BOTTOM))).into(venuesButton);
+*/
+
+
+        Glide.with(holder.itemView).load(getProfilePicture()).apply(RequestOptions.bitmapTransform(new RoundedCornersTransformation(45, 0,
+                RoundedCornersTransformation.CornerType.BOTTOM))).into(holder.artist_image_vh);
     }
 
 

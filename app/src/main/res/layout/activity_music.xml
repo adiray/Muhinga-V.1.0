@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFF"
-    android:orientation="vertical"
     tools:context=".Music">
 
 
@@ -15,28 +14,37 @@
         android:layout_height="wrap_content"
         android:background="@color/my_color_primary"
         android:minHeight="64dp"
-        app:titleTextColor="@color/my_color_bg"
+        app:layout_constraintEnd_toEndOf="parent"
 
-        />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:titleTextColor="@color/my_color_bg" />
 
 
     <TextView
         android:id="@+id/click_for_search"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="8dp"
         android:fontFamily="@font/montserrat_medium"
         android:text="@string/artists"
-        android:textAlignment="center"
         android:textColor="@color/my_color_secondary"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/music_action_bar" />
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/activity_music_home_artist_swipe_refresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/click_for_search">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/music_main_recycler_view"
@@ -49,4 +57,24 @@
     </android.support.v4.widget.SwipeRefreshLayout>
 
 
-</LinearLayout>
+    <ru.dimorinny.floatingtextbutton.FloatingTextButton
+        android:id="@+id/music_activity_load_more_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:floating_background_color="@color/md_blue_grey_900"
+        app:floating_title="Load more"
+        app:floating_title_color="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+
+
+
+
+
+
+
+</android.support.constraint.ConstraintLayout>

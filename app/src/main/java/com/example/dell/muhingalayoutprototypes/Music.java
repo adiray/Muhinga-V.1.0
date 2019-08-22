@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.javiersantos.bottomdialogs.BottomDialog;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
@@ -40,10 +41,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import ru.dimorinny.floatingtextbutton.FloatingTextButton;
 
 public class Music extends AppCompatActivity {
-
-
 
 
     //miscellaneous objects
@@ -53,6 +53,7 @@ public class Music extends AppCompatActivity {
 
     //declare the view objects
     SwipeRefreshLayout artistSwipeRefresh; //swipe to refresh view for the land recycler view
+    FloatingTextButton loadMoreButton;
 
 
     //TOOLBAR VIEWS
@@ -91,7 +92,8 @@ public class Music extends AppCompatActivity {
 
         //initialize the views
         artistSwipeRefresh = findViewById(R.id.activity_music_home_artist_swipe_refresh);
-
+        loadMoreButton = findViewById(R.id.music_activity_load_more_button);
+        loadMoreButton.setVisibility(View.INVISIBLE);
 
 
 
@@ -152,11 +154,11 @@ public class Music extends AppCompatActivity {
             @Override
             public void onLoadMore(int currentPage) {
 
+                loadMoreButton.setVisibility(View.VISIBLE);
 
-                footerAdapter.clear();
-                footerAdapter.add(new ProgressItem().withEnabled(false));
 
-                loadMoreArtists();
+
+
 
                 /*a statement to check if the user is loading more items that have been filtered or just loading more of all items unfiltered
                 if (filteredState) {
@@ -188,7 +190,7 @@ public class Music extends AppCompatActivity {
 
 
         //fill the query map object for the retrofit query
-        artistFilterMap.put("pageSize", "4");
+        artistFilterMap.put("pageSize", "10");
         artistFilterMap.put("offset", tableOffsetString);
         artistFilterMap.put("sortBy", "created%20desc");
 
@@ -216,6 +218,25 @@ public class Music extends AppCompatActivity {
                 return true;
             }
         });
+
+
+
+
+
+        loadMoreButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                loadMoreButton.setEnabled(false);
+                footerAdapter.clear();
+                footerAdapter.add(new ProgressItem().withEnabled(false));
+                loadMoreButton.setBackgroundColor(getResources().getColor(R.color.md_blue_grey_500));
+
+                loadMoreArtists();
+
+            }
+        });
+
 
 
     }
@@ -313,6 +334,9 @@ public class Music extends AppCompatActivity {
 
                     allArtistResponseArray.addAll(response.body());
                     footerAdapter.clear();
+                    loadMoreButton.setEnabled(true);
+                    loadMoreButton.setBackgroundColor(getResources().getColor(R.color.md_blue_grey_900));
+                    loadMoreButton.setVisibility(View.INVISIBLE);
                     if (response.body().size() > 0) {
                         artistFastAdapter.add(response.body());
                     } else {
@@ -334,12 +358,108 @@ public class Music extends AppCompatActivity {
             @Override
             public void onFailure(Call<ArrayList<ArtistResponse>> call, Throwable t) {
 
+
+
+                if(infiniteLoading && !onRefreshing){
+
+                    footerAdapter.clear();
+                    loadMoreButton.setEnabled(true);
+                    loadMoreButton.setBackgroundColor(getResources().getColor(R.color.md_blue_grey_900));
+                    loadMoreButton.setVisibility(View.INVISIBLE);
+                    createBottomDialog(3);
+
+                }else if(!infiniteLoading && !onRefreshing){
+
+                    createBottomDialog(1);
+
+
+                }else if(onRefreshing && !infiniteLoading){
+
+
+                    createBottomDialog(2);
+
+
+
+                }
+
+
+
                 Log.d("myLogsOnFailure", "onResponse: response unsuccessful");
 
             }
         });
 
     }
+
+
+
+    /*************************************************************************************************************************************************/
+
+
+
+
+    void createBottomDialog(Integer dialogTag) {
+
+
+        if (dialogTag == 1) {
+
+            new BottomDialog.Builder(this)
+                    .setTitle("SORRY!")
+                    .setContent("You do not seem to have a working internet connection. We can't load the data")
+                    .setPositiveText("Retry")
+                    .setPositiveBackgroundColorResource(R.color.my_color_primary)
+                    .setPositiveTextColorResource(android.R.color.white)
+                    .onPositive(new BottomDialog.ButtonCallback() {
+                        @Override
+                        public void onClick(BottomDialog dialog) {
+
+                            requestArtists();
+                        }
+                    }).show();
+        }else if( dialogTag ==2){
+
+
+            new BottomDialog.Builder(this)
+                    .setTitle("SORRY!")
+                    .setContent("We have failed to refresh the artists, Please retry!")
+                    .setPositiveText("Retry")
+                    .setPositiveBackgroundColorResource(R.color.my_color_primary)
+                    .setPositiveTextColorResource(android.R.color.white)
+                    .onPositive(new BottomDialog.ButtonCallback() {
+                        @Override
+                        public void onClick(BottomDialog dialog) {
+
+                            refreshArtists();
+
+                        }
+                    }).show();
+
+
+
+
+
+        }else if(dialogTag == 3){
+            new BottomDialog.Builder(this)
+                    .setTitle("SORRY!")
+                    .setContent("We have failed to automatically load more artists, Please retry!")
+                    .setPositiveText("Retry")
+                    .setPositiveBackgroundColorResource(R.color.my_color_primary)
+                    .setPositiveTextColorResource(android.R.color.white)
+                    .onPositive(new BottomDialog.ButtonCallback() {
+                        @Override
+                        public void onClick(BottomDialog dialog) {
+
+                            loadMoreButton.callOnClick();
+
+                        }
+                    }).show();}
+
+
+    }
+
+
+
+
 
     /*************************************************************************************************************************************************/
 
@@ -404,4 +524,109 @@ public class Music extends AppCompatActivity {
 */
 
 
+/*<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF"
+    android:orientation="vertical"
+    tools:context=".Music">
 
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/music_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/my_color_primary"
+        android:minHeight="64dp"
+        app:titleTextColor="@color/my_color_bg"
+
+        />
+
+
+    <TextView
+        android:id="@+id/click_for_search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/montserrat_medium"
+        android:text="@string/artists"
+        android:textAlignment="center"
+        android:textColor="@color/my_color_secondary"
+        android:textSize="15sp" />
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/activity_music_home_artist_swipe_refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/music_main_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp" />
+
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+
+</LinearLayout>*/
+
+
+
+/*<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/CardView.Light"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp">
+
+    <android.support.constraint.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/music_activity_artist_rec_view_image"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:contentDescription="@string/artists_image"
+            android:scaleType="centerCrop"
+            android:src="@drawable/test_default_img1"
+            app:layout_constraintBottom_toTopOf="@+id/music_activity_artist_rec_view_name"
+            app:layout_constraintDimensionRatio="H,16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/music_activity_artist_rec_view_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/montserrat_regular"
+            android:lineSpacingExtra="8dp"
+            android:text="@string/my_app_name"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textColor="@color/my_color_secondary"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/music_activity_artist_rec_view_image" />
+
+    </android.support.constraint.ConstraintLayout>
+
+
+</android.support.v7.widget.CardView>*/

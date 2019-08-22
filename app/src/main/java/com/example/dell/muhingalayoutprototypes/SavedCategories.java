@@ -94,8 +94,6 @@ public class SavedCategories extends AppCompatActivity {
 */
 
 
-        Glide.with(this).load(R.drawable.houses_saved_categories_img).apply(RequestOptions.bitmapTransform(new RoundedCornersTransformation(45, 0,
-                RoundedCornersTransformation.CornerType.BOTTOM))).into(housesButton);
 
         Glide.with(this).load(R.drawable.venues_saved_categories_img).apply(RequestOptions.bitmapTransform(new RoundedCornersTransformation(45, 0,
                 RoundedCornersTransformation.CornerType.BOTTOM))).into(venuesButton);
