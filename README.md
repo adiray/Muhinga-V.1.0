@@ -24,30 +24,7 @@ Real estate, land, venues and music.
 </p>
 
 
-<h3>LAND</h3>
 
-<p align="center"><img width=30% align="left"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/land%20screen%20s7.png" title="MUHINGA" alt="MUHINGA APP">
- 
-</p>
-
-
-<h3>VENUES</h3>
-
-<p align="center"><img width=30% align="left"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/venues%20screen%20s7.png" title="MUHINGA" alt="MUHINGA APP">
- 
-</p>
-
-
-<h2>MUSIC</h2>
- 
- <h3>SCREENS</h3>
-
-<p align="center"><img width=30% align="left"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/artist%20search%20screen%20s7.png" title="MUHINGA" alt="MUHINGA APP">
- BROWSE ARTISTS ACTIVITY
- <img width=30% align="center"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/house%20product%20page%20screen%20s7.png" title="MUHINGA" alt="MUHINGA APP">
- BROWSE ARTISTS ACTIVITY
-
-</p>
 
 
 
