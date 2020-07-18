@@ -23,11 +23,12 @@ Real estate, land, venues and music.
 <p align="center"><img width=90% align="left"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/houses%20combined.png" title="MUHINGA" alt="MUHINGA APP">
  </p>
 
-</p>
 
 <p align="center"> In this activity the user can browse available houses. The houses can be sorterd using various filters including; Rent/sell, price and location </p>
 
 <br>
+
+
 
 
 
