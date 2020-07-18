@@ -20,8 +20,8 @@ Real estate, land, venues and music.
  
  <h3>HOUSES</h3>
 
-<p align="center"><img width=30% align="left"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/houses%20screen%20s7.png" title="MUHINGA" alt="MUHINGA APP">
- <img width=30% align="center"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/house%20product%20page%20screen%20s7.png" title="MUHINGA" alt="MUHINGA APP">
+<p align="center"><img width=90% align="left"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/houses%20combined.png" title="MUHINGA" alt="MUHINGA APP">
+ </p>
 
 </p>
 
@@ -29,8 +29,6 @@ Real estate, land, venues and music.
 
 <br>
 
-<p align="center"><img width=90% align="left"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/houses%20combined.png" title="MUHINGA" alt="MUHINGA APP">
- </p>
 
 
 
