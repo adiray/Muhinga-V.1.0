@@ -8,7 +8,9 @@
 
 
 
-## NOTE: The app uses Retrofit and Glide to optimize data and image processing. For other libraries used, please check the imports and comments in the gradle file.
+<h2> NOTE: The app uses Retrofit and Glide to optimize data and image processing. For other libraries used, please check the imports and comments in the gradle file.</h2>
+
+<br>
 
 Current services include;
 Real estate, land, venues and music.
@@ -22,6 +24,15 @@ Real estate, land, venues and music.
  <img width=30% align="center"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/house%20product%20page%20screen%20s7.png" title="MUHINGA" alt="MUHINGA APP">
 
 </p>
+
+<p align="center"> In this activity the user can browse available houses. The houses can be sorterd using various filters including; Rent/sell, price and location </p>
+
+<br>
+
+<p align="center"><img width=90% align="left"src="https://github.com/adiray/Muhinga-V.1.0/blob/master/Art/houses%20combined.png" title="MUHINGA" alt="MUHINGA APP">
+ </p>
+
+
 
 
 
